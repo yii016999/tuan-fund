@@ -10,5 +10,7 @@
     "paths": {
       "@env": ["./env.d.ts"]
     }
-  }
+  },
+  // 包含 NativeWind 的型別定義檔案
+  "include": ["**/*.ts", "**/*.tsx", "src/types/nativewind.d.ts"]
 }
