@@ -1,6 +1,14 @@
 {
+  // 繼承 Expo 的基礎 TS 設定，不用重複寫常見設定（像是 jsx, module, target, esModuleInterop 等）
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true
+    // 嚴格模式，強制檢查型別、語法錯誤
+    "strict": true,
+    // 設定 TypeScript 的模組路徑基準為專案根目錄，加上後就可以這樣寫（不用寫 ../../../src/firebase 的路徑）
+    "baseUrl": ".",
+    // 自訂模組別名 @env 對應到 env.d.ts 檔案
+    "paths": {
+      "@env": ["./env.d.ts"]
+    }
   }
 }

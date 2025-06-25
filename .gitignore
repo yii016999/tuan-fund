@@ -30,8 +30,12 @@ yarn-error.*
 .DS_Store
 *.pem
 
-# local env files
+# 環境變數
+.env
+# 個人開發機的設定
 .env*.local
+# 發布版本的環境變數
+.env*.production
 
 # typescript
 *.tsbuildinfo
