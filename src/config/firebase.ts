@@ -1,20 +1,25 @@
-import { FIREBASE_API_KEY, FIREBASE_APP_ID, FIREBASE_AUTH_DOMAIN, FIREBASE_MESSAGING_SENDER_ID, FIREBASE_PROJECT_ID, FIREBASE_STORAGE_BUCKET, FIREBASE_MEASUREMENT_ID } from '@env'
-import { getAnalytics } from 'firebase/analytics'
-import { initializeApp } from 'firebase/app'
+import Constants from 'expo-constants';
+import { initializeApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: FIREBASE_API_KEY,
-    authDomain: FIREBASE_AUTH_DOMAIN,
-    projectId: FIREBASE_PROJECT_ID,
-    storageBucket: FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: FIREBASE_MESSAGING_SENDER_ID,
-    appId: FIREBASE_APP_ID,
-    measurementId: FIREBASE_MEASUREMENT_ID,
+    apiKey: Constants.expoConfig?.extra?.FIREBASE_API_KEY,
+    authDomain: Constants.expoConfig?.extra?.FIREBASE_AUTH_DOMAIN,
+    projectId: Constants.expoConfig?.extra?.FIREBASE_PROJECT_ID,
+    storageBucket: Constants.expoConfig?.extra?.FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: Constants.expoConfig?.extra?.FIREBASE_MESSAGING_SENDER_ID,
+    appId: Constants.expoConfig?.extra?.FIREBASE_APP_ID,
+    measurementId: Constants.expoConfig?.extra?.FIREBASE_MEASUREMENT_ID,
 }
 
+console.log(Constants.expoConfig?.extra?.FIREBASE_API_KEY)
+
 // 初始化 Firebase App
-const app = initializeApp(firebaseConfig)
+const app = initializeApp(firebaseConfig);
 
-console.log('[Firebase Initialized]:', app.name)
+// 初始化 Firebase Auth
+export const auth = getAuth(app);
 
-export default app
+// 初始化 Firebase Firestore
+export const db = getFirestore(app)

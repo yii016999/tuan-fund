@@ -8,7 +8,8 @@
     "baseUrl": ".",
     // 自訂模組別名 @env 對應到 env.d.ts 檔案
     "paths": {
-      "@env": ["./env.d.ts"]
+      "@env": ["./env.d.ts"],
+      "@/*": ["src/*"]
     }
   },
   // 包含 NativeWind 的型別定義檔案

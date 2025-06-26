@@ -13,21 +13,17 @@ module.exports = function (api) {
       // 整合 NativeWind 的 Babel 插件
       'nativewind/babel',
     ],
-    // babel-plugin-dotenv-import 讀取 .env 檔案
-    // expo-router/babel 讓 Expo Router 正常運作的 Babel 插件
     plugins: [
-      // 環境變數載入設定，讓 .env 檔案中的變數可以在程式中使用
-      [
-        'babel-plugin-dotenv-import',
-        {
-          moduleName: '@env',
-          path: '.env',
-          safe: false,
-          allowUndefined: true,
-        },
-      ],
       // 讓 Expo Router 正常運作的 Babel 插件
       'expo-router/babel',
+      [
+        'module-resolver',
+        {
+          alias: {
+            '@': './src',
+          },
+        },
+      ],
     ],
   };
 };
