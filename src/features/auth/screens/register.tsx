@@ -1,5 +1,9 @@
 import ScreenWrapper from "@/components/ScreenWrapper"
+import { AUTH_ROUTES } from "@/constants/routes"
 import { useRegisterViewModel } from "@/features/auth/viewModel/useRegisterViewModel"
+import { AuthParamList } from '@/navigation/types'
+import { useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, Text, TextInput, View } from "react-native"
 
 export default function RegisterScreen() {
@@ -12,8 +16,20 @@ export default function RegisterScreen() {
         setPassword,
         error,
         handleRegister,
-        goToLogin,
     } = useRegisterViewModel()
+
+    const navigation = useNavigation<NativeStackNavigationProp<AuthParamList>>()
+
+    const goToLogin = () => {
+        navigation.replace(AUTH_ROUTES.LOGIN)
+    }
+
+    const onRegisterSubmitPress = async () => {
+        const success = await handleRegister()
+        if (success) {
+            goToLogin()
+        }
+    }
 
     return (
         <ScreenWrapper>
@@ -49,7 +65,7 @@ export default function RegisterScreen() {
                 <View className="w-full flex-row justify-between gap-4 mt-2">
                     <View className="flex-1">
                         {/* 註冊按鈕 */}
-                        <Button title="註冊" onPress={handleRegister} />
+                        <Button title="註冊" onPress={onRegisterSubmitPress} />
                     </View>
                     <View className="flex-1">
                         {/* 前往登入頁 */}

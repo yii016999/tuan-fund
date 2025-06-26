@@ -1,4 +1,5 @@
-import 'expo-router/entry';
+import { registerRootComponent } from 'expo';
+import App from './App';
 
 // App 的 entry point
 // 由 Metro bundler (本機開發時的 JS 打包工具，幫你組合所有 JS/TS 檔案，傳給 App 執行) 
@@ -8,4 +9,4 @@ import 'expo-router/entry';
 // 當使用 expo-router，這個 index.ts 暫時不需要
 // 在 app.json 中 "entryPoint": "./node_modules/expo-router/entry"
 // 這個 entry point 會自己從 app/ 資料夾開始找 index.tsx，自動註冊 Root Component
-// registerRootComponent(App);
+registerRootComponent(App);

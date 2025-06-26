@@ -9,13 +9,11 @@ module.exports = function (api) {
     // 或是 React Native 特有支援	ex.transform runtime、Hermes
     // 整合 React Refresh	開發時自動 hot reload（也叫 Fast Refresh）
     presets: [
-      'babel-preset-expo',
+      ['babel-preset-expo', { jsxImportSource: "nativewind" }],
       // 整合 NativeWind 的 Babel 插件
       'nativewind/babel',
     ],
     plugins: [
-      // 讓 Expo Router 正常運作的 Babel 插件
-      'expo-router/babel',
       [
         'module-resolver',
         {

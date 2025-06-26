@@ -1,5 +1,9 @@
 import ScreenWrapper from '@/components/ScreenWrapper'
+import { AUTH_ROUTES, ROOT_ROUTES } from '@/constants/routes'
 import { useLoginViewModel } from "@/features/auth/viewModel/useLoginViewModel"
+import { AuthParamList, RootStackParamList } from '@/navigation/types'
+import { CompositeNavigationProp, useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { Button, Text, TextInput, View } from "react-native"
 
 export default function LoginScreen() {
@@ -10,8 +14,23 @@ export default function LoginScreen() {
     setPassword,
     error,
     handleLogin,
-    goToRegister,
   } = useLoginViewModel()
+
+  // 判斷當前畫面屬於哪個 Navigator，要看此頁是在哪個 Navigator 中被註冊
+  // 因為現在我的系統整合了兩個 Navigator，所以需要使用 MixedNav 來讓 navigation 可以跳轉到兩個 Navigator 分類的畫面
+  type MixedNav = CompositeNavigationProp<NativeStackNavigationProp<AuthParamList>, NativeStackNavigationProp<RootStackParamList>>
+  const navigation = useNavigation<MixedNav>()
+
+  const onRegisterPress = async () => {
+    // 使用 navigate 會將 Register 畫面堆疊起來
+    // 使用者可透過返回鍵回到 Login
+    navigation.navigate(AUTH_ROUTES.REGISTER)
+  }
+
+  const onLoginPress = async () => {
+    // 跳轉登入頁已由RootNavigator監聽與掌管，因此請求完登入之後，就可以直接跳轉
+    await handleLogin()
+  }
 
   return (
     <ScreenWrapper>
@@ -38,11 +57,11 @@ export default function LoginScreen() {
         <View className="w-full flex-row justify-between gap-4 mt-2">
           <View className="flex-1">
             {/* 登入按鈕 */}
-            <Button title="登入" onPress={handleLogin} />
+            <Button title="登入" onPress={onLoginPress} />
           </View>
           <View className="flex-1">
             {/* 前往註冊頁 */}
-            <Button title="註冊" onPress={goToRegister} />
+            <Button title="註冊" onPress={onRegisterPress} />
           </View>
         </View>
 

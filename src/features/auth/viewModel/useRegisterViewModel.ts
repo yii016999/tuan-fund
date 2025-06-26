@@ -1,6 +1,4 @@
-import { APP_ROUTES, AUTH_ROUTES } from "@/constants/routes"
 import { useAuthStore } from "@/store/useAuthStore"
-import { useRouter } from "expo-router"
 import { useState } from "react"
 import { registerWithEmail } from "../services/AuthService"
 
@@ -10,26 +8,21 @@ export function useRegisterViewModel() {
     const [displayName, setDisplayName] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
-    const router = useRouter()
     const setUser = useAuthStore((s) => s.setUser)
 
     // async 是用來定義一個非同步函式的關鍵字，await 是用來等待一個非同步函式執行完成
-    const handleRegister = async () => {
+    const handleRegister = async (): Promise<boolean> => {
         try {
             setError("")
             // 註冊帳號
             const user = await registerWithEmail(username, password, displayName)
             // 註冊成功後存入 store
             setUser({ uid: user.uid, email: user.email ?? "", displayName: user.displayName ?? "" })
-            // 導向首頁
-            router.replace(APP_ROUTES.HOME)
+            return true
         } catch (err: any) {
             setError(err.message)
+            return false
         }
-    }
-
-    const goToLogin = () => {
-        router.replace(AUTH_ROUTES.LOGIN)
     }
 
     return {
@@ -41,6 +34,5 @@ export function useRegisterViewModel() {
         setPassword,
         error,
         handleRegister,
-        goToLogin,
     }
 }
