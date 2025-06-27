@@ -7,8 +7,10 @@ interface AuthUser {
 }
 
 interface AuthState {
-  user: AuthUser
+  user: AuthUser | null
+  activeGroupId: string | null
   setUser: (user: AuthUser) => void
+  setActiveGroupId: (groupId: string | null) => void
   logout: () => void
 }
 
@@ -17,7 +19,9 @@ interface AuthState {
 // useAuthStore 是一個 Zustand 的 store，它會儲存使用者資訊，並提供 setUser 和 logout 方法來更新使用者資訊
 // 這樣一來，我們就可以在任何地方取得使用者資訊，並在需要時更新使用者資訊
 export const useAuthStore = create<AuthState>((set) => ({
-  user: { uid: '', email: '', displayName: '' },
+  user: null,
+  activeGroupId: null,
   setUser: (user) => set({ user }),
-  logout: () => set({ user: { uid: '', email: '', displayName: '' } }),
+  setActiveGroupId: (groupId) => set({ activeGroupId: groupId }),
+  logout: () => set({ user: null, activeGroupId: null }),
 }))

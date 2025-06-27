@@ -1,9 +1,10 @@
-import GroupsScreen from '@/features/groups/screens/groups'
+import { TAB_ROUTES } from '@/constants/routes'
 import HomeScreen from '@/features/home/home'
 import MembersScreen from '@/features/members/view/members'
 import Ionicons from '@expo/vector-icons/Ionicons'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
-import { TabParamList } from './types'
+import { TabParamList } from '../types'
+import GroupsStack from './GroupsStack'
 
 const Tab = createBottomTabNavigator<TabParamList>()
 
@@ -13,7 +14,7 @@ export default function TabNavigator() {
     return (
         <Tab.Navigator screenOptions={{ headerShown: false }}>
             <Tab.Screen
-                name="Home"
+                name={TAB_ROUTES.HOME}
                 component={HomeScreen}
                 options={{
                     title: '首頁',
@@ -23,8 +24,8 @@ export default function TabNavigator() {
                 }}
             />
             <Tab.Screen
-                name="Groups"
-                component={GroupsScreen}
+                name={TAB_ROUTES.GROUPS}
+                component={GroupsStack}
                 options={{
                     title: '群組',
                     tabBarIcon: ({ color, size }) => (
@@ -33,7 +34,7 @@ export default function TabNavigator() {
                 }}
             />
             <Tab.Screen
-                name="Members"
+                name={TAB_ROUTES.MEMBERS}
                 component={MembersScreen}
                 options={{
                     title: '會員',

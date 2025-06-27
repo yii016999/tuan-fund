@@ -1,8 +1,8 @@
 import { AUTH_ROUTES } from '@/constants/routes'
-import LoginScreen from '@/features/auth/screens/login'
-import RegisterScreen from '@/features/auth/screens/register'
+import LoginScreen from '@/features/auth/screens/LoginScreen'
+import RegisterScreen from '@/features/auth/screens/RegisterScreen'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
-import { AuthParamList } from './types'
+import { AuthParamList } from '../types'
 
 const Stack = createNativeStackNavigator<AuthParamList>()
 

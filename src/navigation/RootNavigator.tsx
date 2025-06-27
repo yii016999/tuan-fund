@@ -1,4 +1,4 @@
-import ScreenWrapper from '@/components/ScreenWrapper'
+import FullScreenLoader from '@/components/FullScreenLoader'
 import { auth } from '@/config/firebase'
 import { ROOT_ROUTES } from '@/constants/routes'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -6,9 +6,9 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, View } from 'react-native'
-import AppNavigator from './AppNavigator'
-import AuthNavigator from './AuthNavigator'
+import { View } from 'react-native'
+import AppNavigator from './stacks/AppNavigator'
+import AuthNavigator from './stacks/AuthNavigator'
 import { RootStackParamList } from './types'
 
 // 建立 Stack Navigator 實體
@@ -53,26 +53,22 @@ export default function RootNavigator() {
   // 尚未完成初始化時顯示 loading 畫面
   if (loading) {
     return (
-      <ScreenWrapper>
-        <View className="flex-1 justify-center items-center bg-white">
-          <ActivityIndicator size="large" color="#000" />
-        </View>
-      </ScreenWrapper>
+      <FullScreenLoader visible={loading} />
     )
   }
 
   // 當初始化完成後，使用 react-navigation 導向對應畫面
   return (
     <NavigationContainer>
-      <RootStack.Navigator screenOptions={{ headerShown: false }}>
-        {isLoggedIn ? (
-          // 已登入：顯示主頁面
-          <RootStack.Screen name={ROOT_ROUTES.APP} component={AppNavigator} />
-        ) : (
-          // 未登入：顯示登入頁面
-          <RootStack.Screen name={ROOT_ROUTES.AUTH} component={AuthNavigator} />
-        )}
-      </RootStack.Navigator>
+        <RootStack.Navigator screenOptions={{ headerShown: false }}>
+          {isLoggedIn ? (
+            // 已登入：顯示主頁面
+            <RootStack.Screen name={ROOT_ROUTES.APP} component={AppNavigator} />
+          ) : (
+            // 未登入：顯示登入頁面
+            <RootStack.Screen name={ROOT_ROUTES.AUTH} component={AuthNavigator} />
+          )}
+        </RootStack.Navigator>
     </NavigationContainer>
   )
 }

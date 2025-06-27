@@ -1,7 +1,8 @@
-import { db } from '@/config/firebase'
+import { db } from '@/config/firebase';
+import { COLLECTIONS } from '@/constants/firestorePaths';
 import { useAuthStore } from '@/store/useAuthStore';
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
-import { useState } from 'react'
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { useState } from 'react';
 
 export function useCreateGroupViewModel() {
     const [isLoading, setIsLoading] = useState(false)
@@ -9,18 +10,18 @@ export function useCreateGroupViewModel() {
     // 從 store 中取得使用者資訊
     const user = useAuthStore((s) => s.user)
 
-    const createGroup = async (name: string, type: string, description?: string) => {
+    const createGroup = async (name: string, type: string, description?: string): Promise<boolean> => {
 
         if (!name.trim()) {
             setError('請輸入群組名稱')
-            return
+            return false
         }
 
         try {
             setIsLoading(true)
             setError('')
 
-            await addDoc(collection(db, 'groups'), {
+            await addDoc(collection(db, COLLECTIONS.GROUPS), {
                 name,
                 type,
                 description: description ?? '',
@@ -29,9 +30,11 @@ export function useCreateGroupViewModel() {
                 members: [user?.uid],
             })
 
-            router.replace('/groups')
+            return true
+
         } catch (e: any) {
             setError(e.message)
+            return false
         } finally {
             setIsLoading(false)
         }

@@ -23,14 +23,12 @@ export default function HomeScreen() {
   }, [user])
 
   return (
-    <ScreenWrapper>
       <View className="flex-1 justify-center items-center">
         {/* 登入成功，顯示歡迎文字，並顯示使用者名稱 */}
         <>
           <Text className="!text-green-700 text-lg font-bold">登入成功！</Text>
-          <Text className="text-base mt-2">歡迎：{user.displayName}</Text>
+          <Text className="text-base mt-2">歡迎：{user?.displayName}</Text>
         </>
       </View>
-    </ScreenWrapper >
   )
 }

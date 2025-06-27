@@ -8,6 +8,7 @@ export default {
     // 通常也會被用作產出的 bundle 路徑的一部分
     slug: 'tuanfund',
     version: '1.0.0',
+    userInterfaceStyle: 'automatic',
     extra: {
       FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
       FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,

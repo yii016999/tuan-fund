@@ -21,6 +21,7 @@
     "**/*.ts",
     "**/*.tsx",
     "src/types/nativewind.d.ts",
+    "src/types/nativewind-env.d.ts",
     "nativewind-env.d.ts"
   ]
 }

@@ -10,10 +10,19 @@ export const AUTH_ROUTES = {
 
 export const TAB_ROUTES = {
   HOME: 'Home',
-  GROUPS: 'Groups',
   MEMBERS: 'Members',
+  GROUPS: 'Groups',
 } as const
 
 export const APP_ROUTES = {
   TABS: 'App/Tabs',
+} as const
+
+export const GROUPS_ROUTES = {
+  LIST: 'GroupList',
+  CREATE: 'CreateGroup',
+  DETAIL: 'GroupDetail',
+} as const
+
+export const MEMBERS_ROUTES = {
 } as const

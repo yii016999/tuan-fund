@@ -1,4 +1,5 @@
 import { auth, db } from "@/config/firebase"
+import { COLLECTIONS } from "@/constants/firestorePaths"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
 import { doc, getDoc, serverTimestamp, setDoc, Timestamp } from "firebase/firestore"
 import { UserModel } from "../model/User"
@@ -12,7 +13,7 @@ export async function registerWithEmail(username: string, password: string, disp
     const result = await createUserWithEmailAndPassword(auth, email, password)
 
     // 註冊成功後建立 Firestore 使用者資料
-    await setDoc(doc(db, "users", result.user.uid), {
+    await setDoc(doc(db, COLLECTIONS.USERS, result.user.uid), {
         uid: result.user.uid,
         displayName: name,
         joinedGroupIds: [],
@@ -33,7 +34,7 @@ export async function loginWithEmail(email: string, password: string): Promise<U
     const result = await signInWithEmailAndPassword(auth, email, password)
 
     const uid = result.user.uid
-    const docSnap = await getDoc(doc(db, 'users', uid))
+    const docSnap = await getDoc(doc(db, COLLECTIONS.USERS, uid))
 
     if (!docSnap.exists()) {
         throw new Error('使用者資料不存在')

@@ -3,6 +3,7 @@ import { StatusBar, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 interface Props {
+    safeAreaClassName?: string
     children: ReactNode
 }
 
@@ -11,7 +12,7 @@ export default function ScreenWrapper(Props: Props) {
     return (
         <View className="flex-1">
             <StatusBar hidden={true} />
-            <SafeAreaView className="flex-1">
+            <SafeAreaView className={`flex-1 ${Props.safeAreaClassName}`}>
                 {Props.children}
             </SafeAreaView>
         </View>
