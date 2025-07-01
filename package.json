@@ -17,6 +17,7 @@
     "expo": "^53.0.13",
     "expo-status-bar": "~2.2.3",
     "firebase": "^11.9.1",
+    "lucide-react-native": "^0.525.0",
     "nativewind": "^4.1.23",
     "react": "19.0.0",
     "react-dom": "19.0.0",

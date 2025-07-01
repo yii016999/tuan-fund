@@ -18,8 +18,10 @@ export type AppStackParamList = {
 
 export type TabParamList = {
     [TAB_ROUTES.HOME]: undefined
-    [TAB_ROUTES.GROUPS]: undefined
-    [TAB_ROUTES.MEMBERS]: NavigatorScreenParams<MembersStackParamList>
+    [TAB_ROUTES.RECORDS]: undefined
+    [TAB_ROUTES.MEMBERS]: undefined
+    [TAB_ROUTES.SETTINGS]: undefined
+    [TAB_ROUTES.ADD]: undefined
 }
 
 export type GroupsStackParamList = {

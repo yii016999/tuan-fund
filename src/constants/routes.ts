@@ -4,14 +4,16 @@ export const ROOT_ROUTES = {
 } as const
 
 export const AUTH_ROUTES = {
-  LOGIN: 'Auth/Login',
-  REGISTER: 'Auth/Register',
+  LOGIN: 'Login',
+  REGISTER: 'Register',
 } as const
 
 export const TAB_ROUTES = {
   HOME: 'Home',
+  RECORDS: 'Records',
   MEMBERS: 'Members',
-  GROUPS: 'Groups',
+  SETTINGS: 'Settings',
+  ADD: 'Add',
 } as const
 
 export const APP_ROUTES = {
