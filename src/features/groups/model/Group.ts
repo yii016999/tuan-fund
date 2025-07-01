@@ -1,7 +1,9 @@
+import { GroupType } from "@/constants/types"
+
 export interface GroupModel {
   id: string
   name: string
-  type: 'long-term' | 'one-time'
+  type: GroupType
   members: string[]
   createdAt?: any
 }

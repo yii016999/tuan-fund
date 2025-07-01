@@ -6,7 +6,6 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { onAuthStateChanged } from 'firebase/auth'
 import { useEffect, useState } from 'react'
-import { View } from 'react-native'
 import AppNavigator from './stacks/AppNavigator'
 import AuthNavigator from './stacks/AuthNavigator'
 import { RootStackParamList } from './types'
@@ -37,6 +36,7 @@ export default function RootNavigator() {
           uid: user.uid,
           email: user.email ?? '',
           displayName: user.displayName ?? '',
+          avatarUrl: user.photoURL ?? '',
         })
         setIsLoggedIn(true)
       } else {
@@ -60,15 +60,15 @@ export default function RootNavigator() {
   // 當初始化完成後，使用 react-navigation 導向對應畫面
   return (
     <NavigationContainer>
-        <RootStack.Navigator screenOptions={{ headerShown: false }}>
-          {isLoggedIn ? (
-            // 已登入：顯示主頁面
-            <RootStack.Screen name={ROOT_ROUTES.APP} component={AppNavigator} />
-          ) : (
-            // 未登入：顯示登入頁面
-            <RootStack.Screen name={ROOT_ROUTES.AUTH} component={AuthNavigator} />
-          )}
-        </RootStack.Navigator>
+      <RootStack.Navigator screenOptions={{ headerShown: false }}>
+        {isLoggedIn ? (
+          // 已登入：顯示主頁面
+          <RootStack.Screen name={ROOT_ROUTES.APP} component={AppNavigator} />
+        ) : (
+          // 未登入：顯示登入頁面
+          <RootStack.Screen name={ROOT_ROUTES.AUTH} component={AuthNavigator} />
+        )}
+      </RootStack.Navigator>
     </NavigationContainer>
   )
 }

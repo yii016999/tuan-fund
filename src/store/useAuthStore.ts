@@ -1,17 +1,18 @@
 import { create } from 'zustand'
 
 interface AuthUser {
-  uid: string
-  email: string
-  displayName: string
+  uid: string              // 使用者 id 
+  email: string            // 使用者 email
+  displayName: string      // 使用者名稱
+  avatarUrl: string        // 使用者頭像
 }
 
 interface AuthState {
-  user: AuthUser | null
-  activeGroupId: string | null
-  setUser: (user: AuthUser) => void
-  setActiveGroupId: (groupId: string | null) => void
-  logout: () => void
+  user: AuthUser | null               // 使用者資訊
+  activeGroupId: string | null        // 使用者活躍群組
+  setUser: (user: AuthUser) => void   // 設定使用者資訊
+  setActiveGroupId: (groupId: string | null) => void // 設定使用者活躍群組
+  logout: () => void                  // 登出使用者
 }
 
 // 當做 Firebase 登入的時候，signInWithEmailAndPassword 回傳 Firebase 的使用者物件 (userCredential.user)

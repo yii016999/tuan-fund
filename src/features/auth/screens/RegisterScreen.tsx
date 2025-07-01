@@ -1,4 +1,5 @@
 import { AUTH_ROUTES } from "@/constants/routes"
+import { REGISTER } from "@/constants/string"
 import { useRegisterViewModel } from "@/features/auth/viewModel/useRegisterViewModel"
 import { AuthParamList } from '@/navigation/types'
 import { useNavigation } from '@react-navigation/native'
@@ -32,10 +33,10 @@ export default function RegisterScreen() {
 
     return (
         <View className="flex-1 justify-center items-center px-4">
-            <Text className="text-2xl font-bold mb-6">註冊</Text>
+            <Text className="text-2xl font-bold mb-6">{REGISTER.TITLE}</Text>
 
             <TextInput
-                placeholder="暱稱"
+                placeholder={REGISTER.DISPLAY_NAME}
                 value={displayName}
                 onChangeText={setDisplayName}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white"
@@ -44,7 +45,7 @@ export default function RegisterScreen() {
             />
 
             <TextInput
-                placeholder="帳號"
+                placeholder={REGISTER.USERNAME}
                 value={username}
                 onChangeText={setUsername}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white"
@@ -53,7 +54,7 @@ export default function RegisterScreen() {
             />
 
             <TextInput
-                placeholder="密碼"
+                placeholder={REGISTER.PASSWORD}
                 value={password}
                 onChangeText={setPassword}
                 className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white"
@@ -63,11 +64,11 @@ export default function RegisterScreen() {
             <View className="w-full flex-row justify-between gap-4 mt-2">
                 <View className="flex-1">
                     {/* 註冊按鈕 */}
-                    <Button title="註冊" onPress={onRegisterSubmitPress} />
+                    <Button title={REGISTER.REGISTER} onPress={onRegisterSubmitPress} />
                 </View>
                 <View className="flex-1">
                     {/* 前往登入頁 */}
-                    <Button title="返回登入" onPress={goToLogin} />
+                    <Button title={REGISTER.RETURN_TO_LOGIN} onPress={goToLogin} />
                 </View>
             </View>
 

@@ -1,4 +1,5 @@
 import { APP_ROUTES, TAB_ROUTES } from '@/constants/routes'
+import { GROUP_TYPES, GroupType } from '@/constants/types'
 import { useCreateGroupViewModel } from '@/features/groups/viewModel/useCreateGroupViewModel'
 import { AppStackParamList } from '@/navigation/types'
 import { useNavigation } from '@react-navigation/native'
@@ -10,7 +11,7 @@ export default function CreateGroupScreen() {
     const navigation = useNavigation<NativeStackNavigationProp<AppStackParamList>>()
 
     const [name, setName] = useState('')
-    const [type, setType] = useState<'longterm' | 'one-time'>('longterm')
+    const [type, setType] = useState<GroupType>(GROUP_TYPES.LONG_TERM)
     const [description, setDescription] = useState('')
 
     const { createGroup, isLoading, error } = useCreateGroupViewModel()
@@ -39,14 +40,14 @@ export default function CreateGroupScreen() {
             <View className="flex-row mb-4">
                 <Button
                     title="長期型"
-                    color={type === 'longterm' ? '#007AFF' : '#ccc'}
-                    onPress={() => setType('longterm')}
+                    color={type === GROUP_TYPES.LONG_TERM ? '#007AFF' : '#ccc'}
+                    onPress={() => setType(GROUP_TYPES.LONG_TERM)}
                 />
                 <View className="w-4" />
                 <Button
                     title="一次性"
-                    color={type === 'one-time' ? '#007AFF' : '#ccc'}
-                    onPress={() => setType('one-time')}
+                    color={type === GROUP_TYPES.ONE_TIME ? '#007AFF' : '#ccc'}
+                    onPress={() => setType(GROUP_TYPES.ONE_TIME)}
                 />
             </View>
 

@@ -1,6 +1,7 @@
 import FullScreenLoader from '@/components/FullScreenLoader'
 import ScreenWrapper from '@/components/ScreenWrapper'
 import { GROUPS_ROUTES } from '@/constants/routes'
+import { GROUP_TYPES } from '@/constants/types'
 import { useGroupViewModel } from '@/features/groups/viewModel/useGroupViewModel'
 import { GroupsStackParamList } from '@/navigation/types'
 import { useNavigation } from '@react-navigation/native'
@@ -41,7 +42,7 @@ export default function GroupsScreen() {
             className="p-4 border-b border-gray-200"
             onPress={() => navigation.navigate(GROUPS_ROUTES.DETAIL, { groupId: item.id })}>
             <Text className="text-lg font-bold">{item.name}</Text>
-            <Text>{item.type === 'one-time' ? '一次性群組' : '長期型群組'}</Text>
+            <Text>{item.type === GROUP_TYPES.ONE_TIME ? '一次性群組' : '長期型群組'}</Text>
           </TouchableOpacity>
         )}
       />

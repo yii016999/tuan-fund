@@ -1,6 +1,6 @@
 import { auth, db } from "@/config/firebase"
 import { COLLECTIONS } from "@/constants/firestorePaths"
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth"
 import { doc, getDoc, serverTimestamp, setDoc, Timestamp } from "firebase/firestore"
 import { UserModel } from "../model/User"
 
@@ -41,4 +41,9 @@ export async function loginWithEmail(email: string, password: string): Promise<U
     }
 
     return docSnap.data() as UserModel
+}
+
+// 登出
+export async function logout(): Promise<void> {
+    await signOut(auth)
 }
