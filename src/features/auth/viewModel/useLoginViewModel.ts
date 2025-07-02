@@ -14,7 +14,7 @@ export function useLoginViewModel() {
         try {
             const email = `${username}@tuanfund.com`
             const user = await loginWithEmail(email, password)
-            setUser({ uid: user.uid, email: user.email ?? "", displayName: user.displayName ?? "" })
+            setUser({ uid: user.uid, email: user.email ?? "", displayName: user.displayName ?? "", avatarUrl: user.avatarUrl ?? "" })
             return true
         } catch (err: any) {
             setError(err.message)

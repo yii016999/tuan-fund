@@ -163,7 +163,7 @@ export default function SettingsScreen() {
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 groups={groups}
-                activeGroupId={activeGroupId}
+                activeGroupId={activeGroupId || ''}
                 onGroupSelect={switchGroup}
             />
 

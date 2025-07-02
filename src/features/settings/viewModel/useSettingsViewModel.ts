@@ -3,7 +3,6 @@ import { COLLECTIONS } from '@/constants/firestorePaths'
 import { AUTH_ROUTES } from '@/constants/routes'
 import { AuthParamList } from '@/navigation/types'
 import { useAuthStore } from '@/store/useAuthStore'
-import { useGroupStore } from '@/store/useGroupStore'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { signOut } from 'firebase/auth'
@@ -15,8 +14,7 @@ const db = getFirestore()
 
 export function useSettingsViewModel() {
     const navigation = useNavigation<NativeStackNavigationProp<AuthParamList>>()
-    const { user, logout } = useAuthStore()
-    const { activeGroupId, setActiveGroupId } = useGroupStore()
+    const { user, logout, activeGroupId, setActiveGroupId } = useAuthStore()
     const [groups, setGroups] = useState<GroupModel[]>([])
     const [currentGroupName, setCurrentGroupName] = useState('')
     const [loading, setLoading] = useState(true)
@@ -51,11 +49,16 @@ export function useSettingsViewModel() {
 
     // 切換群組
     const switchGroup = useCallback(async (groupId: string, groupName: string) => {
-        setActiveGroupId(groupId)
-        setCurrentGroupName(groupName)
         try {
             if (user?.uid) {
-                await updateDoc(doc(db, COLLECTIONS.USERS, user.uid), { activeGroupId: groupId })
+                // 先更新 Firestore 中使用者的 activeGroupId
+                await updateDoc(doc(db, COLLECTIONS.USERS, user.uid), {
+                    activeGroupId: groupId
+                })
+
+                // 更新本地 store
+                setActiveGroupId(groupId)
+                setCurrentGroupName(groupName)
             }
         } catch (e) {
             console.error('切換群組失敗', e)
