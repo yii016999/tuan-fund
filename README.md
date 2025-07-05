@@ -17,3 +17,14 @@ TuanFund 是一個用於管理多人參加金（例如家庭基金、小團體�
 - 成員間繳費狀況透明顯示（如：繳到 2025/10）
 - 金流歷史與可視化折線圖
 - 支援多群組切換與管理
+
+## 專案結構
+
+app/
+├── screens/ # 畫面元件（如 LoginScreen, HomeScreen）
+├── viewmodels/ # MVVM 的 ViewModel 層
+├── services/ # API 或 Firebase 存取邏輯
+├── components/ # 可重用的 UI 元件
+├── constants/ # 共用的 enum、型別定義等
+├── hooks/ # 自定義 hook
+└── utils/ # 工具函式、格式化等
