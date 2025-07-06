@@ -1,7 +1,7 @@
 import React, { useRef } from "react"
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native"
 import { Calendar } from 'react-native-calendars'
-import { useAddViewModel } from '../viewModel/useAddViewModel'
+import { useAddViewModel } from '../viewmodel/useAddViewModel'
 
 export default function AddScreen() {
     const amountInputRef = useRef<TextInput>(null)

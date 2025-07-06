@@ -1,6 +1,6 @@
 import { GroupService } from "@/features/settings/services/GroupService"
 import { useEffect, useState } from "react"
-import { MemberModel } from "../model/MemberModel"
+import { MemberModel } from "../model/Member"
 
 export function useMembersViewModel(groupId: string) {
   const [members, setMembers] = useState<MemberModel[]>([])

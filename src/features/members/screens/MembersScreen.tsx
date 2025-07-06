@@ -1,4 +1,4 @@
-import { useMembersViewModel } from "@/features/members/viewModel/useMembersViewModel"
+import { useMembersViewModel } from "@/features/members/viewmodel/useMembersViewModel"
 import { useAuthStore } from "@/store/useAuthStore"
 import { ActivityIndicator, FlatList, Image, Text, View } from "react-native"
 

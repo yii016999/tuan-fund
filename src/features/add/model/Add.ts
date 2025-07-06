@@ -11,7 +11,7 @@ export interface Add {
   updatedAt: Date
 }
 
-export interface AddData {
+export interface AddModel {
   type: 'income' | 'expense'
   amount: number
   date: string
