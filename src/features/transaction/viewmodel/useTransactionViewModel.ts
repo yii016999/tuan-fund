@@ -1,7 +1,7 @@
 import { useState, useMemo, useCallback } from 'react'
 import { Alert } from 'react-native'
-import { AddService } from '../services/AddService'
-import { AddModel } from '../model/Add'
+import { AddService } from '../services/TransactionService'
+import { CreateTransactionInput } from '../model/Transaction'
 import { useAuthStore } from '../../../store/useAuthStore'
 
 type TransactionType = 'income' | 'expense'
@@ -128,7 +128,7 @@ export const useAddViewModel = () => {
     setIsLoading(true)
 
     try {
-      const transactionData: AddModel = {
+      const transactionData: CreateTransactionInput = {
         type: activeTab,
         amount: parseInt(amountValue),
         date: selectedDate,

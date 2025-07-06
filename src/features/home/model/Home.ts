@@ -34,7 +34,7 @@ export interface PaymentStatus {
 }
 
 // 首頁數據模型
-export interface HomeModel {
+export interface DashboardSummary {
     balanceData: BalanceData;
     transactionOverview: TransactionOverview;
     paymentStatus: PaymentStatus;

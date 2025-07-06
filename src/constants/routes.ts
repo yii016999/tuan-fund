@@ -13,7 +13,7 @@ export const TAB_ROUTES = {
   RECORDS: 'Records',
   MEMBERS: 'Members',
   SETTINGS: 'Settings',
-  ADD: 'Add',
+  TRANSACTION: 'Transaction',
 } as const
 
 export const APP_ROUTES = {

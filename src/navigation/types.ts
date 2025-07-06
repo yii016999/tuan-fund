@@ -21,7 +21,7 @@ export type TabParamList = {
     [TAB_ROUTES.RECORDS]: undefined
     [TAB_ROUTES.MEMBERS]: undefined
     [TAB_ROUTES.SETTINGS]: undefined
-    [TAB_ROUTES.ADD]: undefined
+    [TAB_ROUTES.TRANSACTION]: undefined
 }
 
 export type GroupsStackParamList = {

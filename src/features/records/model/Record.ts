@@ -29,6 +29,7 @@ export interface MemberPaymentRecord {
   updatedAt: Timestamp | FieldValue       // 記錄更新時間
 }
 
+// 記錄列表項目 (用於顯示在列表中)
 export interface RecordListItem {
   id: string            // 記錄 id
   type: RecordType      // 記錄類型

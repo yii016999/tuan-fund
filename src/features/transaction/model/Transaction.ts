@@ -1,4 +1,5 @@
-export interface Add {
+// 完整的交易記錄實體（包含系統欄位）
+export interface Transaction {
   id?: string
   type: 'income' | 'expense'
   amount: number
@@ -11,7 +12,8 @@ export interface Add {
   updatedAt: Date
 }
 
-export interface AddModel {
+// 創建交易時的輸入資料（僅業務邏輯欄位）
+export interface CreateTransactionInput {
   type: 'income' | 'expense'
   amount: number
   date: string

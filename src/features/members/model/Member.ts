@@ -1,6 +1,6 @@
 import { MemberRole } from "@/constants/types"
 
-export interface MemberModel {
+export interface GroupMember {
     uid: string              // 使用者 id
     displayName: string      // 使用者名稱
     email: string            // 使用者 email

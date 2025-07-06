@@ -1,8 +1,8 @@
-import { MemberModel } from '@/features/members/model/Member'
+import { GroupMember } from '@/features/members/model/Member'
 import { FlatList, Image, Text, View } from 'react-native'
 
 interface MembersListProps {
-    members: MemberModel[]
+    members: GroupMember[]
 }
 
 // 成員列表

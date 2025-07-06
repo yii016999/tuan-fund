@@ -1,4 +1,4 @@
-import { Add } from '@/features/add/model/Add'
+import { Transaction } from '@/features/transaction/model/Transaction'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useCallback, useEffect, useState, useMemo } from 'react'
 import { MemberPaymentRecord, RecordListItem } from '../model/Record'
@@ -8,7 +8,7 @@ export const useRecordsViewModel = (groupId: string) => {
     const { user } = useAuthStore()
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<'group' | 'member'>('group')
-    const [groupTransactions, setGroupTransactions] = useState<Add[]>([])
+    const [groupTransactions, setGroupTransactions] = useState<Transaction[]>([])
     const [memberPayments, setMemberPayments] = useState<MemberPaymentRecord[]>([])
     const [dateRange, setDateRange] = useState({
         startDate: new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate()),

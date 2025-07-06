@@ -1,6 +1,6 @@
 import { FieldValue, Timestamp } from "firebase/firestore"
 
-export interface UserModel {
+export interface User {
   uid: string
   displayName: string
   email: string

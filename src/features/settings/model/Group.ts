@@ -1,7 +1,7 @@
 import { BillingCycle, GroupRole, GroupType } from "@/constants/types"
 
 // 整份資料，通常用在「群組詳細頁」、「API 回傳」等場景。
-export interface GroupModel {
+export interface GroupSettings {
     id: string                             // Firestore document id
     name: string                           // 群組名稱
     description?: string                   // 群組介紹、備註
@@ -14,11 +14,4 @@ export interface GroupModel {
     billingCycle?: BillingCycle            // 長期型：繳費週期
     allowPrepay?: boolean                  // 是否可預繳
     latestPaidMap?: Record<string, string> // 各成員已繳到哪個月份（如 {'uid': '2025-06'}），用來記錄各成員的繳費狀態
-}
-
-// 簡單的資料，通常用在「群組列表」、「群組選擇器」等場景。
-export interface GroupBrief {
-    id: string
-    name: string
-    type: GroupType
 }

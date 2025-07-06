@@ -1,6 +1,6 @@
 import { COLLECTIONS } from '@/constants/firestorePaths'
 import { MEMBER_ROLES, MemberRole } from '@/constants/types'
-import { MemberModel } from '@/features/members/model/Member'
+import { GroupMember } from '@/features/members/model/Member'
 import { collection, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore'
 import type { GroupBrief } from '../model/Group'
 
@@ -33,7 +33,7 @@ export const GroupService = {
   },
 
   // 取得某群組的所有成員詳細資料
-  async getGroupMembers(groupId: string): Promise<MemberModel[]> {
+  async getGroupMembers(groupId: string): Promise<GroupMember[]> {
     // 查詢 group 拿 member id 與 role
     const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
     const groupSnap = await getDoc(groupRef)
@@ -49,7 +49,7 @@ export const GroupService = {
     )
 
     // 組裝資料
-    const members: MemberModel[] = memberDocs.map((snap) => {
+    const members: GroupMember[] = memberDocs.map((snap) => {
       const user = snap.data()
       return {
         uid: snap.id,

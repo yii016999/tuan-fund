@@ -2,12 +2,12 @@ import { auth, db } from "@/config/firebase"
 import { COLLECTIONS } from "@/constants/firestorePaths"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth"
 import { doc, getDoc, serverTimestamp, setDoc, Timestamp } from "firebase/firestore"
-import { UserModel } from "../model/User"
+import { User } from "../model/User"
 
 // Service 層負責與 Firebase 進行交互
 
 // 註冊
-export async function registerWithEmail(username: string, password: string, displayName: string): Promise<UserModel> {
+export async function registerWithEmail(username: string, password: string, displayName: string): Promise<User> {
     const email = `${username}@tuanfund.com`
     const name = displayName.trim()
     const result = await createUserWithEmailAndPassword(auth, email, password)
@@ -30,7 +30,7 @@ export async function registerWithEmail(username: string, password: string, disp
 }
 
 // 登入
-export async function loginWithEmail(email: string, password: string): Promise<UserModel> {
+export async function loginWithEmail(email: string, password: string): Promise<User> {
     const result = await signInWithEmailAndPassword(auth, email, password)
 
     const uid = result.user.uid
@@ -40,7 +40,7 @@ export async function loginWithEmail(email: string, password: string): Promise<U
         throw new Error('使用者資料不存在')
     }
 
-    return docSnap.data() as UserModel
+    return docSnap.data() as User
 }
 
 // 登出

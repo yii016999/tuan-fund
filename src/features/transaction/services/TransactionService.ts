@@ -1,6 +1,6 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../../config/firebase'
-import { AddModel } from '../model/Add'
+import { CreateTransactionInput } from '../model/Transaction'
 
 export class AddService {
   private static getCollectionPath(groupId: string) {
@@ -11,7 +11,7 @@ export class AddService {
     return `groups/${groupId}/memberPayments`
   }
 
-  static async create(groupId: string, userId: string, data: AddModel): Promise<string> {
+  static async create(groupId: string, userId: string, data: CreateTransactionInput): Promise<string> {
     try {
       // 創建群組收支記錄
       const transactionId = await this.createGroupTransaction(groupId, userId, data)
@@ -29,11 +29,11 @@ export class AddService {
   }
 
   // 創建群組收支記錄
-  private static async createGroupTransaction(groupId: string, userId: string, data: AddModel): Promise<string> {
+  private static async createGroupTransaction(groupId: string, userId: string, data: CreateTransactionInput): Promise<string> {
     // 過濾掉 undefined 值
     const cleanData = Object.fromEntries(
       Object.entries(data).filter(([_, value]) => value !== undefined)
-    ) as AddModel
+    ) as CreateTransactionInput
 
     const transactionData = {
       ...cleanData,
@@ -52,7 +52,7 @@ export class AddService {
   }
 
   // 創建個人繳費記錄
-  private static async createMemberPayment(groupId: string, userId: string, data: AddModel): Promise<void> {
+  private static async createMemberPayment(groupId: string, userId: string, data: CreateTransactionInput): Promise<void> {
     const memberPaymentData = {
       memberId: userId,
       groupId: groupId,

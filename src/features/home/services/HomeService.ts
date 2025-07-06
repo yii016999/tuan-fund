@@ -1,4 +1,4 @@
-import { BalanceData, HomeModel, PaymentStatus, Transaction, TransactionOverview } from '../model/Home';
+import { BalanceData, DashboardSummary, PaymentStatus, Transaction, TransactionOverview } from '../model/Home';
 
 class HomeService {
   // 獲取餘額趨勢數據
@@ -74,7 +74,7 @@ class HomeService {
   }
 
   // 獲取首頁所有數據
-  async getHomeData(): Promise<HomeModel> {
+  async getHomeData(): Promise<DashboardSummary> {
     try {
       const [balanceData, transactionOverview, paymentStatus] = await Promise.all([
         this.getBalanceData(),

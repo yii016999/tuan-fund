@@ -1,15 +1,15 @@
-import { collection, query, where, orderBy, limit, getDocs, doc, updateDoc, deleteDoc, addDoc, Timestamp } from 'firebase/firestore'
 import { db } from '@/config/firebase'
-import { MemberPaymentRecord, GroupTransactionRecord } from '../model/Record'
-import { Add } from '@/features/add/model/Add'
+import { Transaction } from '@/features/transaction/model/Transaction'
+import { collection, deleteDoc, doc, getDocs, limit, orderBy, query, Timestamp, updateDoc, where } from 'firebase/firestore'
+import { MemberPaymentRecord } from '../model/Record'
 
 export class RecordsService {
   // 獲取群組收支記錄 (使用正確的路徑)
   static async getGroupTransactions(
-    groupId: string, 
-    startDate: Date, 
+    groupId: string,
+    startDate: Date,
     endDate: Date
-  ): Promise<Add[]> {
+  ): Promise<Transaction[]> {
     try {
       const q = query(
         collection(db, `groups/${groupId}/transactions`),
@@ -18,12 +18,12 @@ export class RecordsService {
         orderBy('date', 'desc'),
         limit(1000)
       )
-      
+
       const querySnapshot = await getDocs(q)
       return querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
-      })) as Add[]
+      })) as Transaction[]
     } catch (error) {
       console.error('Error fetching group transactions:', error)
       throw error
@@ -39,7 +39,7 @@ export class RecordsService {
   ): Promise<MemberPaymentRecord[]> {
     try {
       let q;
-      
+
       if (currentUserId) {
         // 如果有 currentUserId，只查詢該用戶的記錄
         q = query(
@@ -73,7 +73,7 @@ export class RecordsService {
   }
 
   // 更新群組收支記錄
-  static async updateGroupTransaction(id: string, data: Partial<Add>, groupId: string): Promise<void> {
+  static async updateGroupTransaction(id: string, data: Partial<Transaction>, groupId: string): Promise<void> {
     try {
       const docRef = doc(db, `groups/${groupId}/transactions`, id)
       await updateDoc(docRef, {

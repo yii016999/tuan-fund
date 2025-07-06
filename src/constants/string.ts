@@ -6,7 +6,7 @@ export const COMMON = {
 export const TAB_NAVIGATOR = {
     HOME: '首頁',
     RECORDS: '記錄',
-    ADD: '記帳',
+    TRANSACTION: '記帳',
     MEMBERS: '成員',
     SETTINGS: '設定',
 }

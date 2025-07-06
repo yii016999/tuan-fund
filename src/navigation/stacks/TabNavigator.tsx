@@ -2,7 +2,7 @@ import { AppHeader } from '@/components/AppHeader'
 import { TAB_ROUTES } from '@/constants/routes'
 import { TAB_NAVIGATOR } from '@/constants/string'
 import { HEADER_BACK_TYPES } from '@/constants/types'
-import AddScreen from '@/features/add/screens/AddScreen'
+import TransactionScreen from '@/features/transaction/screens/TransactionScreen'
 import HomeScreen from '@/features/home/screens/HomeScreen'
 import MembersScreen from '@/features/members/screens/MembersScreen'
 import RecordsScreen from '@/features/records/screens/RecordsScreen'
@@ -43,14 +43,14 @@ export default function TabNavigator() {
             />
 
             <Tab.Screen
-                name={TAB_ROUTES.ADD}
-                component={AddScreen}
+                name={TAB_ROUTES.TRANSACTION}
+                component={TransactionScreen}
                 options={{
-                    title: TAB_NAVIGATOR.ADD,
+                    title: TAB_NAVIGATOR.TRANSACTION,
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="add-circle" size={size} color={color} />
                     ),
-                    header: () => <AppHeader showBack={true} backType={HEADER_BACK_TYPES.CLOSE} title={TAB_NAVIGATOR.ADD} />,
+                    header: () => <AppHeader showBack={true} backType={HEADER_BACK_TYPES.CLOSE} title={TAB_NAVIGATOR.TRANSACTION} />,
                 }}
             />
 

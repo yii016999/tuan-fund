@@ -1,19 +1,19 @@
 import { GROUP_TYPES } from '@/constants/types';
-import { GroupModel } from '@/features/settings/model/Group';
+import { GroupSettings } from '@/features/settings/model/Group';
 import React, { useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
 
 interface GroupSwitchModalProps {
-    visible: boolean;                                          // 彈窗開關
-    onClose: () => void;                                       // 關閉事件
-    groups: GroupModel[];                                      // 群組資料
-    activeGroupId: string;                                     // 當前選中 id
-    onGroupSelect: (groupId: string, groupName: string) => void; // 選擇群組
-    onViewDetail: (groupId: string) => void;                   // 查看詳細
+    visible: boolean;                                               // 彈窗開關
+    onClose: () => void;                                            // 關閉事件
+    groups: GroupSettings[];                                        // 群組資料
+    activeGroupId: string;                                          // 當前選中 id
+    onGroupSelect: (groupId: string, groupName: string) => void;    // 選擇群組
+    onViewDetail: (groupId: string) => void;                        // 查看詳細
 }
 
 interface GroupCardProps {
-    group: GroupModel;
+    group: GroupSettings;
     isActive: boolean;
     onSelect: () => Promise<void>;
     onViewDetail: () => void;
