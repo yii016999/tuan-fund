@@ -17,7 +17,7 @@ export function useRegisterViewModel() {
             // 註冊帳號
             const user = await registerWithEmail(username, password, displayName)
             // 註冊成功後存入 store
-            setUser({ uid: user.uid, email: user.email ?? "", displayName: user.displayName ?? "" })
+            setUser({ uid: user.uid, email: user.email ?? "", displayName: user.displayName ?? "", avatarUrl: user.avatarUrl ?? "" })
             return true
         } catch (err: any) {
             setError(err.message)

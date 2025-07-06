@@ -1,3 +1,4 @@
+import { REGISTER } from "@/constants/string"
 import { useAuthStore } from "@/store/useAuthStore"
 import { useState } from "react"
 import { loginWithEmail } from "../services/AuthService"
@@ -12,8 +13,8 @@ export function useLoginViewModel() {
     const handleLogin = async (): Promise<boolean> => {
         setError("")
         try {
-            const email = `${username}@tuanfund.com`
-            const user = await loginWithEmail(email, password)
+            const account = `${username}${REGISTER.MAIL_SUFFIX}`
+            const user = await loginWithEmail(account, password)
             setUser({ uid: user.uid, email: user.email ?? "", displayName: user.displayName ?? "", avatarUrl: user.avatarUrl ?? "" })
             return true
         } catch (err: any) {

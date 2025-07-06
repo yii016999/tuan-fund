@@ -1,4 +1,5 @@
 import { BillingCycle, GroupRole, GroupType } from "@/constants/types"
+import { Timestamp } from "firebase/firestore"
 
 // 整份資料，通常用在「群組詳細頁」、「API 回傳」等場景。
 export interface GroupSettings {
@@ -14,4 +15,6 @@ export interface GroupSettings {
     billingCycle?: BillingCycle            // 長期型：繳費週期
     allowPrepay?: boolean                  // 是否可預繳
     latestPaidMap?: Record<string, string> // 各成員已繳到哪個月份（如 {'uid': '2025-06'}），用來記錄各成員的繳費狀態
+    inviteCode: string,                    // 群組邀請碼（群組建立時生成）
+    memberJoinedAt: Record<string, Timestamp>  // 記錄各成員加入時間
 }

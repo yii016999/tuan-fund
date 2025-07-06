@@ -37,16 +37,16 @@ export default function RegisterScreen() {
             <View className="bg-white rounded-2xl shadow-lg p-8 mx-2">
                 {/* 標題 */}
                 <View className="items-center mb-8">
-                    <Text className="text-3xl font-bold text-gray-800 mb-2">建立帳號</Text>
-                    <Text className="text-gray-500 text-base">請填寫您的資料</Text>
+                    <Text className="text-3xl font-bold text-gray-800 mb-2">{REGISTER.TITLE}</Text>
+                    <Text className="text-gray-500 text-base">{REGISTER.DISPLAY_INFO}</Text>
                 </View>
 
                 {/* 輸入框區域 */}
                 <View className="mb-6">
                     <View>
-                        <Text className="text-gray-700 text-sm font-medium mb-2">顯示名稱</Text>
+                        <Text className="text-gray-700 text-sm font-medium mb-2">{REGISTER.DISPLAY_NAME}</Text>
                         <TextInput
-                            placeholder="請輸入您的顯示名稱"
+                            placeholder={REGISTER.DISPLAY_NAME_PLACEHOLDER}
                             value={displayName}
                             onChangeText={setDisplayName}
                             className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
@@ -57,9 +57,9 @@ export default function RegisterScreen() {
                     </View>
 
                     <View className="mt-4">
-                        <Text className="text-gray-700 text-sm font-medium mb-2">帳號</Text>
+                        <Text className="text-gray-700 text-sm font-medium mb-2">{REGISTER.USERNAME}</Text>
                         <TextInput
-                            placeholder="請輸入您的帳號"
+                            placeholder={REGISTER.USERNAME_PLACEHOLDER}
                             value={username}
                             onChangeText={setUsername}
                             className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
@@ -70,9 +70,9 @@ export default function RegisterScreen() {
                     </View>
 
                     <View className="mt-4">
-                        <Text className="text-gray-700 text-sm font-medium mb-2">密碼</Text>
+                        <Text className="text-gray-700 text-sm font-medium mb-2">{REGISTER.PASSWORD}</Text>
                         <TextInput
-                            placeholder="請輸入您的密碼"
+                            placeholder={REGISTER.PASSWORD_PLACEHOLDER}
                             value={password}
                             onChangeText={setPassword}
                             className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
@@ -96,7 +96,7 @@ export default function RegisterScreen() {
                         onPress={onRegisterSubmitPress}
                         className="bg-blue-600 rounded-xl py-4 shadow-sm active:bg-blue-700"
                     >
-                        <Text className="text-white text-center font-semibold text-lg">註冊</Text>
+                        <Text className="text-white text-center font-semibold text-lg">{REGISTER.REGISTER}</Text>
                     </TouchableOpacity>
 
                     {/* 返回登入按鈕 */}
@@ -104,7 +104,7 @@ export default function RegisterScreen() {
                         onPress={goToLogin}
                         className="bg-gray-100 border border-gray-200 rounded-xl py-4 active:bg-gray-200 mt-3"
                     >
-                        <Text className="text-gray-700 text-center font-semibold text-lg">返回登入</Text>
+                        <Text className="text-gray-700 text-center font-semibold text-lg">{REGISTER.RETURN_TO_LOGIN}</Text>
                     </TouchableOpacity>
                 </View>
             </View>

@@ -1,14 +1,15 @@
 import { auth } from '@/config/firebase'
 import { COLLECTIONS } from '@/constants/firestorePaths'
-import { AUTH_ROUTES } from '@/constants/routes'
+import { GroupType } from '@/constants/types'
 import { AuthParamList } from '@/navigation/types'
 import { useAuthStore } from '@/store/useAuthStore'
-import { useNavigation } from '@react-navigation/native'
+import { CommonActions, useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { signOut } from 'firebase/auth'
-import { collection, doc, getDocs, getFirestore, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore'
+import { collection, getDocs, getFirestore } from 'firebase/firestore'
 import { useCallback, useEffect, useState } from 'react'
-import { GroupModel } from '../model/Group'
+import { GroupSettings } from '../model/Group'
+import { GroupService } from '../services/GroupService'
 
 const db = getFirestore()
 
@@ -19,33 +20,29 @@ interface MonthlyPaymentSettings {
 export function useSettingsViewModel() {
     const navigation = useNavigation<NativeStackNavigationProp<AuthParamList>>()
     const { user, logout, activeGroupId, setActiveGroupId } = useAuthStore()
-    const [groups, setGroups] = useState<GroupModel[]>([])
+    const [groups, setGroups] = useState<GroupSettings[]>([])
     const [currentGroupName, setCurrentGroupName] = useState('')
     const [loading, setLoading] = useState(true)
     const [isCreatingGroup, setIsCreatingGroup] = useState(false)
     const [createGroupError, setCreateGroupError] = useState('')
 
-    // 取得所有使用者有加入的群組
+    // 統一使用 GroupService.getGroupsByUserId 獲取完整群組資訊
     const fetchGroups = useCallback(async () => {
         if (!user?.uid) return
         setLoading(true)
         try {
-            // 取得所有群組
-            const qs = await getDocs(collection(db, COLLECTIONS.GROUPS))
-            const myGroups: GroupModel[] = []
-            // 取得所有群組後，過濾出使用者有加入的群組
-            qs.forEach((docSnap) => {
-                const data = docSnap.data()
-                if (data.members?.includes(user.uid)) {
-                    myGroups.push({ id: docSnap.id, name: data.name, type: data.type, members: data.members, createdBy: data.createdBy })
-                    if (docSnap.id === activeGroupId) setCurrentGroupName(data.name)
-                }
-            })
-            // 設定群組列表
-            setGroups(myGroups)
+            const userGroups = await GroupService.getGroupsByUserId(user.uid)
+            setGroups(userGroups)
+            
+            // 設定當前群組名稱
+            const activeGroup = userGroups.find(g => g.id === activeGroupId)
+            if (activeGroup) {
+                setCurrentGroupName(activeGroup.name)
+            }
+        } catch (error) {
+            console.error('獲取群組失敗:', error)
+        } finally {
             setLoading(false)
-        } catch (e) {
-            console.error('取得群組失敗', e)
         }
     }, [user?.uid, activeGroupId])
 
@@ -54,57 +51,60 @@ export function useSettingsViewModel() {
     }, [fetchGroups])
 
     // 切換群組
-    const switchGroup = useCallback(async (groupId: string, groupName: string) => {
-        try {
-            if (user?.uid) {
-                // 先更新 Firestore 中使用者的 activeGroupId
-                await updateDoc(doc(db, COLLECTIONS.USERS, user.uid), {
-                    activeGroupId: groupId
-                })
-
-                // 更新本地 store
-                setActiveGroupId(groupId)
-                setCurrentGroupName(groupName)
-            }
-        } catch (e) {
-            console.error('切換群組失敗', e)
-        }
-    }, [setActiveGroupId, user?.uid])
-
-    // 創建群組功能
-    const createGroup = async (name: string, type: string, description?: string, monthlyPaymentSettings?: MonthlyPaymentSettings): Promise<boolean> => {
-        if (!name.trim()) {
-            setCreateGroupError('請輸入群組名稱')
-            return false
-        }
+    const switchGroup = async (groupId: string, groupName: string) => {
+        if (!user?.uid) return
 
         try {
-            setIsCreatingGroup(true)
-            setCreateGroupError('')
+            await GroupService.updateUserActiveGroup(user.uid, groupId)
 
-            const groupData: any = {
-                name,
-                type,
-                description: description ?? '',
-                createdBy: user?.uid ?? '',
-                createdAt: serverTimestamp(),
-                members: [user?.uid],
-            }
+            // 更新本地狀態
+            setActiveGroupId(groupId)
+            setCurrentGroupName(groupName)
 
-            // 如果有繳費設定，則加入群組資料中
-            if (monthlyPaymentSettings && monthlyPaymentSettings.enabled) {
-                groupData.monthlyPaymentSettings = monthlyPaymentSettings
-            }
+            // 同步到 AuthStore
+            const authStore = useAuthStore.getState()
+            authStore.setActiveGroupId(groupId)
 
-            await addDoc(collection(db, COLLECTIONS.GROUPS), groupData)
-            
-            // 創建成功後重新取得群組列表
+            // 重新獲取群組資料以確保資料同步
             await fetchGroups()
             
-            return true
+            const userGroups = await GroupService.getGroupsByUserId(user.uid)
+            authStore.setJoinedGroupIds(userGroups.map(g => g.id))
 
-        } catch (e: any) {
-            setCreateGroupError(e.message)
+        } catch (error) {
+            console.error('切換群組失敗:', error)
+            throw error
+        }
+    }
+
+    // 創建群組功能
+    const createGroup = async (name: string, type: GroupType, description?: string, monthlyPaymentSettings?: any) => {
+        if (!user?.uid) return false
+
+        setIsCreatingGroup(true)
+        setCreateGroupError('')
+
+        try {
+            const groupId = await GroupService.createGroup(user.uid, name, type, description, monthlyPaymentSettings)
+            
+            // 立即更新本地狀態
+            setActiveGroupId(groupId)
+            setCurrentGroupName(name)
+            
+            // 同步到 AuthStore
+            const authStore = useAuthStore.getState()
+            authStore.setActiveGroupId(groupId)
+            
+            // 重新載入群組資料
+            await fetchGroups()
+            
+            // 同步 joinedGroupIds
+            const userGroups = await GroupService.getGroupsByUserId(user.uid)
+            authStore.setJoinedGroupIds(userGroups.map(g => g.id))
+            
+            return true
+        } catch (error) {
+            setCreateGroupError(error instanceof Error ? error.message : '建立群組失敗')
             return false
         } finally {
             setIsCreatingGroup(false)
@@ -114,18 +114,27 @@ export function useSettingsViewModel() {
     // 登出功能
     const userLogout = async () => {
         try {
+            // 先清理本地狀態
+            setGroups([])
+            setCurrentGroupName('')
+            setActiveGroupId(null)
+
+            // 登出 Firebase
             await signOut(auth);
-            // 使用 store 中定義的 logout 方法清除狀態
+
+            // 清理 store 狀態
             logout();
-            // 重置導航堆疊到登入畫面
-            navigation.reset({
-                routes: [{ name: AUTH_ROUTES.LOGIN }]
-            });
+
         } catch (error) {
             console.error('登出錯誤:', error);
             throw error;
         }
     };
+
+    // 載入使用者加入的群組（現在統一使用 fetchGroups）
+    const loadUserGroups = useCallback(async () => {
+        await fetchGroups()
+    }, [fetchGroups])
 
     return {
         groups,
@@ -138,5 +147,7 @@ export function useSettingsViewModel() {
         createGroup,
         isCreatingGroup,
         createGroupError,
+        loadUserGroups,
+        fetchGroups, // 新增這個方法供外部使用
     }
 }

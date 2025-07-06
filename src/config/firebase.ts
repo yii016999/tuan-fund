@@ -18,7 +18,7 @@ console.log(Constants.expoConfig?.extra?.FIREBASE_API_KEY)
 // 初始化 Firebase App
 const app = initializeApp(firebaseConfig);
 
-// 初始化 Firebase Auth
+// 初始化 Firebase Auth (默認就有持久化)
 export const auth = getAuth(app);
 
 // 初始化 Firebase Firestore

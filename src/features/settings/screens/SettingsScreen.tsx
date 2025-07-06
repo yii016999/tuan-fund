@@ -1,6 +1,7 @@
 import CreateGroupModal from '@/features/settings/components/CreateGroupModal';
 import { GroupSwitchModal } from '@/features/settings/components/GroupSwitchModal';
-import React, { useState } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
 import { useSettingsViewModel } from '../viewmodel/useSettingsViewModel';
 
@@ -13,11 +14,20 @@ export default function SettingsScreen() {
         switchGroup,
         user,
         userLogout,
+        loadUserGroups,
+        fetchGroups,
     } = useSettingsViewModel();
 
     const [modalVisible, setModalVisible] = useState(false);
     const [createGroupModalVisible, setCreateGroupModalVisible] = useState(false);
     const [initialTab, setInitialTab] = useState<'create' | 'join'>('create');
+
+    // 頁面進入時重新獲取群組資料
+    useFocusEffect(
+        useCallback(() => {
+            fetchGroups()
+        }, [fetchGroups])
+    );
 
     // 點選上傳頭像
     const handleAvatarPress = () => {
@@ -137,6 +147,13 @@ export default function SettingsScreen() {
         </View>
     );
 
+    const handleGroupModalSuccess = () => {
+        // 重新載入群組資料
+        loadUserGroups()
+        // 或者調用 ViewModel 的刷新方法
+        // refreshData()
+    }
+
     return (
         <View className="flex-1 bg-gray-100">
             {/* --- 個人資料區塊 --- */}
@@ -159,18 +176,19 @@ export default function SettingsScreen() {
 
             {/* --- 群組切換 Modal --- */}
             <GroupSwitchModal
-                onViewDetail={() => { }}
                 visible={modalVisible}
                 onClose={() => setModalVisible(false)}
                 groups={groups}
                 activeGroupId={activeGroupId || ''}
                 onGroupSelect={switchGroup}
+                isLoading={loading}
             />
 
             {/* --- 建立群組 Modal --- */}
             <CreateGroupModal
                 visible={createGroupModalVisible}
                 onClose={() => setCreateGroupModalVisible(false)}
+                onSuccess={handleGroupModalSuccess}
                 initialTab={initialTab}
             />
         </View>

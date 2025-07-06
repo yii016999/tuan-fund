@@ -2,10 +2,26 @@ import React, { useRef } from "react"
 import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native"
 import { Calendar } from 'react-native-calendars'
 import { useAddViewModel } from '../viewmodel/useTransactionViewModel'
+import { useAuthStore } from '@/store/useAuthStore'
+import NoGroupSelected from '@/components/NoGroupSelected'
 
 export default function AddScreen() {
+    // 檢查是否有選擇群組
+    const { user, activeGroupId, joinedGroupIds } = useAuthStore()
+    const currentGroupId = activeGroupId || ''
+
     const amountInputRef = useRef<TextInput>(null)
     const viewModel = useAddViewModel()
+
+    // 如果沒有加入群組
+    if (!activeGroupId && joinedGroupIds.length === 0) {
+        return <NoGroupSelected title="沒有加入群組" message="請先至「設定」建立或加入一個群組" />
+    }
+
+    // 如果沒有群組
+    if (!currentGroupId) {
+        return <NoGroupSelected />
+    }
 
     return (
         <ScrollView

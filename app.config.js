@@ -3,10 +3,10 @@ import 'dotenv/config'
 export default {
   expo: {
     // 在裝置上看到的 App 名（例如主畫面圖示下、App Switcher），支持多語系
-    name: '家族金小幫手',
+    name: APP.NAME,
     // Expo 用來識別專案的 唯一 URL 標籤，必須是英文小寫 + 數字 + dash（-）等組成，不能有空格或特殊字元
     // 通常也會被用作產出的 bundle 路徑的一部分
-    slug: 'tuanfund',
+    slug: APP.SLUG,
     version: '1.0.0',
     userInterfaceStyle: 'automatic',
     extra: {

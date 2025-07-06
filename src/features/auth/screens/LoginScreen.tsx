@@ -1,4 +1,5 @@
 import { AUTH_ROUTES } from '@/constants/routes';
+import { LOGIN } from '@/constants/string';
 import { useLoginViewModel } from "@/features/auth/viewmodel/useLoginViewModel";
 import { AuthParamList, RootStackParamList } from '@/navigation/types';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
@@ -37,16 +38,16 @@ export default function LoginScreen() {
       <View className="bg-white rounded-2xl shadow-lg p-8 mx-2">
         {/* 標題 */}
         <View className="items-center mb-8">
-          <Text className="text-3xl font-bold text-gray-800 mb-2">歡迎回來</Text>
-          <Text className="text-gray-500 text-base">請登入您的帳號</Text>
+          <Text className="text-3xl font-bold text-gray-800 mb-2">{LOGIN.WELCOME}</Text>
+          <Text className="text-gray-500 text-base">{LOGIN.WELCOME_MESSAGE}</Text>
         </View>
 
         {/* 輸入框區域 */}
         <View className="mb-6">
           <View>
-            <Text className="text-gray-700 text-sm font-medium mb-2">帳號</Text>
+            <Text className="text-gray-700 text-sm font-medium mb-2">{LOGIN.USERNAME}</Text>
             <TextInput
-              placeholder="請輸入您的電子郵件"
+              placeholder={LOGIN.USERNAME_PLACEHOLDER}
               value={username}
               onChangeText={setUsername}
               className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
@@ -57,9 +58,9 @@ export default function LoginScreen() {
           </View>
 
           <View className="mt-4">
-            <Text className="text-gray-700 text-sm font-medium mb-2">密碼</Text>
+            <Text className="text-gray-700 text-sm font-medium mb-2">{LOGIN.PASSWORD}</Text>
             <TextInput
-              placeholder="請輸入您的密碼"
+              placeholder={LOGIN.PASSWORD_PLACEHOLDER}
               value={password}
               onChangeText={setPassword}
               className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
@@ -83,7 +84,7 @@ export default function LoginScreen() {
             onPress={onLoginPress}
             className="bg-blue-600 rounded-xl py-4 shadow-sm active:bg-blue-700"
           >
-            <Text className="text-white text-center font-semibold text-lg">登入</Text>
+            <Text className="text-white text-center font-semibold text-lg">{LOGIN.LOGIN}</Text>
           </TouchableOpacity>
 
           {/* 註冊按鈕 */}
@@ -91,7 +92,7 @@ export default function LoginScreen() {
             onPress={onRegisterPress}
             className="bg-gray-100 border border-gray-200 rounded-xl py-4 active:bg-gray-200 mt-3"
           >
-            <Text className="text-gray-700 text-center font-semibold text-lg">建立新帳號</Text>
+            <Text className="text-gray-700 text-center font-semibold text-lg">{LOGIN.CREATE_ACCOUNT}</Text>
           </TouchableOpacity>
         </View>
       </View>

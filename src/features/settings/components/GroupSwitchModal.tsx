@@ -1,7 +1,9 @@
-import { GROUP_TYPES } from '@/constants/types';
+import { COMMON, SETTINGS_GROUP_SWITCH, SETTINGS_GROUP_SWITCH_MESSAGES } from '@/constants/string';
+import { BILLING_CYCLES, GROUP_TYPES } from '@/constants/types';
 import { GroupSettings } from '@/features/settings/model/Group';
+import * as Clipboard from 'expo-clipboard';
 import React, { useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Modal, Platform, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
 
 interface GroupSwitchModalProps {
     visible: boolean;                                               // 彈窗開關
@@ -9,35 +11,61 @@ interface GroupSwitchModalProps {
     groups: GroupSettings[];                                        // 群組資料
     activeGroupId: string;                                          // 當前選中 id
     onGroupSelect: (groupId: string, groupName: string) => void;    // 選擇群組
-    onViewDetail: (groupId: string) => void;                        // 查看詳細
+    isLoading?: boolean;                                            // 是否載入中
 }
 
 interface GroupCardProps {
     group: GroupSettings;
     isActive: boolean;
     onSelect: () => Promise<void>;
-    onViewDetail: () => void;
     isLoading: boolean;
 }
 
-// 單一群組卡片（名稱、性質標籤、描述、查看詳細按鈕）
+// 單一群組卡片（重新設計）
 function GroupCard(props: GroupCardProps) {
-    const typeLabel =
-        props.group.type === GROUP_TYPES.LONG_TERM ? '長期型' : '一次性';
-    const typeColor =
-        props.group.type === GROUP_TYPES.LONG_TERM
-            ? 'bg-blue-100 text-blue-700'
-            : 'bg-green-100 text-green-700';
+    const isLongTerm = props.group.type === GROUP_TYPES.LONG_TERM;
+    const typeLabel = isLongTerm ? SETTINGS_GROUP_SWITCH.TYPE_LONG_TERM : SETTINGS_GROUP_SWITCH.TYPE_ONE_TIME;
+
+    // 根據實際 GroupSettings 模型取得繳費資訊
+    const paymentAmount = props.group.monthlyAmount || 0;
+    const billingCycle = props.group.billingCycle;
+
+    // 週期顯示文字
+    const getPeriodText = (cycle: string) => {
+        switch (cycle) {
+            case BILLING_CYCLES.MONTHLY: return SETTINGS_GROUP_SWITCH.PERIOD_MONTHLY;
+            case BILLING_CYCLES.QUARTERLY: return SETTINGS_GROUP_SWITCH.PERIOD_QUARTERLY;
+            case BILLING_CYCLES.YEARLY: return SETTINGS_GROUP_SWITCH.PERIOD_YEARLY;
+            default: return SETTINGS_GROUP_SWITCH.PERIOD_MONTHLY;
+        }
+    };
+
+    // 複製邀請碼功能
+    const copyInviteCode = async () => {
+        if (props.group.inviteCode) {
+            try {
+                Clipboard.setString(props.group.inviteCode);
+
+                // 顯示 Toast 提示
+                if (Platform.OS === COMMON.ANDROID) {
+                    ToastAndroid.show(SETTINGS_GROUP_SWITCH_MESSAGES.COPY_SUCCESS, ToastAndroid.SHORT);
+                } else {
+                    // iOS 使用 Alert
+                    Alert.alert('', SETTINGS_GROUP_SWITCH_MESSAGES.COPY_SUCCESS, [{ text: COMMON.CONFIRM }]);
+                }
+            } catch (error) {
+                console.error(SETTINGS_GROUP_SWITCH.COPY_FAILURE, error);
+                Alert.alert(COMMON.ERROR, SETTINGS_GROUP_SWITCH_MESSAGES.COPY_FAILURE, [{ text: COMMON.CONFIRM }]);
+            }
+        }
+    };
 
     return (
-        <TouchableOpacity
-            className={`bg-white rounded-2xl p-4 mb-4 mx-2 shadow relative ${props.isActive
-                ? 'border-2 border-blue-500'
+        <View
+            className={`bg-white rounded-2xl p-4 mb-4 mx-2 shadow-lg relative ${props.isActive
+                ? 'border-2 border-blue-500 bg-blue-50'
                 : 'border border-gray-100'
                 }`}
-            onPress={props.onSelect}
-            disabled={props.isActive || props.isLoading}
-            activeOpacity={0.7}
         >
             {/* Loading 遮罩 */}
             {props.isLoading && (
@@ -46,35 +74,80 @@ function GroupCard(props: GroupCardProps) {
                 </View>
             )}
 
-            {/* 名稱 + 性質 */}
-            <View className="flex-row items-center justify-between mb-1">
-                <Text className="text-base font-semibold flex-1" numberOfLines={1}>
-                    {props.group.name}
-                </Text>
-                <View className={`px-2 py-0.5 rounded-xl ml-2 ${typeColor}`}>
-                    <Text className="text-xs font-bold">{typeLabel}</Text>
+            {/* 點擊區域 */}
+            <TouchableOpacity
+                onPress={props.onSelect}
+                disabled={props.isActive || props.isLoading}
+                activeOpacity={0.7}
+                className="absolute inset-0 z-5"
+            />
+
+            {/* 標題行：群組名稱 + 類型標籤 + 繳費資訊 */}
+            <View className="flex-row items-center justify-between mb-3">
+                <View className="flex-1 flex-row items-center">
+                    <Text className="text-lg font-bold text-gray-800 flex-shrink" numberOfLines={1}>
+                        {props.group.name}
+                    </Text>
+                    <View className={`px-2 py-1 rounded-full ml-2 ${isLongTerm
+                        ? 'bg-blue-100 text-blue-700'
+                        : 'bg-green-100 text-green-700'
+                        }`}>
+                        <Text className="text-xs font-bold">{typeLabel}</Text>
+                    </View>
+
+
                 </View>
+
+                {/* 繳費資訊 - 在標題行右側 */}
+                {isLongTerm && (paymentAmount > 0 || billingCycle || props.group.allowPrepay) && (
+                    <View className="flex-row items-center ml-2">
+                        <Text className="text-sm font-semibold text-blue-600">
+                            {COMMON.MONEY_SIGN}{paymentAmount.toLocaleString()}
+                        </Text>
+                        <Text className="text-xs text-gray-500 ml-1">
+                            {COMMON.SLASH} {billingCycle ? getPeriodText(billingCycle) : SETTINGS_GROUP_SWITCH.PERIOD_MONTHLY}
+                        </Text>
+                        {props.group.allowPrepay && (
+                            <Text className="text-xs text-gray-400 ml-1">
+                                {COMMON.DOT} {SETTINGS_GROUP_SWITCH.PREPAY}
+                            </Text>
+                        )}
+                    </View>
+                )}
             </View>
-            {/* 描述（可選） */}
-            {props.group.description ? (
-                <Text className="text-xs text-gray-600 mb-3">
+
+            {/* 描述區域 */}
+            {props.group.description && (
+                <Text className="text-sm text-gray-600 mb-3 leading-5">
                     {props.group.description}
                 </Text>
-            ) : null}
-            {/* 按鈕區 */}
-            <View className="flex-row justify-end">
-                <TouchableOpacity
-                    className="px-3 py-1 rounded-xl border border-gray-300"
-                    onPress={(e) => {
-                        e.stopPropagation(); // 防止事件冒泡
-                        props.onViewDetail();
-                    }}
-                    disabled={props.isLoading}
-                >
-                    <Text className="text-sm text-blue-500">查看詳細</Text>
-                </TouchableOpacity>
+            )}
+
+            {/* 底部：邀請碼 + 複製按鈕 */}
+            <View className="flex-row items-center justify-between">
+                {/* 邀請碼 - 靠右顯示 */}
+                <View className="flex-1" />
+                {props.group.inviteCode && (
+                    <View className="flex-row items-center">
+                        <Text className="text-xs text-gray-500 mr-2">{SETTINGS_GROUP_SWITCH.INVITE_CODE}:</Text>
+                        <Text className="text-sm font-mono text-blue-600 font-medium mr-2">
+                            {props.group.inviteCode}
+                        </Text>
+
+                        {/* 複製按鈕 */}
+                        <TouchableOpacity
+                            onPress={(e) => {
+                                e.stopPropagation(); // 防止觸發群組選擇
+                                copyInviteCode();
+                            }}
+                            className="bg-gray-500 px-2 py-1 rounded-full"
+                        >
+                            <Text className="text-xs text-white font-medium">{COMMON.COPY}</Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
-        </TouchableOpacity>
+        </View>
     );
 }
 
@@ -88,7 +161,7 @@ function Header(props: GroupSwitchModalProps) {
             </TouchableOpacity>
             {/* 標題絕對置中 */}
             <View className="absolute inset-0 items-center justify-center">
-                <Text className="text-lg font-bold">選擇群組</Text>
+                <Text className="text-lg font-bold">{SETTINGS_GROUP_SWITCH.TITLE_SELECT_GROUP}</Text>
             </View>
         </View>
     );
@@ -103,12 +176,13 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
             await props.onGroupSelect(groupId, groupName);
             props.onClose(); // 成功後關閉視窗
         } catch (error) {
-            console.error('切換群組失敗', error);
+            console.error(SETTINGS_GROUP_SWITCH_MESSAGES.ERROR, error);
             // 可以在這裡顯示錯誤訊息
         } finally {
             setLoadingGroupId(null);
         }
     };
+
     return (
         <Modal visible={props.visible} animationType="slide" transparent onRequestClose={props.onClose}>
             {/* 黑色遮罩，內容貼近底部 */}
@@ -122,34 +196,41 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                 >
                     {/* 標題列 */}
                     <Header {...props} />
-                    {/* scrollable 群組清單，內容少時自然收縮，多時scroll */}
-                    <FlatList
-                        data={props.groups}
-                        keyExtractor={(item) => item.id}
-                        renderItem={({ item }) => (
-                            // 群組卡片
-                            <GroupCard
-                                group={item}
-                                isActive={item.id === props.activeGroupId}
-                                onSelect={() => handleGroupSelect(item.id, item.name)}
-                                isLoading={loadingGroupId === item.id}
-                                onViewDetail={() => props.onViewDetail(item.id)}
-                            />
-                        )}
-                        ListEmptyComponent={
-                            <Text className="text-gray-400 text-center py-8">
-                                暫無可選群組
-                            </Text>
-                        }
-                        contentContainerStyle={{
-                            paddingBottom: 12,
-                            paddingTop: 2,
-                            flexGrow: 0, // 內容區少時不會被強制拉高
-                        }}
-                        showsVerticalScrollIndicator={true}
-                    />
+                    
+                    {/* 加入 loading 狀態 */}
+                    {props.isLoading ? (
+                        <View className="flex-1 justify-center items-center">
+                            <ActivityIndicator size="large" color="#3B82F6" />
+                            <Text className="text-gray-500 mt-2">載入群組資訊中...</Text>
+                        </View>
+                    ) : (
+                        <FlatList
+                            data={props.groups}
+                            keyExtractor={(item) => item.id}
+                            renderItem={({ item }) => (
+                                // 群組卡片
+                                <GroupCard
+                                    group={item}
+                                    isActive={item.id === props.activeGroupId}
+                                    onSelect={() => handleGroupSelect(item.id, item.name)}
+                                    isLoading={loadingGroupId === item.id}
+                                />
+                            )}
+                            ListEmptyComponent={
+                                <Text className="text-gray-400 text-center py-8">
+                                    {SETTINGS_GROUP_SWITCH.NO_GROUP}
+                                </Text>
+                            }
+                            contentContainerStyle={{
+                                paddingBottom: 12,
+                                paddingTop: 2,
+                                flexGrow: 0, // 內容區少時不會被強制拉高
+                            }}
+                            showsVerticalScrollIndicator={true}
+                        />
+                    )}
                 </View>
             </View>
-        </Modal >
+        </Modal>
     );
 }

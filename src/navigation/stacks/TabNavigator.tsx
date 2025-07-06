@@ -62,7 +62,7 @@ export default function TabNavigator() {
                     tabBarIcon: ({ color, size }) => (
                         <Ionicons name="people" size={size} color={color} />
                     ),
-                    header: () => <AppHeader showBack={false} backType={HEADER_BACK_TYPES.ARROW} title={TAB_NAVIGATOR.MEMBERS} />,
+                    header: () => <AppHeader showBack={true} backType={HEADER_BACK_TYPES.ARROW} title={TAB_NAVIGATOR.MEMBERS} />,
                 }}
             />
 

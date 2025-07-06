@@ -3,6 +3,7 @@ import { Alert } from 'react-native'
 import { AddService } from '../services/TransactionService'
 import { CreateTransactionInput } from '../model/Transaction'
 import { useAuthStore } from '../../../store/useAuthStore'
+import { MemberService } from '../../members/services/MemberService'
 
 type TransactionType = 'income' | 'expense'
 
@@ -149,6 +150,7 @@ export const useAddViewModel = () => {
       setSelectedDate(new Date().toISOString().split('T')[0])
 
       Alert.alert('成功', `${activeTab === 'income' ? '收入' : '支出'}新增成功`)
+
     } catch (error) {
       Alert.alert('錯誤', error instanceof Error ? error.message : '新增失敗')
     } finally {

@@ -1,5 +1,7 @@
 import { auth, db } from "@/config/firebase"
 import { COLLECTIONS } from "@/constants/firestorePaths"
+import { LOGIN_MESSAGES, REGISTER } from "@/constants/string"
+import { useAuthStore } from "@/store/useAuthStore"
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "firebase/auth"
 import { doc, getDoc, serverTimestamp, setDoc, Timestamp } from "firebase/firestore"
 import { User } from "../model/User"
@@ -8,9 +10,9 @@ import { User } from "../model/User"
 
 // 註冊
 export async function registerWithEmail(username: string, password: string, displayName: string): Promise<User> {
-    const email = `${username}@tuanfund.com`
+    const account = `${username}${REGISTER.MAIL_SUFFIX}`
     const name = displayName.trim()
-    const result = await createUserWithEmailAndPassword(auth, email, password)
+    const result = await createUserWithEmailAndPassword(auth, account, password)
 
     // 註冊成功後建立 Firestore 使用者資料
     await setDoc(doc(db, COLLECTIONS.USERS, result.user.uid), {
@@ -37,10 +39,17 @@ export async function loginWithEmail(email: string, password: string): Promise<U
     const docSnap = await getDoc(doc(db, COLLECTIONS.USERS, uid))
 
     if (!docSnap.exists()) {
-        throw new Error('使用者資料不存在')
+        throw new Error(LOGIN_MESSAGES.USER_NOT_EXIST)
     }
 
-    return docSnap.data() as User
+    const userData = docSnap.data() as User
+
+    // 同步到 AuthStore
+    const authStore = useAuthStore.getState()
+    authStore.setJoinedGroupIds(userData.joinedGroupIds || [])
+    authStore.setActiveGroupId(userData.activeGroupId || '')
+
+    return userData
 }
 
 // 登出

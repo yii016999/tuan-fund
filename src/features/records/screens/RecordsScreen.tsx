@@ -9,22 +9,13 @@ import RecordItem from '../components/RecordItem'
 import RecordsEmptyState from '../components/RecordsEmptyState'
 import { RecordListItem } from '../model/Record'
 import { useRecordsViewModel } from '../viewmodel/useRecordsViewModel'
+import NoGroupSelected from '@/components/NoGroupSelected'
 
 export default function RecordsScreen() {
-    const { activeGroupId } = useAuthStore()
+    const { activeGroupId, joinedGroupIds } = useAuthStore()
     const [refreshing, setRefreshing] = useState(false)
 
-    // 如果沒有 activeGroupId，沒有選擇任何群組，顯示錯誤訊息
-    if (!activeGroupId) {
-        return (
-            <View className="flex-1 justify-center items-center bg-gray-50">
-                <Text className="text-red-500 text-lg">{RECORD_MESSAGES.NO_GROUP}</Text>
-                <Text className="text-gray-500 mt-2">{RECORD_MESSAGES.NO_GROUP_SELECTED}</Text>
-            </View>
-        )
-    }
-
-    // 引入 useRecordsViewModel 來管理記錄相關邏輯
+    // 所有 Hooks 必須在條件檢查之前
     const {
         loading,
         activeTab,
@@ -35,16 +26,23 @@ export default function RecordsScreen() {
         dateRange,
         deleteRecord,
         refreshRecords,
-    } = useRecordsViewModel(activeGroupId)
+    } = useRecordsViewModel(activeGroupId || '')
 
-    // 下拉刷新事件
+    // 條件檢查放在所有 Hooks 之後
+    if (!joinedGroupIds || joinedGroupIds.length === 0) {
+        return <NoGroupSelected title="沒有加入群組" message="請先至「設定」建立或加入一個群組" />
+    }
+
+    if (!activeGroupId) {
+        return <NoGroupSelected />
+    }
+
     const handleRefresh = async () => {
         setRefreshing(true)
         await refreshRecords()
         setRefreshing(false)
     }
 
-    // 刪除記錄事件
     const handleDeleteRecord = (record: RecordListItem) => {
         Alert.alert(
             RECORD.DELETE_CONFIRM,
@@ -67,19 +65,14 @@ export default function RecordsScreen() {
         )
     }
 
-    // 編輯記錄事件
     const handleEditRecord = () => {
-        // TODO: 實現編輯功能
         Alert.alert('編輯功能', '編輯功能開發中...')
     }
 
-    // 日期選擇事件
     const handleDateRangePress = () => {
-        // TODO: 實現日期選擇器
         Alert.alert('日期選擇', '日期選擇功能開發中...')
     }
 
-    // 格式化金額
     const formatAmount = (amount: number, type?: string) => {
         const sign = type === RECORD_TRANSACTION_TYPES.EXPENSE ? RECORD.EXPENSE_SIGN : RECORD.INCOME_SIGN
         const color = type === RECORD_TRANSACTION_TYPES.EXPENSE ? 'text-red-600' : 'text-green-600'
@@ -90,7 +83,6 @@ export default function RecordsScreen() {
         )
     }
 
-    // 格式化日期
     const formatDate = (dateStr: string) => {
         const date = new Date(dateStr)
         return date.toLocaleDateString(COMMON.ZH_TW, {
@@ -99,7 +91,6 @@ export default function RecordsScreen() {
         })
     }
 
-    // 獲取交易類型(群組收支、個人繳費)
     const getTransactionType = (record: RecordListItem) => {
         if (record.type === RECORD_TYPES.GROUP_TRANSACTION) {
             const transaction = groupTransactions.find(t => t.id === record.id)
@@ -108,16 +99,13 @@ export default function RecordsScreen() {
         return undefined
     }
 
-    // 總結欄
     const renderSummary = () => {
         if (activeTab !== 'group') return null
 
-        // 收入總額
         const incomeTotal = groupRecords
             .filter(r => groupTransactions.find(t => t.id === r.id)?.type === RECORD_TRANSACTION_TYPES.INCOME)
             .reduce((sum, r) => sum + r.amount, 0)
 
-        // 支出總額
         const expenseTotal = groupRecords
             .filter(r => groupTransactions.find(t => t.id === r.id)?.type === RECORD_TRANSACTION_TYPES.EXPENSE)
             .reduce((sum, r) => sum + r.amount, 0)
@@ -134,18 +122,15 @@ export default function RecordsScreen() {
         )
     }
 
-    // 資料和配置
     const tabs: Array<{ key: RecordTabType; title: string }> = [
         { key: RECORD_TAB_TYPES.GROUP, title: RECORD.GROUP_RECORDS },
         { key: RECORD_TAB_TYPES.MEMBER, title: RECORD.MEMBER_RECORDS },
     ]
 
-    // 目前顯示的記錄
     const currentRecords = activeTab === 'group' ? groupRecords : memberRecords
 
     return (
         <View className="flex-1 bg-gray-50">
-            {/* 日期範圍選擇器 */}
             <View className="bg-white mx-4 mt-4 p-4 rounded-lg shadow-sm">
                 <TouchableOpacity
                     className="flex-row items-center justify-between"
@@ -161,7 +146,6 @@ export default function RecordsScreen() {
                 </TouchableOpacity>
             </View>
 
-            {/* Tab 切換 */}
             <View className="mt-4">
                 <RecordTab
                     tabs={tabs}
@@ -170,7 +154,6 @@ export default function RecordsScreen() {
                 />
             </View>
 
-            {/* 記錄列表 */}
             <ScrollView
                 className="flex-1"
                 refreshControl={
@@ -185,7 +168,6 @@ export default function RecordsScreen() {
                     <RecordsEmptyState activeTab={activeTab} />
                 ) : (
                     <View className="pb-4">
-                        {/* 實際使用的記錄列表 */}
                         {currentRecords.map(record => (
                             <RecordItem
                                 key={record.id}
@@ -201,14 +183,12 @@ export default function RecordsScreen() {
                 )}
             </ScrollView>
 
-            {/* 總結欄 */}
             {currentRecords.length > 0 && (
                 <View className="bg-white px-4 py-3 border-t border-gray-200">
                     <View className="flex-row justify-between items-center">
                         <Text className="text-sm text-gray-600">
                             共 {currentRecords.length} 筆記錄
                         </Text>
-                        {/* 總結欄 */}
                         {renderSummary()}
                     </View>
                 </View>
