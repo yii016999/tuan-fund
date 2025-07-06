@@ -1,9 +1,9 @@
 import { AUTH_ROUTES } from '@/constants/routes';
-import { useLoginViewModel } from "@/features/auth/viewModel/useLoginViewModel";
+import { useLoginViewModel } from "@/features/auth/viewmodel/useLoginViewModel";
 import { AuthParamList, RootStackParamList } from '@/navigation/types';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button, Text, TextInput, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function LoginScreen() {
   const {
@@ -32,39 +32,69 @@ export default function LoginScreen() {
   }
 
   return (
-    <View className="flex-1 justify-center items-center px-4">
-      <Text className="text-2xl font-bold mb-6">登入</Text>
-
-      <TextInput
-        placeholder="帳號"
-        value={username}
-        onChangeText={setUsername}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white"
-        keyboardType="email-address"
-        autoCapitalize="none"
-      />
-
-      <TextInput
-        placeholder="密碼"
-        value={password}
-        onChangeText={setPassword}
-        className="w-full border border-gray-300 rounded-lg px-4 py-2 mb-4 bg-white"
-        secureTextEntry
-      />
-
-      <View className="w-full flex-row justify-between gap-4 mt-2">
-        <View className="flex-1">
-          {/* 登入按鈕 */}
-          <Button title="登入" onPress={onLoginPress} />
+    <View className="flex-1 bg-gray-50 justify-center px-6">
+      {/* 主要容器 */}
+      <View className="bg-white rounded-2xl shadow-lg p-8 mx-2">
+        {/* 標題 */}
+        <View className="items-center mb-8">
+          <Text className="text-3xl font-bold text-gray-800 mb-2">歡迎回來</Text>
+          <Text className="text-gray-500 text-base">請登入您的帳號</Text>
         </View>
-        <View className="flex-1">
-          {/* 前往註冊頁 */}
-          <Button title="註冊" onPress={onRegisterPress} />
+
+        {/* 輸入框區域 */}
+        <View className="mb-6">
+          <View>
+            <Text className="text-gray-700 text-sm font-medium mb-2">帳號</Text>
+            <TextInput
+              placeholder="請輸入您的電子郵件"
+              value={username}
+              onChangeText={setUsername}
+              className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+
+          <View className="mt-4">
+            <Text className="text-gray-700 text-sm font-medium mb-2">密碼</Text>
+            <TextInput
+              placeholder="請輸入您的密碼"
+              value={password}
+              onChangeText={setPassword}
+              className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
+              secureTextEntry
+              placeholderTextColor="#9CA3AF"
+            />
+          </View>
+        </View>
+
+        {/* 錯誤訊息 */}
+        {error && (
+          <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+            <Text className="text-red-600 text-sm text-center">{error}</Text>
+          </View>
+        )}
+
+        {/* 按鈕區域 */}
+        <View>
+          {/* 登入按鈕 */}
+          <TouchableOpacity
+            onPress={onLoginPress}
+            className="bg-blue-600 rounded-xl py-4 shadow-sm active:bg-blue-700"
+          >
+            <Text className="text-white text-center font-semibold text-lg">登入</Text>
+          </TouchableOpacity>
+
+          {/* 註冊按鈕 */}
+          <TouchableOpacity
+            onPress={onRegisterPress}
+            className="bg-gray-100 border border-gray-200 rounded-xl py-4 active:bg-gray-200 mt-3"
+          >
+            <Text className="text-gray-700 text-center font-semibold text-lg">建立新帳號</Text>
+          </TouchableOpacity>
         </View>
       </View>
-
-      {/* 顯示錯誤訊息 */}
-      {error ? <Text className="text-red-500 text-sm mt-4">{error}</Text> : null}
     </View>
   )
 }
