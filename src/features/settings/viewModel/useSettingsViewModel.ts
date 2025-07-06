@@ -6,11 +6,15 @@ import { useAuthStore } from '@/store/useAuthStore'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { signOut } from 'firebase/auth'
-import { collection, doc, getDocs, getFirestore, updateDoc } from 'firebase/firestore'
+import { collection, doc, getDocs, getFirestore, updateDoc, addDoc, serverTimestamp } from 'firebase/firestore'
 import { useCallback, useEffect, useState } from 'react'
 import { GroupModel } from '../model/Group'
 
 const db = getFirestore()
+
+interface MonthlyPaymentSettings {
+    enabled: boolean;
+}
 
 export function useSettingsViewModel() {
     const navigation = useNavigation<NativeStackNavigationProp<AuthParamList>>()
@@ -18,6 +22,8 @@ export function useSettingsViewModel() {
     const [groups, setGroups] = useState<GroupModel[]>([])
     const [currentGroupName, setCurrentGroupName] = useState('')
     const [loading, setLoading] = useState(true)
+    const [isCreatingGroup, setIsCreatingGroup] = useState(false)
+    const [createGroupError, setCreateGroupError] = useState('')
 
     // 取得所有使用者有加入的群組
     const fetchGroups = useCallback(async () => {
@@ -65,6 +71,46 @@ export function useSettingsViewModel() {
         }
     }, [setActiveGroupId, user?.uid])
 
+    // 創建群組功能
+    const createGroup = async (name: string, type: string, description?: string, monthlyPaymentSettings?: MonthlyPaymentSettings): Promise<boolean> => {
+        if (!name.trim()) {
+            setCreateGroupError('請輸入群組名稱')
+            return false
+        }
+
+        try {
+            setIsCreatingGroup(true)
+            setCreateGroupError('')
+
+            const groupData: any = {
+                name,
+                type,
+                description: description ?? '',
+                createdBy: user?.uid ?? '',
+                createdAt: serverTimestamp(),
+                members: [user?.uid],
+            }
+
+            // 如果有繳費設定，則加入群組資料中
+            if (monthlyPaymentSettings && monthlyPaymentSettings.enabled) {
+                groupData.monthlyPaymentSettings = monthlyPaymentSettings
+            }
+
+            await addDoc(collection(db, COLLECTIONS.GROUPS), groupData)
+            
+            // 創建成功後重新取得群組列表
+            await fetchGroups()
+            
+            return true
+
+        } catch (e: any) {
+            setCreateGroupError(e.message)
+            return false
+        } finally {
+            setIsCreatingGroup(false)
+        }
+    }
+
     // 登出功能
     const userLogout = async () => {
         try {
@@ -89,5 +135,8 @@ export function useSettingsViewModel() {
         switchGroup,
         user,
         userLogout,
+        createGroup,
+        isCreatingGroup,
+        createGroupError,
     }
 }

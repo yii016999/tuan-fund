@@ -1,6 +1,6 @@
 import { COLLECTIONS } from '@/constants/firestorePaths'
 import { MEMBER_ROLES, MemberRole } from '@/constants/types'
-import { MemberModel } from '@/features/members/model/MemberModel'
+import { MemberModel } from '@/features/members/model/Member'
 import { collection, doc, getDoc, getDocs, getFirestore, updateDoc } from 'firebase/firestore'
 import type { GroupBrief } from '../model/Group'
 

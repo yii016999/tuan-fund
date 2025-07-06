@@ -1,7 +1,7 @@
 import { GROUP_TYPES } from '@/constants/types';
 import { GroupModel } from '@/features/settings/model/Group';
-import React from 'react';
-import { FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { ActivityIndicator, FlatList, Modal, Text, TouchableOpacity, View } from 'react-native';
 
 interface GroupSwitchModalProps {
     visible: boolean;                                          // 彈窗開關
@@ -15,11 +15,12 @@ interface GroupSwitchModalProps {
 interface GroupCardProps {
     group: GroupModel;
     isActive: boolean;
-    onSelect: () => void;
+    onSelect: () => Promise<void>;
     onViewDetail: () => void;
+    isLoading: boolean;
 }
 
-// 單一群組卡片（名稱、性質標籤、描述、兩顆按鈕）
+// 單一群組卡片（名稱、性質標籤、描述、查看詳細按鈕）
 function GroupCard(props: GroupCardProps) {
     const typeLabel =
         props.group.type === GROUP_TYPES.LONG_TERM ? '長期型' : '一次性';
@@ -29,10 +30,22 @@ function GroupCard(props: GroupCardProps) {
             : 'bg-green-100 text-green-700';
 
     return (
-        <View className={`bg-white rounded-2xl p-4 mb-4 mx-2 shadow ${props.isActive
-            ? 'border-2 border-blue-500'
-            : 'border border-gray-100'
-            }`}>
+        <TouchableOpacity
+            className={`bg-white rounded-2xl p-4 mb-4 mx-2 shadow relative ${props.isActive
+                ? 'border-2 border-blue-500'
+                : 'border border-gray-100'
+                }`}
+            onPress={props.onSelect}
+            disabled={props.isActive || props.isLoading}
+            activeOpacity={0.7}
+        >
+            {/* Loading 遮罩 */}
+            {props.isLoading && (
+                <View className="absolute inset-0 bg-black/20 rounded-2xl flex items-center justify-center z-10">
+                    <ActivityIndicator size="large" color="#3B82F6" />
+                </View>
+            )}
+
             {/* 名稱 + 性質 */}
             <View className="flex-row items-center justify-between mb-1">
                 <Text className="text-base font-semibold flex-1" numberOfLines={1}>
@@ -49,24 +62,19 @@ function GroupCard(props: GroupCardProps) {
                 </Text>
             ) : null}
             {/* 按鈕區 */}
-            <View className="flex-row justify-end space-x-3">
+            <View className="flex-row justify-end">
                 <TouchableOpacity
-                    className="mr-2 px-3 py-1 rounded-xl border border-gray-300"
-                    onPress={props.onViewDetail}
+                    className="px-3 py-1 rounded-xl border border-gray-300"
+                    onPress={(e) => {
+                        e.stopPropagation(); // 防止事件冒泡
+                        props.onViewDetail();
+                    }}
+                    disabled={props.isLoading}
                 >
                     <Text className="text-sm text-blue-500">查看詳細</Text>
                 </TouchableOpacity>
-                <TouchableOpacity
-                    className={`px-3 py-1 rounded-xl ${props.isActive ? 'bg-gray-300' : 'bg-blue-500'}`}
-                    onPress={props.onSelect}
-                    disabled={props.isActive}
-                >
-                    <Text className={`text-sm ${props.isActive ? 'text-gray-400' : 'text-white'}`}>
-                        {props.isActive ? '目前' : '選擇'}
-                    </Text>
-                </TouchableOpacity>
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 
@@ -87,6 +95,20 @@ function Header(props: GroupSwitchModalProps) {
 }
 
 export function GroupSwitchModal(props: GroupSwitchModalProps) {
+    const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
+
+    const handleGroupSelect = async (groupId: string, groupName: string) => {
+        setLoadingGroupId(groupId);
+        try {
+            await props.onGroupSelect(groupId, groupName);
+            props.onClose(); // 成功後關閉視窗
+        } catch (error) {
+            console.error('切換群組失敗', error);
+            // 可以在這裡顯示錯誤訊息
+        } finally {
+            setLoadingGroupId(null);
+        }
+    };
     return (
         <Modal visible={props.visible} animationType="slide" transparent onRequestClose={props.onClose}>
             {/* 黑色遮罩，內容貼近底部 */}
@@ -109,10 +131,8 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                             <GroupCard
                                 group={item}
                                 isActive={item.id === props.activeGroupId}
-                                onSelect={() => {
-                                    props.onGroupSelect(item.id, item.name);
-                                    props.onClose();
-                                }}
+                                onSelect={() => handleGroupSelect(item.id, item.name)}
+                                isLoading={loadingGroupId === item.id}
                                 onViewDetail={() => props.onViewDetail(item.id)}
                             />
                         )}

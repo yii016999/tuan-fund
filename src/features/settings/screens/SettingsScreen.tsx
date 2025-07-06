@@ -1,8 +1,8 @@
-import CreateGroupModal from '@/components/CreateGroupModal';
-import { GroupSwitchModal } from '@/components/GroupSwitchModal';
+import CreateGroupModal from '@/features/settings/components/CreateGroupModal';
+import { GroupSwitchModal } from '@/features/settings/components/GroupSwitchModal';
 import React, { useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
-import { useSettingsViewModel } from '../viewModel/useSettingsViewModel';
+import { useSettingsViewModel } from '../viewmodel/useSettingsViewModel';
 
 export default function SettingsScreen() {
     const {
