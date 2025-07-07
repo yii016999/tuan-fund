@@ -1,9 +1,11 @@
+import NoGroupSelected from '@/components/NoGroupSelected'
+import { COMMON, TRANSACTION } from '@/constants/string'
+import { useAuthStore } from '@/store/useAuthStore'
 import React, { useRef } from "react"
-import { ScrollView, Text, TextInput, TouchableOpacity, View, ActivityIndicator } from "react-native"
+import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { Calendar } from 'react-native-calendars'
 import { useAddViewModel } from '../viewmodel/useTransactionViewModel'
-import { useAuthStore } from '@/store/useAuthStore'
-import NoGroupSelected from '@/components/NoGroupSelected'
+import { RECORD_TRANSACTION_TYPES } from '@/constants/types'
 
 export default function AddScreen() {
     // 檢查是否有選擇群組
@@ -13,14 +15,9 @@ export default function AddScreen() {
     const amountInputRef = useRef<TextInput>(null)
     const viewModel = useAddViewModel()
 
-    // 如果沒有加入群組
-    if (!activeGroupId && joinedGroupIds.length === 0) {
-        return <NoGroupSelected title="沒有加入群組" message="請先至「設定」建立或加入一個群組" />
-    }
-
-    // 如果沒有群組
+    // 如果沒有選擇群組
     if (!currentGroupId) {
-        return <NoGroupSelected />
+        return <NoGroupSelected joinedGroupIds={joinedGroupIds} />
     }
 
     return (
@@ -42,7 +39,7 @@ export default function AddScreen() {
             {/* 收入支出選擇 */}
             <View className="mb-2">
                 <Text className="text-gray-500 text-sm mb-1">
-                    收入或支出
+                    {TRANSACTION.INCOME_OR_EXPENSE}
                 </Text>
             </View>
             <View className="mb-8">
@@ -52,9 +49,9 @@ export default function AddScreen() {
                         onPress={viewModel.handleExpensePress}
                         activeOpacity={0.7}
                     >
-                        <Text className={`text-lg font-medium text-center ${viewModel.activeTab === 'expense' ? 'text-white' : 'text-gray-700'
+                        <Text className={`text-lg font-medium text-center ${viewModel.activeTab === RECORD_TRANSACTION_TYPES.EXPENSE ? 'text-white' : 'text-gray-700'
                             }`}>
-                            支出
+                            {TRANSACTION.EXPENSE}
                         </Text>
                     </TouchableOpacity>
 
@@ -65,9 +62,9 @@ export default function AddScreen() {
                         onPress={viewModel.handleIncomePress}
                         activeOpacity={0.7}
                     >
-                        <Text className={`text-lg font-medium text-center ${viewModel.activeTab === 'income' ? 'text-white' : 'text-gray-700'
+                        <Text className={`text-lg font-medium text-center ${viewModel.activeTab === RECORD_TRANSACTION_TYPES.INCOME ? 'text-white' : 'text-gray-700'
                             }`}>
-                            收入
+                            {TRANSACTION.INCOME}
                         </Text>
                     </TouchableOpacity>
                 </View>
@@ -76,7 +73,7 @@ export default function AddScreen() {
             {/* 類型標籤 */}
             <View className="mb-2">
                 <Text className="text-gray-500 text-sm mb-1">
-                    項目標題
+                    {TRANSACTION.ITEM_TITLE}
                 </Text>
             </View>
 
@@ -88,14 +85,14 @@ export default function AddScreen() {
                     onChangeText={viewModel.setTitle}
                     onFocus={viewModel.handleTitleFocus}
                     onBlur={viewModel.handleTitleBlur}
-                    placeholder="ex.某某款項..."
+                    placeholder={TRANSACTION.ITEM_TITLE_PLACEHOLDER}
                     placeholderTextColor="#9CA3AF"
                 />
             </View>
 
             {/* 金額標籤和輸入 */}
             <View className="mb-2">
-                <Text className="text-gray-500 text-sm mb-1">金額</Text>
+                <Text className="text-gray-500 text-sm mb-1">{TRANSACTION.AMOUNT}</Text>
             </View>
             <View className="mb-6">
                 <View className="relative">
@@ -111,7 +108,7 @@ export default function AddScreen() {
                         placeholderTextColor="#9CA3AF"
                     />
                     <Text className="absolute right-4 top-1/2 -translate-y-1/2 text-xl font-medium text-gray-600">
-                        $
+                        {COMMON.MONEY_SIGN}
                     </Text>
                 </View>
             </View>
@@ -119,7 +116,7 @@ export default function AddScreen() {
             {/* 備註標籤 */}
             <View className="mb-2">
                 <Text className="text-gray-500 text-sm mb-1">
-                    備註 (選填)
+                    {TRANSACTION.DESCRIPTION}
                 </Text>
             </View>
 
@@ -130,7 +127,7 @@ export default function AddScreen() {
                     style={{ height: 88 }} // 固定高度 (約三行文字 + padding)
                     value={viewModel.description}
                     onChangeText={viewModel.setDescription}
-                    placeholder="輸入備註"
+                    placeholder={TRANSACTION.DESCRIPTION_PLACEHOLDER}
                     placeholderTextColor="#9CA3AF"
                     multiline
                     numberOfLines={3}
@@ -149,7 +146,7 @@ export default function AddScreen() {
                     <ActivityIndicator color="white" />
                 ) : (
                     <Text className="text-white text-lg font-medium text-center">
-                        {viewModel.activeTab === 'income' ? '新增收入' : '新增支出'}
+                        {viewModel.activeTab === RECORD_TRANSACTION_TYPES.INCOME ? TRANSACTION.ADD_INCOME : TRANSACTION.ADD_EXPENSE}
                     </Text>
                 )}
             </TouchableOpacity>

@@ -10,6 +10,7 @@ import { collection, getDocs, getFirestore } from 'firebase/firestore'
 import { useCallback, useEffect, useState } from 'react'
 import { GroupSettings } from '../model/Group'
 import { GroupService } from '../services/GroupService'
+import { SETTINGS_GROUP_SWITCH } from '@/constants/string'
 
 const db = getFirestore()
 
@@ -25,6 +26,8 @@ export function useSettingsViewModel() {
     const [loading, setLoading] = useState(true)
     const [isCreatingGroup, setIsCreatingGroup] = useState(false)
     const [createGroupError, setCreateGroupError] = useState('')
+    const [isJoiningGroup, setIsJoiningGroup] = useState(false)
+    const [joinGroupError, setJoinGroupError] = useState('')
 
     // 統一使用 GroupService.getGroupsByUserId 獲取完整群組資訊
     const fetchGroups = useCallback(async () => {
@@ -40,7 +43,7 @@ export function useSettingsViewModel() {
                 setCurrentGroupName(activeGroup.name)
             }
         } catch (error) {
-            console.error('獲取群組失敗:', error)
+            console.error('Error fetching groups:', error)
         } finally {
             setLoading(false)
         }
@@ -72,7 +75,7 @@ export function useSettingsViewModel() {
             authStore.setJoinedGroupIds(userGroups.map(g => g.id))
 
         } catch (error) {
-            console.error('切換群組失敗:', error)
+            console.error('Error switching group:', error)
             throw error
         }
     }
@@ -104,7 +107,7 @@ export function useSettingsViewModel() {
             
             return true
         } catch (error) {
-            setCreateGroupError(error instanceof Error ? error.message : '建立群組失敗')
+            setCreateGroupError(error instanceof Error ? error.message : SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_CREATE_GROUP)
             return false
         } finally {
             setIsCreatingGroup(false)
@@ -126,7 +129,7 @@ export function useSettingsViewModel() {
             logout();
 
         } catch (error) {
-            console.error('登出錯誤:', error);
+            console.error('Error logging out:', error);
             throw error;
         }
     };
@@ -135,6 +138,45 @@ export function useSettingsViewModel() {
     const loadUserGroups = useCallback(async () => {
         await fetchGroups()
     }, [fetchGroups])
+
+    // 加入群組功能
+    const joinGroup = async (inviteCode: string) => {
+        if (!user?.uid) return false
+
+        setIsJoiningGroup(true)
+        setJoinGroupError('')
+
+        try {
+            const result = await GroupService.joinGroupByCode(user.uid, inviteCode)
+            
+            if (result.success && result.groupId && result.groupName) {
+                // 更新本地狀態
+                setActiveGroupId(result.groupId)
+                setCurrentGroupName(result.groupName)
+                
+                // 同步到 AuthStore
+                const authStore = useAuthStore.getState()
+                authStore.setActiveGroupId(result.groupId)
+                
+                // 重新載入群組資料
+                await fetchGroups()
+                
+                // 同步 joinedGroupIds
+                const userGroups = await GroupService.getGroupsByUserId(user.uid)
+                authStore.setJoinedGroupIds(userGroups.map(g => g.id))
+                
+                return true
+            } else {
+                setJoinGroupError(result.error || SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP)
+                return false
+            }
+        } catch (error) {
+            setJoinGroupError(error instanceof Error ? error.message : SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP)
+            return false
+        } finally {
+            setIsJoiningGroup(false)
+        }
+    }
 
     return {
         groups,
@@ -148,6 +190,9 @@ export function useSettingsViewModel() {
         isCreatingGroup,
         createGroupError,
         loadUserGroups,
-        fetchGroups, // 新增這個方法供外部使用
+        fetchGroups,
+        joinGroup,
+        isJoiningGroup,
+        joinGroupError,
     }
 }

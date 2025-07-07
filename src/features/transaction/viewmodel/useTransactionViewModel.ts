@@ -1,15 +1,13 @@
-import { useState, useMemo, useCallback } from 'react'
+import { COMMON, TRANSACTION } from '@/constants/string'
+import { RECORD_TRANSACTION_TYPES, RecordTransactionType } from '@/constants/types'
+import { useCallback, useMemo, useState } from 'react'
 import { Alert } from 'react-native'
-import { AddService } from '../services/TransactionService'
-import { CreateTransactionInput } from '../model/Transaction'
 import { useAuthStore } from '../../../store/useAuthStore'
-import { MemberService } from '../../members/services/MemberService'
-
-type TransactionType = 'income' | 'expense'
+import { CreateTransactionInput } from '../model/Transaction'
+import { AddService } from '../services/TransactionService'
 
 export const useAddViewModel = () => {
-  // States
-  const [activeTab, setActiveTab] = useState<TransactionType>('expense')
+  const [activeTab, setActiveTab] = useState<RecordTransactionType>(RECORD_TRANSACTION_TYPES.EXPENSE)
   const [amount, setAmount] = useState('0')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [title, setTitle] = useState('')
@@ -18,37 +16,33 @@ export const useAddViewModel = () => {
   const [amountFocus, setAmountFocus] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
-  // Store
   const { user, activeGroupId } = useAuthStore()
 
-  // Computed values
   const themeColor = useMemo(() => {
-    return activeTab === 'income' ? '#10B981' : '#EF4444'
+    return activeTab === RECORD_TRANSACTION_TYPES.INCOME ? '#10B981' : '#EF4444'
   }, [activeTab])
 
-  const titleInputStyle = useMemo(() => 
-    `py-4 px-4 border-2 rounded-lg bg-white text-lg ${
-      titleFocus ? 'border-blue-400' : 'border-gray-300'
+  const titleInputStyle = useMemo(() =>
+    `py-4 px-4 border-2 rounded-lg bg-white text-lg ${titleFocus ? 'border-blue-400' : 'border-gray-300'
     }`
-  , [titleFocus])
+    , [titleFocus])
 
-  const amountInputStyle = useMemo(() => 
-    `text-2xl font-bold text-left pl-4 pr-12 py-4 border-2 rounded-lg bg-white ${
-      amountFocus ? 'border-blue-400' : 'border-gray-300'
+  const amountInputStyle = useMemo(() =>
+    `text-2xl font-bold text-left pl-4 pr-12 py-4 border-2 rounded-lg bg-white ${amountFocus ? 'border-blue-400' : 'border-gray-300'
     }`
-  , [amountFocus])
+    , [amountFocus])
 
-  const expenseButtonStyle = useMemo(() => 
-    `flex-1 py-4 px-4 ${activeTab === 'expense' ? 'bg-red-400' : 'bg-white'}`
-  , [activeTab])
+  const expenseButtonStyle = useMemo(() =>
+    `flex-1 py-4 px-4 ${activeTab === RECORD_TRANSACTION_TYPES.EXPENSE ? 'bg-red-400' : 'bg-white'}`
+    , [activeTab])
 
-  const incomeButtonStyle = useMemo(() => 
-    `flex-1 py-4 px-4 ${activeTab === 'income' ? 'bg-emerald-400' : 'bg-white'}`
-  , [activeTab])
+  const incomeButtonStyle = useMemo(() =>
+    `flex-1 py-4 px-4 ${activeTab === RECORD_TRANSACTION_TYPES.INCOME ? 'bg-emerald-400' : 'bg-white'}`
+    , [activeTab])
 
-  const submitButtonStyle = useMemo(() => 
-    `py-4 rounded-lg ${activeTab === 'income' ? 'bg-emerald-400' : 'bg-red-400'}`
-  , [activeTab])
+  const submitButtonStyle = useMemo(() =>
+    `py-4 rounded-lg ${activeTab === RECORD_TRANSACTION_TYPES.INCOME ? 'bg-emerald-400' : 'bg-red-400'}`
+    , [activeTab])
 
   const markedDates = useMemo(() => ({
     [selectedDate]: {
@@ -89,11 +83,11 @@ export const useAddViewModel = () => {
   }, [])
 
   const handleExpensePress = useCallback(() => {
-    setActiveTab('expense')
+    setActiveTab(RECORD_TRANSACTION_TYPES.EXPENSE)
   }, [])
 
   const handleIncomePress = useCallback(() => {
-    setActiveTab('income')
+    setActiveTab(RECORD_TRANSACTION_TYPES.INCOME)
   }, [])
 
   const handleDateSelect = useCallback((day: any) => {
@@ -112,17 +106,17 @@ export const useAddViewModel = () => {
     const amountValue = amount.replace(/,/g, '')
 
     if (amountValue === '0' || amountValue === '') {
-      Alert.alert('錯誤', '請輸入有效金額')
+      Alert.alert(COMMON.ERROR, TRANSACTION.ERROR_PLEASE_INPUT_VALID_AMOUNT)
       return
     }
 
     if (!title.trim()) {
-      Alert.alert('錯誤', '請輸入項目標題')
+      Alert.alert(COMMON.ERROR, TRANSACTION.ERROR_PLEASE_INPUT_ITEM_TITLE)
       return
     }
 
     if (!user?.uid || !activeGroupId) {
-      Alert.alert('錯誤', '用戶或群組資訊不完整')
+      Alert.alert(COMMON.ERROR, TRANSACTION.ERROR_MESSAGE_CREATE_TRANSACTION)
       return
     }
 
@@ -149,10 +143,9 @@ export const useAddViewModel = () => {
       setDescription('')
       setSelectedDate(new Date().toISOString().split('T')[0])
 
-      Alert.alert('成功', `${activeTab === 'income' ? '收入' : '支出'}新增成功`)
-
+      Alert.alert(COMMON.SUCCESS, `${activeTab === RECORD_TRANSACTION_TYPES.INCOME ? TRANSACTION.INCOME : TRANSACTION.EXPENSE} ${COMMON.ADD_SUCCESS}`)
     } catch (error) {
-      Alert.alert('錯誤', error instanceof Error ? error.message : '新增失敗')
+      Alert.alert(COMMON.ERROR, error instanceof Error ? error.message : TRANSACTION.ERROR_MESSAGE_CREATE_TRANSACTION)
     } finally {
       setIsLoading(false)
     }

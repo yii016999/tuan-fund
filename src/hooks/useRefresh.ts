@@ -12,7 +12,7 @@ export const useRefresh = ({ onRefresh }: UseRefreshProps) => {
         try {
             await onRefresh()
         } catch (error) {
-            console.error('刷新失敗:', error)
+            console.error('Error refreshing:', error)
         } finally {
             setRefreshing(false)
         }

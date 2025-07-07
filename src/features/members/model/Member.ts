@@ -16,8 +16,7 @@ export interface MemberPaymentStatus {
     currentMonthPaid: boolean,        // 當月是否已繳費
     currentMonthAmount: number,       // 當月繳費金額
     latestPaymentDate?: string,       // 最近一次繳費日期
-    nextDueDate?: string,             // 下次繳費到期日
-    overdueDays: number,              // 逾期天數
+    nextDueDate?: string,             // 下次繳費日
 }
 
 // 成員統計資料

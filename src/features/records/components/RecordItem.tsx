@@ -1,4 +1,3 @@
-import { RECORD_TRANSACTION_TYPES, RECORD_TYPES } from '@/constants/types'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
@@ -13,13 +12,13 @@ interface RecordItemProps {
   formatDate: (dateStr: string) => string
 }
 
-export default function RecordItem({ 
-  record, 
-  transactionType, 
-  onEdit, 
-  onDelete, 
-  formatAmount, 
-  formatDate 
+export default function RecordItem({
+  record,
+  transactionType,
+  onEdit,
+  onDelete,
+  formatAmount,
+  formatDate
 }: RecordItemProps) {
   return (
     <View className="bg-white mx-4 mb-3 p-4 rounded-lg shadow-sm">

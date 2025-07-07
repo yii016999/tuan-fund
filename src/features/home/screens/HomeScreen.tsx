@@ -1,5 +1,6 @@
-import BalanceChart from '@/features/home/components/BalanceChart';
 import FullScreenLoader from '@/components/FullScreenLoader';
+import { HOME } from '@/constants/string';
+import BalanceChart from '@/features/home/components/BalanceChart';
 import PaymentStatusCard from '@/features/home/components/PaymentStatusCard';
 import TransactionOverviewCard from '@/features/home/components/TransactionOverviewCard';
 import React from 'react';
@@ -14,7 +15,7 @@ export default function HomeScreen() {
   const cardHeight = (screenHeight - 250) * 0.4;
   const chartHeight = (screenHeight - 250) * 0.45;
 
-  // 載入狀態
+  // 載入狀態s
   if (loading && !homeData) {
     return <FullScreenLoader visible={loading} />;
   }
@@ -23,12 +24,12 @@ export default function HomeScreen() {
   if (error && !homeData) {
     return (
       <View className="flex-1 justify-center items-center p-4 bg-gray-50">
-        <Text className="text-red-500 text-center mb-4">載入失敗：{error}</Text>
+        <Text className="text-red-500 text-center mb-4">{HOME.LOADING_ERROR}{error}</Text>
         <TouchableOpacity
           onPress={refreshData}
           className="bg-blue-500 px-6 py-3 rounded-lg"
         >
-          <Text className="text-white font-medium">重試</Text>
+          <Text className="text-white font-medium">{HOME.REFRESH}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -38,7 +39,7 @@ export default function HomeScreen() {
   if (!homeData) {
     return (
       <View className="flex-1 justify-center items-center p-4 bg-gray-50">
-        <Text className="text-gray-500 text-center">暫無數據</Text>
+        <Text className="text-gray-500 text-center">{HOME.NO_DATA}</Text>
       </View>
     );
   }
@@ -51,16 +52,16 @@ export default function HomeScreen() {
       }
     >
       <View className="p-4">
-        {/* 上半部：年度餘額圖表 */}
+        {/* 上半部年度餘額趨勢圖表 */}
         <BalanceChart
           data={homeData.balanceData}
           height={chartHeight}
-          title="年度餘額趨勢"
+          title={HOME.BALANCE_CHART_TITLE}
         />
 
-        {/* 下半部：兩張卡片 */}
+        {/* 下半部 */}
         <View className="flex-row flex-1" style={{ gap: 16 }}>
-          {/* 左側：收支總覽 */}
+          {/* 左收支總覽 */}
           <View className="flex-1">
             <TransactionOverviewCard
               monthlyIncome={homeData.transactionOverview.monthlyIncome}
@@ -70,7 +71,7 @@ export default function HomeScreen() {
             />
           </View>
 
-          {/* 右側：繳費狀態 */}
+          {/* 右繳費狀態 */}
           <View className="flex-1">
             <PaymentStatusCard
               isPaid={homeData.paymentStatus.isPaid}

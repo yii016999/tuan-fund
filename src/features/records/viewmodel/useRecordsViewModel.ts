@@ -1,6 +1,8 @@
+import { COMMON, RECORD } from '@/constants/string'
+import { RECORD_TYPES, RecordTabType, RecordType } from '@/constants/types'
 import { Transaction } from '@/features/transaction/model/Transaction'
 import { useAuthStore } from '@/store/useAuthStore'
-import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MemberPaymentRecord, RecordListItem } from '../model/Record'
 import { RecordsService } from '../services/RecordsService'
 
@@ -40,10 +42,10 @@ export const useRecordsViewModel = (groupId: string) => {
     }, [fetchRecords])
 
     // 使用 useMemo 來記憶化轉換後的記錄
-    const groupRecords = useMemo((): RecordListItem[] => 
+    const groupRecords = useMemo((): RecordListItem[] =>
         groupTransactions.map(transaction => ({
             id: transaction.id!,
-            type: 'group-transaction' as const,
+            type: RECORD_TYPES.GROUP_TRANSACTION,
             title: transaction.title,
             amount: transaction.amount,
             date: transaction.date,
@@ -51,25 +53,25 @@ export const useRecordsViewModel = (groupId: string) => {
             canEdit: transaction.userId === user?.uid,
             canDelete: transaction.userId === user?.uid,
         }))
-    , [groupTransactions, user?.uid])
+        , [groupTransactions, user?.uid])
 
-    const memberRecords = useMemo((): RecordListItem[] => 
+    const memberRecords = useMemo((): RecordListItem[] =>
         memberPayments.map(payment => ({
             id: payment.id,
-            type: 'member-payment' as const,
-            title: payment.description || `繳費 - ${payment.billingMonth}`,
+            type: RECORD_TYPES.MEMBER_PAYMENT,
+            title: payment.description || `${RECORD.PAYMENT} ${COMMON.DASH} ${payment.billingMonth}`,
             amount: payment.amount,
             date: payment.paymentDate,
             description: payment.billingMonth,
             canEdit: payment.memberId === user?.uid,
             canDelete: payment.memberId === user?.uid,
         }))
-    , [memberPayments, user?.uid])
+        , [memberPayments, user?.uid])
 
     // 編輯記錄
-    const editRecord = useCallback(async (recordId: string, type: 'group-transaction' | 'member-payment', data: any) => {
+    const editRecord = useCallback(async (recordId: string, type: RecordType, data: any) => {
         try {
-            if (type === 'group-transaction') {
+            if (type === RECORD_TYPES.GROUP_TRANSACTION) {
                 await RecordsService.updateGroupTransaction(recordId, data, groupId)
             } else {
                 await RecordsService.updateMemberPayment(recordId, data, groupId)
@@ -82,9 +84,9 @@ export const useRecordsViewModel = (groupId: string) => {
     }, [fetchRecords, groupId])
 
     // 刪除記錄
-    const deleteRecord = useCallback(async (recordId: string, type: 'group-transaction' | 'member-payment') => {
+    const deleteRecord = useCallback(async (recordId: string, type: RecordType) => {
         try {
-            if (type === 'group-transaction') {
+            if (type === RECORD_TYPES.GROUP_TRANSACTION) {
                 await RecordsService.deleteGroupTransaction(recordId, groupId)
             } else {
                 await RecordsService.deleteMemberPayment(recordId, groupId)
@@ -110,7 +112,7 @@ export const useRecordsViewModel = (groupId: string) => {
     }, [])
 
     // 使用 useCallback 來記憶化 tab 切換函數
-    const handleTabChange = useCallback((newTab: 'group' | 'member') => {
+    const handleTabChange = useCallback((newTab: RecordTabType) => {
         setActiveTab(newTab)
     }, [])
 

@@ -1,4 +1,5 @@
 import { COLLECTIONS } from '@/constants/firestorePaths'
+import { SETTINGS_GROUP_SWITCH } from '@/constants/string'
 import { GroupType, MEMBER_ROLES, MemberRole } from '@/constants/types'
 import { GroupMember } from '@/features/members/model/Member'
 import { collection, doc, getDoc, getDocs, getFirestore, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
@@ -14,14 +15,14 @@ export const GroupService = {
     qs.forEach((docSnap) => {
       const data = docSnap.data()
       if (data.members?.includes(userId)) {
-        result.push({ 
-          id: docSnap.id, 
-          name: data.name, 
-          type: data.type, 
+        result.push({
+          id: docSnap.id,
+          name: data.name,
+          type: data.type,
           description: data.description,
-          members: data.members, 
-          createdBy: data.createdBy, 
-          inviteCode: data.inviteCode, 
+          members: data.members,
+          createdBy: data.createdBy,
+          inviteCode: data.inviteCode,
           memberJoinedAt: data.memberJoinedAt,
           monthlyAmount: data.monthlyAmount || 0,
           billingCycle: data.billingCycle || 'monthly',
@@ -54,7 +55,7 @@ export const GroupService = {
         joinedGroupIds: actualGroupIds
       })
     } catch (error) {
-      console.error('同步用戶群組失敗:', error)
+      console.error('Error syncing user joined groups:', error)
       throw error
     }
   },
@@ -62,15 +63,15 @@ export const GroupService = {
   // 更新用戶活躍群組（同時同步加入群組列表）
   async updateUserActiveGroup(userId: string, groupId: string) {
     try {
-      // 1. 更新活躍群組
+      // 更新活躍群組
       await updateDoc(doc(db, COLLECTIONS.USERS, userId), {
         activeGroupId: groupId
       })
 
-      // 2. 同步加入群組列表
+      // 同步加入群組列表
       await this.syncUserJoinedGroups(userId)
     } catch (error) {
-      console.error('更新活躍群組失敗:', error)
+      console.error('Error updating user active group:', error)
       throw error
     }
   },
@@ -119,10 +120,10 @@ export const GroupService = {
       // 建立群組文檔
       const groupRef = doc(collection(db, COLLECTIONS.GROUPS))
       const groupId = groupRef.id
-      
+
       // 生成邀請碼
       const inviteCode = this.generateInviteCode()
-      
+
       const groupData = {
         name,
         type,
@@ -135,26 +136,26 @@ export const GroupService = {
         memberJoinedAt: { [userId]: serverTimestamp() },  // 記錄加入時間
         ...(monthlyPaymentSettings || {})
       }
-      
+
       await setDoc(groupRef, groupData)
-      
+
       // 2. 更新用戶的 joinedGroupIds 和 activeGroupId
       const userRef = doc(db, COLLECTIONS.USERS, userId)
       const userSnap = await getDoc(userRef)
-      
+
       if (userSnap.exists()) {
         const userData = userSnap.data()
         const currentGroupIds = userData.joinedGroupIds || []
-        
+
         await updateDoc(userRef, {
           joinedGroupIds: [...currentGroupIds, groupId],
           activeGroupId: groupId  // 設為活躍群組
         })
       }
-      
+
       return groupId
     } catch (error) {
-      console.error('建立群組失敗:', error)
+      console.error('Error creating group:', error)
       throw error
     }
   },
@@ -183,8 +184,76 @@ export const GroupService = {
         allowPrepay
       })
     } catch (error) {
-      console.error('更新群組財務設定失敗:', error)
+      console.error('Error updating group financial settings:', error)
       throw error
+    }
+  },
+
+  // 通過邀請碼加入群組
+  async joinGroupByCode(userId: string, inviteCode: string): Promise<{ success: boolean; groupId?: string; groupName?: string; error?: string }> {
+    try {
+      // 查找具有該邀請碼的群組
+      const groupsQuery = await getDocs(collection(db, COLLECTIONS.GROUPS))
+      let targetGroup: any = null
+      let targetGroupId: string = ''
+
+      groupsQuery.forEach((doc) => {
+        const data = doc.data()
+        if (data.inviteCode === inviteCode.toUpperCase()) {
+          targetGroup = data
+          targetGroupId = doc.id
+        }
+      })
+
+      if (!targetGroup) {
+        return { success: false, error: SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP_INFO }
+      }
+
+      // 檢查用戶是否已經是群組成員
+      const currentMembers = targetGroup.members || []
+      if (currentMembers.includes(userId)) {
+        return { success: false, error: SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP_ALREADY_JOINED }
+      }
+
+      // 將用戶添加到群組成員列表
+      const updatedMembers = [...currentMembers, userId]
+      const updatedRoles = { ...targetGroup.roles, [userId]: MEMBER_ROLES.MEMBER }
+      const updatedMemberJoinedAt = {
+        ...targetGroup.memberJoinedAt,
+        [userId]: serverTimestamp()
+      }
+
+      await updateDoc(doc(db, COLLECTIONS.GROUPS, targetGroupId), {
+        members: updatedMembers,
+        roles: updatedRoles,
+        memberJoinedAt: updatedMemberJoinedAt
+      })
+
+      // 更新用戶的群組列表和活躍群組
+      const userRef = doc(db, COLLECTIONS.USERS, userId)
+      const userSnap = await getDoc(userRef)
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data()
+        const currentJoinedGroups = userData.joinedGroupIds || []
+
+        await updateDoc(userRef, {
+          joinedGroupIds: [...currentJoinedGroups, targetGroupId],
+          activeGroupId: targetGroupId  // 設為活躍群組
+        })
+      }
+
+      return {
+        success: true,
+        groupId: targetGroupId,
+        groupName: targetGroup.name
+      }
+    } catch (error) {
+      console.error('Error joining group:', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error joining group'
+      }
     }
   },
 }

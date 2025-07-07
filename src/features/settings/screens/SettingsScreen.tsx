@@ -1,3 +1,4 @@
+import { SETTINGS_GROUP_SWITCH } from '@/constants/string';
 import CreateGroupModal from '@/features/settings/components/CreateGroupModal';
 import { GroupSwitchModal } from '@/features/settings/components/GroupSwitchModal';
 import { useFocusEffect } from '@react-navigation/native';
@@ -62,9 +63,9 @@ export default function SettingsScreen() {
                 />
             </TouchableOpacity>
             <View className="ml-4 flex-1">
-                <Text className="text-lg font-bold">{user?.displayName || '(未命名)'}</Text>
+                <Text className="text-lg font-bold">{user?.displayName || ''}</Text>
                 <Text className="text-gray-500 text-xs">{user?.email}</Text>
-                <Text className="text-gray-700 text-sm mt-1">目前群組：{currentGroupName || '(無)'}</Text>
+                <Text className="text-gray-700 text-sm mt-1">{SETTINGS_GROUP_SWITCH.CURRENT_GROUP_INFO}{currentGroupName || ''}</Text>
             </View>
         </View>
     );
@@ -79,11 +80,11 @@ export default function SettingsScreen() {
             <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                     <View>
-                        <Text className="text-base font-semibold text-gray-800">切換主頁群組</Text>
+                        <Text className="text-base font-semibold text-gray-800">{SETTINGS_GROUP_SWITCH.SWITCH_GROUP_TITLE}</Text>
                     </View>
                 </View>
                 <View className="flex-row items-center">
-                    <Text className="text-blue-600 text-sm font-medium mr-2">{groups.length} 個群組</Text>
+                    <Text className="text-blue-600 text-sm font-medium mr-2">{groups.length} {SETTINGS_GROUP_SWITCH.GROUPS_COUNT}</Text>
                     <Text className="text-gray-400">›</Text>
                 </View>
             </View>
@@ -100,11 +101,11 @@ export default function SettingsScreen() {
             <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                     <View>
-                        <Text className="text-base font-semibold text-gray-800">建立新群組</Text>
+                        <Text className="text-base font-semibold text-gray-800">{SETTINGS_GROUP_SWITCH.ADD_GROUP_TITLE}</Text>
                     </View>
                 </View>
                 <View className="flex-row items-center">
-                    <Text className="text-blue-600 text-sm mr-2">新增</Text>
+                    <Text className="text-blue-600 text-sm mr-2">{SETTINGS_GROUP_SWITCH.ADD_GROUP_BUTTON}</Text>
                     <Text className="text-gray-400">›</Text>
                 </View>
             </View>
@@ -121,11 +122,11 @@ export default function SettingsScreen() {
             <View className="flex-row items-center justify-between">
                 <View className="flex-row items-center">
                     <View>
-                        <Text className="text-base font-semibold text-gray-800">加入現有群組</Text>
+                        <Text className="text-base font-semibold text-gray-800">{SETTINGS_GROUP_SWITCH.JOIN_GROUP_TITLE}</Text>
                     </View>
                 </View>
                 <View className="flex-row items-center">
-                    <Text className="text-blue-600 text-sm mr-2">加入</Text>
+                    <Text className="text-blue-600 text-sm mr-2">{SETTINGS_GROUP_SWITCH.JOIN_GROUP_BUTTON}</Text>
                     <Text className="text-gray-400">›</Text>
                 </View>
             </View>
@@ -141,7 +142,7 @@ export default function SettingsScreen() {
                 style={{ transform: [{ scale: 1 }] }}
             >
                 <View className="flex-row items-center justify-center">
-                    <Text className="text-red-600 font-semibold text-base">登出帳戶</Text>
+                    <Text className="text-red-600 font-semibold text-base">{SETTINGS_GROUP_SWITCH.LOGOUT_TITLE}</Text>
                 </View>
             </TouchableOpacity>
         </View>

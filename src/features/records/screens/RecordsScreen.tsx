@@ -1,4 +1,5 @@
-import { COMMON, RECORD, RECORD_MESSAGES } from '@/constants/string'
+import NoGroupSelected from '@/components/NoGroupSelected'
+import { COMMON, RECORD } from '@/constants/string'
 import { RECORD_TAB_TYPES, RECORD_TRANSACTION_TYPES, RECORD_TYPES, RecordTabType } from '@/constants/types'
 import RecordTab from '@/features/records/components/RecordTab'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -9,13 +10,11 @@ import RecordItem from '../components/RecordItem'
 import RecordsEmptyState from '../components/RecordsEmptyState'
 import { RecordListItem } from '../model/Record'
 import { useRecordsViewModel } from '../viewmodel/useRecordsViewModel'
-import NoGroupSelected from '@/components/NoGroupSelected'
 
 export default function RecordsScreen() {
     const { activeGroupId, joinedGroupIds } = useAuthStore()
     const [refreshing, setRefreshing] = useState(false)
 
-    // 所有 Hooks 必須在條件檢查之前
     const {
         loading,
         activeTab,
@@ -28,13 +27,9 @@ export default function RecordsScreen() {
         refreshRecords,
     } = useRecordsViewModel(activeGroupId || '')
 
-    // 條件檢查放在所有 Hooks 之後
-    if (!joinedGroupIds || joinedGroupIds.length === 0) {
-        return <NoGroupSelected title="沒有加入群組" message="請先至「設定」建立或加入一個群組" />
-    }
-
+    // 如果沒有選擇群組
     if (!activeGroupId) {
-        return <NoGroupSelected />
+        return <NoGroupSelected joinedGroupIds={joinedGroupIds} />
     }
 
     const handleRefresh = async () => {
@@ -46,7 +41,7 @@ export default function RecordsScreen() {
     const handleDeleteRecord = (record: RecordListItem) => {
         Alert.alert(
             RECORD.DELETE_CONFIRM,
-            RECORD_MESSAGES.DELETE_ALERT(record.title),
+            RECORD.DELETE_ALERT(record.title),
             [
                 { text: RECORD.CANCEL, style: 'cancel' },
                 {
@@ -55,9 +50,9 @@ export default function RecordsScreen() {
                     onPress: async () => {
                         try {
                             await deleteRecord(record.id, record.type)
-                            Alert.alert(RECORD.SUCCESS, RECORD_MESSAGES.DELETE_SUCCESS)
+                            Alert.alert(RECORD.SUCCESS, RECORD.DELETE_SUCCESS)
                         } catch (error) {
-                            Alert.alert(RECORD.FAILURE, RECORD_MESSAGES.DELETE_FAILURE)
+                            Alert.alert(RECORD.FAILURE, RECORD.DELETE_FAILURE)
                         }
                     }
                 }
@@ -74,7 +69,7 @@ export default function RecordsScreen() {
     }
 
     const formatAmount = (amount: number, type?: string) => {
-        const sign = type === RECORD_TRANSACTION_TYPES.EXPENSE ? RECORD.EXPENSE_SIGN : RECORD.INCOME_SIGN
+        const sign = type === RECORD_TRANSACTION_TYPES.EXPENSE ? COMMON.EXPENSE_SIGN : COMMON.INCOME_SIGN
         const color = type === RECORD_TRANSACTION_TYPES.EXPENSE ? 'text-red-600' : 'text-green-600'
         return (
             <Text className={`font-semibold ${color}`}>
@@ -100,7 +95,7 @@ export default function RecordsScreen() {
     }
 
     const renderSummary = () => {
-        if (activeTab !== 'group') return null
+        if (activeTab !== RECORD_TAB_TYPES.GROUP) return null
 
         const incomeTotal = groupRecords
             .filter(r => groupTransactions.find(t => t.id === r.id)?.type === RECORD_TRANSACTION_TYPES.INCOME)
@@ -127,7 +122,7 @@ export default function RecordsScreen() {
         { key: RECORD_TAB_TYPES.MEMBER, title: RECORD.MEMBER_RECORDS },
     ]
 
-    const currentRecords = activeTab === 'group' ? groupRecords : memberRecords
+    const currentRecords = activeTab === RECORD_TAB_TYPES.GROUP ? groupRecords : memberRecords
 
     return (
         <View className="flex-1 bg-gray-50">
@@ -150,7 +145,7 @@ export default function RecordsScreen() {
                 <RecordTab
                     tabs={tabs}
                     activeTab={activeTab}
-                    onTabChange={(tabKey: string) => setActiveTab(tabKey as 'group' | 'member')}
+                    onTabChange={(tabKey: string) => setActiveTab(tabKey as RecordTabType)}
                 />
             </View>
 
@@ -187,7 +182,7 @@ export default function RecordsScreen() {
                 <View className="bg-white px-4 py-3 border-t border-gray-200">
                     <View className="flex-row justify-between items-center">
                         <Text className="text-sm text-gray-600">
-                            共 {currentRecords.length} 筆記錄
+                            {RECORD.RECORDS_COUNT} {currentRecords.length} {RECORD.RECORDS_COUNT_INFO}
                         </Text>
                         {renderSummary()}
                     </View>

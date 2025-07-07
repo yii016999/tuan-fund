@@ -59,3 +59,9 @@ export const RECORD_PERMISSIONS = {
   CAN_EDIT: 'canEdit',
   CAN_DELETE: 'canDelete',
 } as const
+
+export type CreateGroupTabType = 'create' | 'join'
+export const CREATE_GROUP_TAB_TYPES = {
+  CREATE: 'create',
+  JOIN: 'join',
+} as const

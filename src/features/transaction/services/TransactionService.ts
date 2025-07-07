@@ -1,3 +1,5 @@
+import { COMMON, TRANSACTION } from '@/constants/string'
+import { RECORD_TRANSACTION_TYPES } from '@/constants/types'
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore'
 import { db } from '../../../config/firebase'
 import { CreateTransactionInput } from '../model/Transaction'
@@ -15,16 +17,16 @@ export class AddService {
     try {
       // 創建群組收支記錄
       const transactionId = await this.createGroupTransaction(groupId, userId, data)
-      
+
       // 如果是收入，自動創建個人繳費記錄
-      if (data.type === 'income') {
+      if (data.type === RECORD_TRANSACTION_TYPES.INCOME) {
         await this.createMemberPayment(groupId, userId, data)
       }
-      
+
       return transactionId
     } catch (error) {
       console.error('Error creating transaction:', error)
-      throw new Error('新增交易失敗')
+      throw new Error(TRANSACTION.ERROR_MESSAGE_CREATE_TRANSACTION)
     }
   }
 
@@ -59,11 +61,11 @@ export class AddService {
       amount: data.amount,
       paymentDate: data.date,
       billingMonth: data.date.substring(0, 7), // YYYY-MM 格式
-      description: data.description || `繳費 - ${data.title}`,
+      description: data.description || `${TRANSACTION.PAYMENT_DESCRIPTION} ${COMMON.DASH} ${data.title}`,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     }
-    
+
     await addDoc(
       collection(db, this.getMemberPaymentsPath(groupId)),
       memberPaymentData

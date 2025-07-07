@@ -1,6 +1,7 @@
 import FullScreenLoader from '@/components/FullScreenLoader'
 import NoGroupSelected from '@/components/NoGroupSelected'
 import RefreshScrollView from '@/components/RefreshScrollView'
+import { MEMBERS } from '@/constants/string'
 import { useAuthStore } from '@/store/useAuthStore'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
@@ -33,14 +34,9 @@ export function MembersScreen() {
     isCurrentUser
   } = useMembersViewModel(currentGroupId)
 
-  // 如果沒有加入群組
-  if (joinedGroupIds.length === 0) {
-    return <NoGroupSelected title="沒有加入群組" message="請先至「設定」建立或加入一個群組" />
-  }
-
-  // 如果沒有選擇活躍群組
+  // 如果沒有選擇群組
   if (!activeGroupId) {
-    return <NoGroupSelected />
+    return <NoGroupSelected joinedGroupIds={joinedGroupIds} />
   }
 
   // 載入中
@@ -59,7 +55,7 @@ export function MembersScreen() {
           onPress={loadMembers}
           className="bg-blue-500 px-4 py-2 rounded-lg"
         >
-          <Text className="text-white">重新載入</Text>
+          <Text className="text-white">{MEMBERS.REFRESH}</Text>
         </TouchableOpacity>
       </View>
     )
@@ -71,16 +67,13 @@ export function MembersScreen() {
       <View className="p-4 bg-white border-b border-gray-200">
         <View className="flex-row justify-between items-center mb-3">
           <Text className="text-xl font-bold text-gray-800">
-            群組成員 ({members.length})
+            {MEMBERS.MEMBERS_COUNT} ({members.length})
           </Text>
           <TouchableOpacity
             onPress={refreshMembers}
             className="bg-gray-500 px-3 py-1 rounded-full"
             disabled={refreshing}
           >
-            <Text className="text-white text-sm">
-              {refreshing ? '更新中...' : '刷新'}
-            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -92,7 +85,7 @@ export function MembersScreen() {
         >
           <View className="flex-1 justify-center items-center p-8">
             <Text className="text-gray-500 text-center">
-              目前沒有成員
+              {MEMBERS.NO_MEMBERS}
             </Text>
           </View>
         </RefreshScrollView>

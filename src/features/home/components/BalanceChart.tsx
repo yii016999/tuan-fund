@@ -1,5 +1,6 @@
+import { BALANCE_CHART, COMMON } from '@/constants/string';
 import React from 'react';
-import { View, Text, Dimensions } from 'react-native';
+import { Dimensions, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 
 const { width: screenWidth } = Dimensions.get('window');
@@ -19,13 +20,13 @@ interface BalanceChartProps {
   title?: string;
 }
 
-export default function BalanceChart({ data, height, title = '年度餘額趨勢' }: BalanceChartProps) {
+export default function BalanceChart({ data, height, title = BALANCE_CHART.TITLE }: BalanceChartProps) {
   const currentBalance = data.datasets[0].data[data.datasets[0].data.length - 1];
 
   return (
     <View className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 mb-4">
       <Text className="text-lg font-bold text-gray-800 mb-3">{title}</Text>
-      
+
       <LineChart
         data={data}
         width={screenWidth - 32} // 考慮 padding
@@ -53,9 +54,9 @@ export default function BalanceChart({ data, height, title = '年度餘額趨勢
           borderRadius: 16,
         }}
       />
-      
+
       <Text className="text-center text-gray-500 text-xs mt-2">
-        當前餘額: NT$ {currentBalance.toLocaleString()}
+        {BALANCE_CHART.CURRENT_BALANCE} {COMMON.MONEY_SIGN} {currentBalance.toLocaleString()}
       </Text>
     </View>
   );

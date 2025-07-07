@@ -1,9 +1,10 @@
 import { db } from '@/config/firebase'
 import { COLLECTIONS } from '@/constants/firestorePaths'
-import { MEMBER_ROLES, MemberRole } from '@/constants/types'
-import { collection, doc, getDoc, getDocs, query, where, orderBy, updateDoc, arrayRemove, deleteField } from 'firebase/firestore'
-import { MemberPaymentStatus, MemberStatistics, MemberWithDetails } from '../model/Member'
+import { COMMON, MEMBERS } from '@/constants/string'
+import { MEMBER_ROLES, MemberRole, RECORD_STATUSES } from '@/constants/types'
 import { MemberPaymentRecord } from '@/features/records/model/Record'
+import { arrayRemove, collection, deleteField, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore'
+import { MemberPaymentStatus, MemberStatistics, MemberWithDetails } from '../model/Member'
 
 export class MemberService {
   // 獲取群組成員列表
@@ -12,9 +13,9 @@ export class MemberService {
       // 獲取群組資料
       const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
       const groupSnap = await getDoc(groupRef)
-      
+
       if (!groupSnap.exists()) {
-        throw new Error('群組不存在')
+        throw new Error(MEMBERS.GROUP_ERROR)
       }
 
       const groupData = groupSnap.data()
@@ -26,13 +27,13 @@ export class MemberService {
       const memberPromises = memberIds.map(async (uid) => {
         const userRef = doc(db, COLLECTIONS.USERS, uid)
         const userSnap = await getDoc(userRef)
-        
+
         if (!userSnap.exists()) {
           return null
         }
 
         const userData = userSnap.data()
-        
+
         // 組合基本成員資料
         const basicMember = {
           uid,
@@ -42,7 +43,7 @@ export class MemberService {
           role: roles[uid] || MEMBER_ROLES.MEMBER,
           joinedAt: memberJoinedAt[uid] || groupData.createdAt
         }
-        
+
         // 獲取繳費狀態和統計資料
         const [paymentStatus, statistics] = await Promise.all([
           this.getMemberPaymentStatus(groupId, uid),
@@ -76,36 +77,33 @@ export class MemberService {
   static async getMemberPaymentStatus(groupId: string, memberId: string): Promise<MemberPaymentStatus> {
     try {
       const currentMonth = new Date().toISOString().substring(0, 7) // YYYY-MM
-      
+
       // 查詢該成員的繳費記錄
       const paymentsQuery = query(
         collection(db, `groups/${groupId}/memberPayments`),
         where('memberId', '==', memberId),
         orderBy('paymentDate', 'desc')
       )
-      
+
       const paymentsSnap = await getDocs(paymentsQuery)
       const payments = paymentsSnap.docs.map(doc => doc.data() as MemberPaymentRecord)
-      
+
       // 計算當月繳費狀態
       const currentMonthPayments = payments.filter(p => p.billingMonth === currentMonth)
       const currentMonthPaid = currentMonthPayments.length > 0
       const currentMonthAmount = currentMonthPayments.reduce((sum, p) => sum + p.amount, 0)
-      
+
       // 最近一次繳費日期
       const latestPaymentDate = payments.length > 0 ? payments[0].paymentDate : undefined
-      
-      // 計算逾期天數（簡化版本）
+
+      // 取得今日日期
       const today = new Date()
-      const currentMonthEnd = new Date(today.getFullYear(), today.getMonth() + 1, 0)
-      const overdueDays = currentMonthPaid ? 0 : Math.max(0, Math.floor((today.getTime() - currentMonthEnd.getTime()) / (1000 * 60 * 60 * 24)))
-      
+
       return {
         currentMonthPaid,
         currentMonthAmount,
         latestPaymentDate,
         nextDueDate: new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().split('T')[0],
-        overdueDays
       }
     } catch (error) {
       console.error('Error fetching member payment status:', error)
@@ -122,22 +120,22 @@ export class MemberService {
         where('memberId', '==', memberId),
         orderBy('paymentDate', 'desc')
       )
-      
+
       const paymentsSnap = await getDocs(paymentsQuery)
       const payments = paymentsSnap.docs.map(doc => doc.data() as MemberPaymentRecord)
-      
+
       // 計算統計資料
       const totalPaidAmount = payments.reduce((sum, p) => sum + p.amount, 0)
       const totalPaymentCount = payments.length
       const averagePaymentAmount = totalPaymentCount > 0 ? totalPaidAmount / totalPaymentCount : 0
-      
-      // 計算按時繳費率（簡化版本）
-      const onTimePayments = payments.filter(p => p.status === 'paid').length
+
+      // 計算按時繳費率
+      const onTimePayments = payments.filter(p => p.status === RECORD_STATUSES.PAID).length
       const onTimePaymentRate = totalPaymentCount > 0 ? onTimePayments / totalPaymentCount : 0
-      
+
       // 計算成員時長
-      const memberSince = this.calculateMemberSince(new Date()) // 簡化版本
-      
+      const memberSince = this.calculateMemberSince(new Date())
+
       return {
         totalPaidAmount,
         totalPaymentCount,
@@ -151,15 +149,15 @@ export class MemberService {
     }
   }
 
-  // 獲取單個成員詳細資料（核心方法）
+  // 獲取單個成員詳細資料
   static async getMemberWithDetails(groupId: string, memberId: string, currentUserId: string): Promise<MemberWithDetails> {
     try {
       // 獲取基本成員資料
       const members = await this.getGroupMembers(groupId, currentUserId)
       const member = members.find(m => m.uid === memberId)
-      
+
       if (!member) {
-        throw new Error('成員不存在')
+        throw new Error(MEMBERS.MEMBER_ERROR)
       }
 
       // 獲取繳費狀態和統計資料
@@ -224,9 +222,9 @@ export class MemberService {
     try {
       const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
       const groupSnap = await getDoc(groupRef)
-      
+
       if (!groupSnap.exists()) {
-        throw new Error('群組不存在')
+        throw new Error(MEMBERS.GROUP_ERROR)
       }
 
       const groupData = groupSnap.data()
@@ -242,7 +240,7 @@ export class MemberService {
     try {
       const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
       const groupSnap = await getDoc(groupRef)
-      
+
       if (!groupSnap.exists()) {
         return MEMBER_ROLES.MEMBER
       }
@@ -261,16 +259,16 @@ export class MemberService {
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - joinedAt.getTime())
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-    
+
     if (diffDays < 30) {
-      return `${diffDays}天`
+      return `${diffDays}${COMMON.DAYS}`  
     } else if (diffDays < 365) {
       const months = Math.floor(diffDays / 30)
-      return `${months}個月`
+      return `${months}${COMMON.MONTHS}`
     } else {
       const years = Math.floor(diffDays / 365)
       const months = Math.floor((diffDays % 365) / 30)
-      return years > 0 ? `${years}年${months}個月` : `${months}個月`
+      return years > 0 ? `${years}${COMMON.YEARS}${months}${COMMON.MONTHS}` : `${months}${COMMON.MONTHS}`
     }
   }
 }

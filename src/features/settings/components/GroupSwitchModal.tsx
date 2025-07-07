@@ -1,4 +1,4 @@
-import { COMMON, SETTINGS_GROUP_SWITCH, SETTINGS_GROUP_SWITCH_MESSAGES } from '@/constants/string';
+import { COMMON, SETTINGS_GROUP_SWITCH } from '@/constants/string';
 import { BILLING_CYCLES, GROUP_TYPES } from '@/constants/types';
 import { GroupSettings } from '@/features/settings/model/Group';
 import * as Clipboard from 'expo-clipboard';
@@ -48,14 +48,14 @@ function GroupCard(props: GroupCardProps) {
 
                 // 顯示 Toast 提示
                 if (Platform.OS === COMMON.ANDROID) {
-                    ToastAndroid.show(SETTINGS_GROUP_SWITCH_MESSAGES.COPY_SUCCESS, ToastAndroid.SHORT);
+                    ToastAndroid.show(SETTINGS_GROUP_SWITCH.COPY_SUCCESS_MESSAGE, ToastAndroid.SHORT);
                 } else {
                     // iOS 使用 Alert
-                    Alert.alert('', SETTINGS_GROUP_SWITCH_MESSAGES.COPY_SUCCESS, [{ text: COMMON.CONFIRM }]);
+                    Alert.alert('', SETTINGS_GROUP_SWITCH.COPY_SUCCESS_MESSAGE, [{ text: COMMON.CONFIRM }]);
                 }
             } catch (error) {
                 console.error(SETTINGS_GROUP_SWITCH.COPY_FAILURE, error);
-                Alert.alert(COMMON.ERROR, SETTINGS_GROUP_SWITCH_MESSAGES.COPY_FAILURE, [{ text: COMMON.CONFIRM }]);
+                Alert.alert(COMMON.ERROR, SETTINGS_GROUP_SWITCH.COPY_FAILURE_MESSAGE, [{ text: COMMON.CONFIRM }]);
             }
         }
     };
@@ -82,12 +82,14 @@ function GroupCard(props: GroupCardProps) {
                 className="absolute inset-0 z-5"
             />
 
-            {/* 標題行：群組名稱 + 類型標籤 + 繳費資訊 */}
+            {/* 標題 */}
             <View className="flex-row items-center justify-between mb-3">
+                {/* 群組名稱 */}
                 <View className="flex-1 flex-row items-center">
                     <Text className="text-lg font-bold text-gray-800 flex-shrink" numberOfLines={1}>
                         {props.group.name}
                     </Text>
+                    {/* 類型標籤 */}
                     <View className={`px-2 py-1 rounded-full ml-2 ${isLongTerm
                         ? 'bg-blue-100 text-blue-700'
                         : 'bg-green-100 text-green-700'
@@ -98,7 +100,7 @@ function GroupCard(props: GroupCardProps) {
 
                 </View>
 
-                {/* 繳費資訊 - 在標題行右側 */}
+                {/* 繳費資訊 */}
                 {isLongTerm && (paymentAmount > 0 || billingCycle || props.group.allowPrepay) && (
                     <View className="flex-row items-center ml-2">
                         <Text className="text-sm font-semibold text-blue-600">
@@ -123,9 +125,9 @@ function GroupCard(props: GroupCardProps) {
                 </Text>
             )}
 
-            {/* 底部：邀請碼 + 複製按鈕 */}
+            {/* 右下 */}
             <View className="flex-row items-center justify-between">
-                {/* 邀請碼 - 靠右顯示 */}
+                {/* 邀請碼 */}
                 <View className="flex-1" />
                 {props.group.inviteCode && (
                     <View className="flex-row items-center">
@@ -176,7 +178,7 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
             await props.onGroupSelect(groupId, groupName);
             props.onClose(); // 成功後關閉視窗
         } catch (error) {
-            console.error(SETTINGS_GROUP_SWITCH_MESSAGES.ERROR, error);
+            console.error(SETTINGS_GROUP_SWITCH.ERROR_MESSAGE, error);
             // 可以在這裡顯示錯誤訊息
         } finally {
             setLoadingGroupId(null);
@@ -196,12 +198,12 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                 >
                     {/* 標題列 */}
                     <Header {...props} />
-                    
-                    {/* 加入 loading 狀態 */}
+
+                    {/* 載入中 */}
                     {props.isLoading ? (
                         <View className="flex-1 justify-center items-center">
                             <ActivityIndicator size="large" color="#3B82F6" />
-                            <Text className="text-gray-500 mt-2">載入群組資訊中...</Text>
+                            <Text className="text-gray-500 mt-2">{COMMON.LOADING}</Text>
                         </View>
                     ) : (
                         <FlatList

@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
-import { HomeData } from '../model/Home';
+import { useEffect, useState } from 'react';
+import { DashboardSummary } from '../model/Home';
 import { homeService } from '../services/HomeService';
 
 export const useHomeViewModel = () => {
-  const [homeData, setHomeData] = useState<HomeData | null>(null);
+  const [homeData, setHomeData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,7 +37,7 @@ export const useHomeViewModel = () => {
     homeData,
     loading,
     error,
-    
+
     // 操作
     refreshData,
     loadHomeData,

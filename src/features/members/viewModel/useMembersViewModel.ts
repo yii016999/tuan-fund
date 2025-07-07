@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback } from 'react'
-import { Alert } from 'react-native'
-import { MemberService } from '../services/MemberService'
-import { MemberWithDetails } from '../model/Member'
+import { COMMON, MEMBERS } from '@/constants/string'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useFocusEffect } from '@react-navigation/native'
+import { useCallback, useEffect, useState } from 'react'
+import { Alert } from 'react-native'
+import { MemberWithDetails } from '../model/Member'
+import { MemberService } from '../services/MemberService'
 
 export interface UseMembersViewModelResult {
   // 狀態
@@ -12,13 +13,13 @@ export interface UseMembersViewModelResult {
   refreshing: boolean
   error: string | null
   inviteCode: string
-  
+
   // 操作方法
   loadMembers: () => Promise<void>
   refreshMembers: () => Promise<void>
   removeMember: (memberId: string) => Promise<void>
   copyInviteCode: () => void
-  
+
   // 工具方法
   canRemoveMember: (memberId: string) => boolean
   isCurrentUser: (memberId: string) => boolean
@@ -31,7 +32,7 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
   const [refreshing, setRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [inviteCode, setInviteCode] = useState('')
-  
+
   // 獲取當前用戶
   const { user } = useAuthStore()
   const currentUserId = user?.uid || ''
@@ -40,17 +41,17 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
   const loadMembers = useCallback(async () => {
     try {
       setError(null)
-      
+
       // 並行載入成員列表和邀請碼
       const [membersData, inviteCodeData] = await Promise.all([
         MemberService.getGroupMembers(groupId, currentUserId),
         MemberService.getGroupInviteCode(groupId)
       ])
-      
+
       setMembers(membersData)
       setInviteCode(inviteCodeData)
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '載入成員列表失敗'
+      const errorMessage = err instanceof Error ? err.message : MEMBERS.ERROR_LOADING_MEMBERS
       setError(errorMessage)
       console.error('Error loading members:', err)
     } finally {
@@ -74,42 +75,42 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
       // 找到要移除的成員
       const memberToRemove = members.find(m => m.uid === memberId)
       if (!memberToRemove) {
-        throw new Error('找不到要移除的成員')
+        throw new Error(MEMBERS.MEMBER_ERROR)
       }
 
       // 確認對話框
       Alert.alert(
-        '確認移除成員',
-        `確定要移除 ${memberToRemove.displayName} 嗎？`,
+        MEMBERS.CONFIRM_REMOVE_MEMBER,
+        `${MEMBERS.CONFIRM_REMOVE_MEMBER_MESSAGE} ${memberToRemove.displayName} ${COMMON.QUESTION} ${COMMON.QUESTION_MARK}`,
         [
-          { text: '取消', style: 'cancel' },
-          { 
-            text: '確定', 
+          { text: COMMON.CANCEL, style: 'cancel' },
+          {
+            text: COMMON.CONFIRM,
             style: 'destructive',
             onPress: async () => {
               try {
                 setError(null)
                 await MemberService.removeMember(groupId, memberId, currentUserId)
-                
+
                 // 更新本地狀態
-                setMembers(prevMembers => 
+                setMembers(prevMembers =>
                   prevMembers.filter(m => m.uid !== memberId)
                 )
-                
-                Alert.alert('成功', '成員已被移除')
+
+                Alert.alert(COMMON.SUCCESS, MEMBERS.SUCCESS_REMOVE_MEMBER)
               } catch (err) {
-                const errorMessage = err instanceof Error ? err.message : '移除成員失敗'
+                const errorMessage = err instanceof Error ? err.message : MEMBERS.ERROR_REMOVING_MEMBER_INFO
                 setError(errorMessage)
-                Alert.alert('錯誤', errorMessage)
+                Alert.alert(COMMON.ERROR, errorMessage)
               }
             }
           }
         ]
       )
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '移除成員失敗'
+      const errorMessage = err instanceof Error ? err.message : MEMBERS.ERROR_REMOVING_MEMBER_INFO
       setError(errorMessage)
-      Alert.alert('錯誤', errorMessage)
+      Alert.alert(COMMON.ERROR, errorMessage)
     }
   }, [groupId, currentUserId, members])
 
@@ -119,10 +120,10 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
       // 這裡需要使用 Clipboard API
       // 由於是 React Native，可能需要額外的套件
       Alert.alert(
-        '邀請碼', 
-        `群組邀請碼：${inviteCode}`,
+        MEMBERS.INVITE_CODE_TITLE,
+        `${MEMBERS.INVITE_CODE_MESSAGE}${inviteCode}`,
         [
-          { text: '知道了', style: 'default' }
+          { text: MEMBERS.INVITE_CODE_INFO, style: 'default' }
         ]
       )
     }
@@ -146,9 +147,9 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
       setLoading(false)
       return
     }
-    
+
     loadMembers()
-    
+
     // 清理函數
     return () => {
       setMembers([])
@@ -182,13 +183,13 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
     refreshing,
     error,
     inviteCode,
-    
+
     // 操作方法
     loadMembers,
     refreshMembers,
     removeMember,
     copyInviteCode,
-    
+
     // 工具方法
     canRemoveMember,
     isCurrentUser
