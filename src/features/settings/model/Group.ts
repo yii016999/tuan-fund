@@ -17,4 +17,7 @@ export interface GroupSettings {
     latestPaidMap?: Record<string, string> // 各成員已繳到哪個月份（如 {'uid': '2025-06'}），用來記錄各成員的繳費狀態
     inviteCode: string,                    // 群組邀請碼（群組建立時生成）
     memberJoinedAt: Record<string, Timestamp>  // 記錄各成員加入時間
+    memberCount: number                    // 成員數量
+    isAdmin: boolean                       // 當前用戶是否為管理員
+    updatedAt: Date
 }

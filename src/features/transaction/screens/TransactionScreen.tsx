@@ -20,6 +20,15 @@ export default function AddScreen() {
         return <NoGroupSelected joinedGroupIds={joinedGroupIds} />
     }
 
+    // 如果還在載入角色資訊
+    if (viewModel.roleLoading) {
+        return (
+            <View className="flex-1 justify-center items-center bg-white">
+                <ActivityIndicator size="large" color="#3B82F6" />
+            </View>
+        )
+    }
+
     return (
         <ScrollView
             className="flex-1 bg-white px-4 py-6"
@@ -43,31 +52,47 @@ export default function AddScreen() {
                 </Text>
             </View>
             <View className="mb-8">
-                <View className="flex-row border-2 border-gray-300 rounded-lg overflow-hidden">
-                    <TouchableOpacity
-                        className={viewModel.expenseButtonStyle}
-                        onPress={viewModel.handleExpensePress}
-                        activeOpacity={0.7}
-                    >
-                        <Text className={`text-lg font-medium text-center ${viewModel.activeTab === RECORD_TRANSACTION_TYPES.EXPENSE ? 'text-white' : 'text-gray-700'
-                            }`}>
-                            {TRANSACTION.EXPENSE}
-                        </Text>
-                    </TouchableOpacity>
+                {viewModel.isAdmin ? (
+                    // 管理員可以看到收入和支出選項
+                    <View className="flex-row border-2 border-gray-300 rounded-lg overflow-hidden">
+                        <TouchableOpacity
+                            className={viewModel.expenseButtonStyle}
+                            onPress={viewModel.handleExpensePress}
+                            activeOpacity={0.7}
+                        >
+                            <Text className={`text-lg font-medium text-center ${viewModel.activeTab === RECORD_TRANSACTION_TYPES.EXPENSE ? 'text-white' : 'text-gray-700'
+                                }`}>
+                                {TRANSACTION.EXPENSE}
+                            </Text>
+                        </TouchableOpacity>
 
-                    <View className="w-px bg-gray-300" />
+                        <View className="w-px bg-gray-300" />
 
-                    <TouchableOpacity
-                        className={viewModel.incomeButtonStyle}
-                        onPress={viewModel.handleIncomePress}
-                        activeOpacity={0.7}
-                    >
-                        <Text className={`text-lg font-medium text-center ${viewModel.activeTab === RECORD_TRANSACTION_TYPES.INCOME ? 'text-white' : 'text-gray-700'
-                            }`}>
-                            {TRANSACTION.INCOME}
-                        </Text>
-                    </TouchableOpacity>
-                </View>
+                        <TouchableOpacity
+                            className={viewModel.incomeButtonStyle}
+                            onPress={viewModel.handleIncomePress}
+                            activeOpacity={0.7}
+                        >
+                            <Text className={`text-lg font-medium text-center ${viewModel.activeTab === RECORD_TRANSACTION_TYPES.INCOME ? 'text-white' : 'text-gray-700'
+                                }`}>
+                                {TRANSACTION.INCOME}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    // 一般成員只能看到收入選項
+                    <View className="border-2 border-gray-300 rounded-lg overflow-hidden">
+                        <TouchableOpacity
+                            className="py-4 px-4 bg-emerald-400"
+                            onPress={viewModel.handleIncomePress}
+                            activeOpacity={0.7}
+                        >
+                            <Text className="text-lg font-medium text-center text-white">
+                                {TRANSACTION.INCOME}
+                            </Text>
+                        </TouchableOpacity>
+                    </View>
+                )}
             </View>
 
             {/* 類型標籤 */}

@@ -235,8 +235,8 @@ export class MemberService {
     }
   }
 
-  // 私有方法：獲取當前用戶角色
-  private static async getCurrentUserRole(groupId: string, userId: string): Promise<MemberRole> {
+  // 獲取當前用戶角色
+  static async getCurrentUserRole(groupId: string, userId: string): Promise<MemberRole> {
     try {
       const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
       const groupSnap = await getDoc(groupRef)
@@ -269,6 +269,63 @@ export class MemberService {
       const years = Math.floor(diffDays / 365)
       const months = Math.floor((diffDays % 365) / 30)
       return years > 0 ? `${years}${COMMON.YEARS}${months}${COMMON.MONTHS}` : `${months}${COMMON.MONTHS}`
+    }
+  }
+
+  // 用戶退出群組
+  static async leaveGroup(groupId: string, userId: string): Promise<void> {
+    try {
+      // 檢查用戶是否在群組中
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
+      const groupSnap = await getDoc(groupRef)
+
+      if (!groupSnap.exists()) {
+        throw new Error('群組不存在')
+      }
+
+      const groupData = groupSnap.data()
+      const members: string[] = groupData.members ?? []
+      const roles: Record<string, MemberRole> = groupData.roles ?? {}
+
+      if (!members.includes(userId)) {
+        throw new Error('您不在此群組中')
+      }
+
+      // 檢查是否為管理員且群組中還有其他成員
+      const isAdmin = roles[userId] === MEMBER_ROLES.ADMIN
+      const otherMembers = members.filter(id => id !== userId)
+      
+      if (isAdmin && otherMembers.length > 0) {
+        throw new Error('身為管理員，您無法退出群組。請先將管理員權限轉移給其他成員，或刪除群組。')
+      }
+
+      // 如果是最後一個成員，刪除整個群組
+      if (members.length === 1) {
+        // TODO: 可能需要刪除群組相關的所有資料
+        // 這裡先簡單處理，實際可能需要更複雜的清理邏輯
+        await updateDoc(groupRef, {
+          members: arrayRemove(userId),
+          [`roles.${userId}`]: deleteField(),
+          [`memberJoinedAt.${userId}`]: deleteField()
+        })
+      } else {
+        // 從群組中移除用戶
+        await updateDoc(groupRef, {
+          members: arrayRemove(userId),
+          [`roles.${userId}`]: deleteField(),
+          [`memberJoinedAt.${userId}`]: deleteField()
+        })
+      }
+
+      // 更新用戶的joinedGroupIds
+      const userRef = doc(db, COLLECTIONS.USERS, userId)
+      await updateDoc(userRef, {
+        joinedGroupIds: arrayRemove(groupId)
+      })
+
+    } catch (error) {
+      console.error('Error leaving group:', error)
+      throw error
     }
   }
 }

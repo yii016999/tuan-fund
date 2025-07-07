@@ -11,17 +11,12 @@ interface MembersListProps {
   isCurrentUser: (memberId: string) => boolean
 }
 
-export function MembersList({
-  members,
-  onRemoveMember,
-  canRemoveMember,
-  isCurrentUser
-}: MembersListProps) {
+export function MembersList(props: MembersListProps) {
 
-  const renderMemberItem = ({ item }: { item: MemberWithDetails }) => {
+  const renderMemberItem = (item: MemberWithDetails) => {
     const isAdmin = item.role === MEMBER_ROLES.ADMIN
-    const canRemove = canRemoveMember(item.uid)
-    const isCurrent = isCurrentUser(item.uid)
+    const canRemove = props.canRemoveMember(item.uid)
+    const isCurrent = props.isCurrentUser(item.uid)
 
     return (
       <View className="bg-white border-b border-gray-100 p-4">
@@ -74,7 +69,7 @@ export function MembersList({
           <View className="flex-row items-center">
             {canRemove && (
               <TouchableOpacity
-                onPress={() => onRemoveMember(item.uid)}
+                onPress={() => props.onRemoveMember(item.uid)}
                 className="bg-red-500 px-3 py-1 rounded ml-2"
               >
                 <Text className="text-white text-sm">{MEMBERS.REMOVE}</Text>
@@ -136,9 +131,9 @@ export function MembersList({
 
   return (
     <FlatList
-      data={members}
+      data={props.members}
       keyExtractor={(item) => item.uid}
-      renderItem={renderMemberItem}
+      renderItem={(item) => renderMemberItem(item.item)}
       showsVerticalScrollIndicator={false}
       contentContainerStyle={{ paddingBottom: 20 }}
     />

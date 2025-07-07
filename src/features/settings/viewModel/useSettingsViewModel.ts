@@ -1,16 +1,17 @@
 import { auth } from '@/config/firebase'
-import { COLLECTIONS } from '@/constants/firestorePaths'
+import { COMMON, SETTINGS, SETTINGS_GROUP_SWITCH } from '@/constants/string'
 import { GroupType } from '@/constants/types'
 import { AuthParamList } from '@/navigation/types'
 import { useAuthStore } from '@/store/useAuthStore'
-import { CommonActions, useNavigation } from '@react-navigation/native'
+import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
 import { signOut } from 'firebase/auth'
-import { collection, getDocs, getFirestore } from 'firebase/firestore'
+import { getFirestore } from 'firebase/firestore'
 import { useCallback, useEffect, useState } from 'react'
+import { Alert } from 'react-native'
+import { MemberService } from '../../members/services/MemberService'
 import { GroupSettings } from '../model/Group'
 import { GroupService } from '../services/GroupService'
-import { SETTINGS_GROUP_SWITCH } from '@/constants/string'
 
 const db = getFirestore()
 
@@ -36,7 +37,7 @@ export function useSettingsViewModel() {
         try {
             const userGroups = await GroupService.getGroupsByUserId(user.uid)
             setGroups(userGroups)
-            
+
             // 設定當前群組名稱
             const activeGroup = userGroups.find(g => g.id === activeGroupId)
             if (activeGroup) {
@@ -70,7 +71,7 @@ export function useSettingsViewModel() {
 
             // 重新獲取群組資料以確保資料同步
             await fetchGroups()
-            
+
             const userGroups = await GroupService.getGroupsByUserId(user.uid)
             authStore.setJoinedGroupIds(userGroups.map(g => g.id))
 
@@ -89,22 +90,22 @@ export function useSettingsViewModel() {
 
         try {
             const groupId = await GroupService.createGroup(user.uid, name, type, description, monthlyPaymentSettings)
-            
+
             // 立即更新本地狀態
             setActiveGroupId(groupId)
             setCurrentGroupName(name)
-            
+
             // 同步到 AuthStore
             const authStore = useAuthStore.getState()
             authStore.setActiveGroupId(groupId)
-            
+
             // 重新載入群組資料
             await fetchGroups()
-            
+
             // 同步 joinedGroupIds
             const userGroups = await GroupService.getGroupsByUserId(user.uid)
             authStore.setJoinedGroupIds(userGroups.map(g => g.id))
-            
+
             return true
         } catch (error) {
             setCreateGroupError(error instanceof Error ? error.message : SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_CREATE_GROUP)
@@ -148,23 +149,23 @@ export function useSettingsViewModel() {
 
         try {
             const result = await GroupService.joinGroupByCode(user.uid, inviteCode)
-            
+
             if (result.success && result.groupId && result.groupName) {
                 // 更新本地狀態
                 setActiveGroupId(result.groupId)
                 setCurrentGroupName(result.groupName)
-                
+
                 // 同步到 AuthStore
                 const authStore = useAuthStore.getState()
                 authStore.setActiveGroupId(result.groupId)
-                
+
                 // 重新載入群組資料
                 await fetchGroups()
-                
+
                 // 同步 joinedGroupIds
                 const userGroups = await GroupService.getGroupsByUserId(user.uid)
                 authStore.setJoinedGroupIds(userGroups.map(g => g.id))
-                
+
                 return true
             } else {
                 setJoinGroupError(result.error || SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP)
@@ -177,6 +178,120 @@ export function useSettingsViewModel() {
             setIsJoiningGroup(false)
         }
     }
+
+    // 退出當前群組
+    const leaveCurrentGroup = useCallback(async () => {
+        if (!user?.uid || !activeGroupId) {
+            Alert.alert('錯誤', '無法退出群組')
+            return
+        }
+
+        // 確認對話框
+        Alert.alert(
+            SETTINGS.LEAVE_GROUP_TITLE,
+            SETTINGS.LEAVE_GROUP_MESSAGE,
+            [
+                {
+                    text: COMMON.CANCEL,
+                    style: 'cancel'
+                },
+                {
+                    text: COMMON.CONFIRM,
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            setLoading(true)
+                            await MemberService.leaveGroup(activeGroupId, user.uid)
+
+                            // 重新載入用戶群組資料
+                            await loadUserGroups()
+                            
+                            // 重新獲取群組列表
+                            await fetchGroups()
+
+                            // 獲取最新的群組資訊
+                            const userGroups = await GroupService.getGroupsByUserId(user.uid)
+                            const authStore = useAuthStore.getState()
+                            
+                            // 更新 joinedGroupIds
+                            authStore.setJoinedGroupIds(userGroups.map(g => g.id))
+                            
+                            // 檢查是否還有其他群組
+                            if (userGroups.length === 0) {
+                                // 沒有群組了，清空 activeGroupId
+                                setActiveGroupId(null)
+                                authStore.setActiveGroupId(null)
+                            } else {
+                                // 還有其他群組，切換到第一個群組
+                                const firstGroup = userGroups[0]
+                                setActiveGroupId(firstGroup.id)
+                                authStore.setActiveGroupId(firstGroup.id)
+                                setCurrentGroupName(firstGroup.name)
+                            }
+
+                            Alert.alert(COMMON.SUCCESS, SETTINGS.LEAVE_GROUP_SUCCESS)
+                        } catch (error) {
+                            console.error('Error leaving group:', error)
+                            Alert.alert(COMMON.ERROR, error instanceof Error ? error.message : SETTINGS.LEAVE_GROUP_FAILURE_INFO)
+                        } finally {
+                            setLoading(false)
+                        }
+                    }
+                }
+            ]
+        )
+    }, [user?.uid, activeGroupId, loadUserGroups, fetchGroups])
+
+    // 刪除群組
+    const deleteGroup = useCallback(async (groupId: string, onModalClose?: () => void) => {
+        if (!user?.uid) return
+
+        setLoading(true)
+        try {
+            await GroupService.deleteGroup(groupId, user.uid)
+            
+            // 重新載入群組資料
+            await fetchGroups()
+            
+            // 重新載入用戶群組資料
+            await loadUserGroups()
+            
+            // 獲取最新的群組資訊
+            const userGroups = await GroupService.getGroupsByUserId(user.uid)
+            const authStore = useAuthStore.getState()
+            
+            // 更新 joinedGroupIds
+            authStore.setJoinedGroupIds(userGroups.map(g => g.id))
+            
+            // 如果刪除的是當前活躍的群組，需要處理 activeGroupId
+            if (activeGroupId === groupId) {
+                if (userGroups.length === 0) {
+                    // 沒有群組了，清空 activeGroupId
+                    setActiveGroupId(null)
+                    authStore.setActiveGroupId(null)
+                    setCurrentGroupName('')
+                } else {
+                    // 還有其他群組，切換到第一個群組
+                    const firstGroup = userGroups[0]
+                    setActiveGroupId(firstGroup.id)
+                    authStore.setActiveGroupId(firstGroup.id)
+                    setCurrentGroupName(firstGroup.name)
+                }
+            }
+            
+            // 如果沒有群組了，自動關閉 modal
+            if (userGroups.length === 0 && onModalClose) {
+                onModalClose()
+            }
+            
+            Alert.alert('成功', '群組已成功刪除')
+        } catch (error) {
+            console.error('Error deleting group:', error)
+            throw error
+        } finally {
+            setLoading(false)
+        }
+    }, [user?.uid, fetchGroups, loadUserGroups, activeGroupId])
 
     return {
         groups,
@@ -194,5 +309,7 @@ export function useSettingsViewModel() {
         joinGroup,
         isJoiningGroup,
         joinGroupError,
+        leaveCurrentGroup,
+        deleteGroup,
     }
 }

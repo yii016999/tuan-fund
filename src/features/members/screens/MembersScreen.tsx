@@ -74,6 +74,7 @@ export function MembersScreen() {
             className="bg-gray-500 px-3 py-1 rounded-full"
             disabled={refreshing}
           >
+            <Text className="text-white">{MEMBERS.REFRESH}</Text>
           </TouchableOpacity>
         </View>
       </View>

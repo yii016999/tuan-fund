@@ -171,6 +171,14 @@ export const MEMBERS = {
 }
 
 /** Settings */
+export const SETTINGS = {
+    LEAVE_GROUP_TITLE: '確認退出群組',
+    LEAVE_GROUP_MESSAGE: '您確定要退出當前群組嗎？退出後您將無法查看群組資料，且無法復原此操作。',
+    LEAVE_GROUP_SUCCESS: '已成功退出群組',
+    LEAVE_GROUP_FAILURE: '退出群組失敗',
+    LEAVE_GROUP_FAILURE_INFO: '退出群組失敗，請稍後再試',
+}
+
 export const SETTINGS_GROUP_SWITCH = {
     TITLE: '選擇群組',
     TITLE_SELECT_GROUP: '選擇群組',
@@ -201,6 +209,8 @@ export const SETTINGS_GROUP_SWITCH = {
     ERROR_MESSAGE_JOIN_GROUP: '加入群組失敗',
     ERROR_MESSAGE_JOIN_GROUP_INFO: '加入群組失敗，請檢查邀請碼是否正確',
     ERROR_MESSAGE_JOIN_GROUP_ALREADY_JOINED: '您已經是此群組的成員',
+    DELETE_GROUP_TITLE: '確認刪除群組',
+    ERROR_MESSAGE_USER_NOT_FOUND: '使用者不存在',
 }
 
 /** BalanceChart */

@@ -2,38 +2,70 @@ import { COLLECTIONS } from '@/constants/firestorePaths'
 import { SETTINGS_GROUP_SWITCH } from '@/constants/string'
 import { GroupType, MEMBER_ROLES, MemberRole } from '@/constants/types'
 import { GroupMember } from '@/features/members/model/Member'
-import { collection, doc, getDoc, getDocs, getFirestore, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore'
+import { collection, doc, getDoc, getDocs, getFirestore, serverTimestamp, setDoc, updateDoc, deleteDoc } from 'firebase/firestore'
 import type { GroupSettings } from '../model/Group'
+import { MemberService } from '@/features/members/services/MemberService'
 
 const db = getFirestore()
 
 export const GroupService = {
   // 查詢所有 user 加入的群組
   async getGroupsByUserId(userId: string): Promise<GroupSettings[]> {
-    const qs = await getDocs(collection(db, COLLECTIONS.GROUPS))
-    const result: GroupSettings[] = []
-    qs.forEach((docSnap) => {
-      const data = docSnap.data()
-      if (data.members?.includes(userId)) {
-        result.push({
-          id: docSnap.id,
-          name: data.name,
-          type: data.type,
-          description: data.description,
-          members: data.members,
-          createdBy: data.createdBy,
-          inviteCode: data.inviteCode,
-          memberJoinedAt: data.memberJoinedAt,
-          monthlyAmount: data.monthlyAmount || 0,
-          billingCycle: data.billingCycle || 'monthly',
-          allowPrepay: data.allowPrepay || false,
-          roles: data.roles,
-          createdAt: data.createdAt,
-          latestPaidMap: data.latestPaidMap
-        })
+    try {
+      const userRef = doc(db, COLLECTIONS.USERS, userId)
+      const userSnap = await getDoc(userRef)
+
+      if (!userSnap.exists()) {
+        throw new Error(SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_USER_NOT_FOUND)
       }
-    })
-    return result
+
+      const userData = userSnap.data()
+      const joinedGroupIds: string[] = userData.joinedGroupIds || []
+
+      if (joinedGroupIds.length === 0) {
+        return []
+      }
+
+      // 批次獲取群組資料
+      const groupPromises = joinedGroupIds.map(async (groupId) => {
+        const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
+        const groupSnap = await getDoc(groupRef)
+
+        if (!groupSnap.exists()) {
+          return null
+        }
+
+        const groupData = groupSnap.data()
+        
+        // 獲取成員數量
+        const memberCount = groupData.members?.length || 0
+        
+        // 檢查當前用戶是否為管理員
+        const roles: Record<string, MemberRole> = groupData.roles || {}
+        const isAdmin = roles[userId] === MEMBER_ROLES.ADMIN
+
+        return {
+          id: groupId,
+          name: groupData.name,
+          description: groupData.description,
+          type: groupData.type,
+          monthlyAmount: groupData.monthlyAmount,
+          billingCycle: groupData.billingCycle,
+          allowPrepay: groupData.allowPrepay,
+          inviteCode: groupData.inviteCode,
+          memberCount,
+          isAdmin,
+          createdAt: groupData.createdAt?.toDate() || new Date(),
+          updatedAt: groupData.updatedAt?.toDate() || new Date()
+        } as GroupSettings
+      })
+
+      const groups = await Promise.all(groupPromises)
+      return groups.filter(group => group !== null) as GroupSettings[]
+    } catch (error) {
+      console.error('Error fetching groups by user ID:', error)
+      throw error
+    }
   },
 
   // 取得某個群組名稱
@@ -254,6 +286,66 @@ export const GroupService = {
         success: false,
         error: error instanceof Error ? error.message : 'Error joining group'
       }
+    }
+  },
+
+  // 刪除群組（只有管理員可以）
+  async deleteGroup(groupId: string, adminUserId: string): Promise<void> {
+    try {
+      // 檢查管理員權限
+      const adminRole = await MemberService.getCurrentUserRole(groupId, adminUserId)
+      if (adminRole !== MEMBER_ROLES.ADMIN) {
+        throw new Error('只有管理員可以刪除群組')
+      }
+
+      // 獲取群組資料
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
+      const groupSnap = await getDoc(groupRef)
+      
+      if (!groupSnap.exists()) {
+        throw new Error('群組不存在')
+      }
+
+      const groupData = groupSnap.data()
+      const members: string[] = groupData.members ?? []
+
+      // 更新所有成員的資料
+      const updateMemberPromises = members.map(async (memberId) => {
+        const userRef = doc(db, COLLECTIONS.USERS, memberId)
+        const userSnap = await getDoc(userRef)
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data()
+          const joinedGroupIds = userData.joinedGroupIds ?? []
+          const activeGroupId = userData.activeGroupId
+
+          // 從 joinedGroupIds 中移除該群組
+          const updatedJoinedGroupIds = joinedGroupIds.filter((id: string) => id !== groupId)
+
+          // 如果 activeGroupId 是被刪除的群組，清空或切換到其他群組
+          let newActiveGroupId = activeGroupId
+          if (activeGroupId === groupId) {
+            newActiveGroupId = updatedJoinedGroupIds.length > 0 ? updatedJoinedGroupIds[0] : null
+          }
+
+          await updateDoc(userRef, {
+            joinedGroupIds: updatedJoinedGroupIds,
+            activeGroupId: newActiveGroupId
+          })
+        }
+      })
+
+      await Promise.all(updateMemberPromises)
+
+      // 刪除群組相關資料
+      // TODO: 根據需要刪除子集合（transactions, memberPayments 等）
+      
+      // 最後刪除群組本身
+      await deleteDoc(groupRef)
+
+    } catch (error) {
+      console.error('Error deleting group:', error)
+      throw error
     }
   },
 }

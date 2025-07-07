@@ -1,13 +1,14 @@
 import { COMMON, TRANSACTION } from '@/constants/string'
-import { RECORD_TRANSACTION_TYPES, RecordTransactionType } from '@/constants/types'
-import { useCallback, useMemo, useState } from 'react'
+import { MEMBER_ROLES, RECORD_TRANSACTION_TYPES, RecordTransactionType } from '@/constants/types'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Alert } from 'react-native'
 import { useAuthStore } from '../../../store/useAuthStore'
 import { CreateTransactionInput } from '../model/Transaction'
 import { AddService } from '../services/TransactionService'
+import { MemberService } from '../../members/services/MemberService'
 
 export const useAddViewModel = () => {
-  const [activeTab, setActiveTab] = useState<RecordTransactionType>(RECORD_TRANSACTION_TYPES.EXPENSE)
+  const [activeTab, setActiveTab] = useState<RecordTransactionType>(RECORD_TRANSACTION_TYPES.INCOME)
   const [amount, setAmount] = useState('0')
   const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
   const [title, setTitle] = useState('')
@@ -15,8 +16,40 @@ export const useAddViewModel = () => {
   const [titleFocus, setTitleFocus] = useState(false)
   const [amountFocus, setAmountFocus] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [roleLoading, setRoleLoading] = useState(true)
 
   const { user, activeGroupId } = useAuthStore()
+
+  // 獲取用戶角色
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!user?.uid || !activeGroupId) {
+        setIsAdmin(false)
+        setRoleLoading(false)
+        return
+      }
+
+      try {
+        const userRole = await MemberService.getCurrentUserRole(activeGroupId, user.uid)
+        setIsAdmin(userRole === MEMBER_ROLES.ADMIN)
+      } catch (error) {
+        console.error('Error fetching user role:', error)
+        setIsAdmin(false)
+      } finally {
+        setRoleLoading(false)
+      }
+    }
+
+    fetchUserRole()
+  }, [user?.uid, activeGroupId])
+
+  // 如果用戶不是管理員，確保預設為收入
+  useEffect(() => {
+    if (!roleLoading && !isAdmin && activeTab === RECORD_TRANSACTION_TYPES.EXPENSE) {
+      setActiveTab(RECORD_TRANSACTION_TYPES.INCOME)
+    }
+  }, [roleLoading, isAdmin, activeTab])
 
   const themeColor = useMemo(() => {
     return activeTab === RECORD_TRANSACTION_TYPES.INCOME ? '#10B981' : '#EF4444'
@@ -83,8 +116,10 @@ export const useAddViewModel = () => {
   }, [])
 
   const handleExpensePress = useCallback(() => {
-    setActiveTab(RECORD_TRANSACTION_TYPES.EXPENSE)
-  }, [])
+    if (isAdmin) {
+      setActiveTab(RECORD_TRANSACTION_TYPES.EXPENSE)
+    }
+  }, [isAdmin])
 
   const handleIncomePress = useCallback(() => {
     setActiveTab(RECORD_TRANSACTION_TYPES.INCOME)
@@ -161,6 +196,8 @@ export const useAddViewModel = () => {
     titleFocus,
     amountFocus,
     isLoading,
+    isAdmin,
+    roleLoading,
 
     // Computed
     themeColor,

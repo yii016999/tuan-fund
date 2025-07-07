@@ -9,6 +9,7 @@ interface AppHeaderProps {
     showBack?: boolean          // 是否顯示左側返回按鈕
     backType?: HeaderBackType   // 返回按鈕樣式：箭頭或叉叉
     title?: string              // 中間顯示的標題文字
+    isBorder?: boolean          // 是否顯示下邊框
     rightSlot?: React.ReactNode // 自定義右側插槽（例如：頭像、設定按鈕）
     leftSlot?: React.ReactNode  // 自定義左側插槽（若未顯示返回按鈕時使用）
 }
@@ -20,7 +21,7 @@ export const AppHeader = (props: AppHeaderProps) => {
 
 
     return (
-        <View className="h-24 bg-white px-4 flex flex-row items-center justify-between border-b border-gray-200" style={{ paddingTop: insets.top }}>
+        <View className={`h-24 bg-white px-4 flex flex-row items-center justify-between ${props.isBorder ? 'border-b border-gray-200' : ''}`} style={{ paddingTop: insets.top }}>
             {/* 左側區域：顯示返回按鈕或自定義插槽 */}
             <View className="w-16">
                 {props.showBack ? (

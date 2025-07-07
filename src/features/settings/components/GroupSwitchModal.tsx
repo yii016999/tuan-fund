@@ -1,6 +1,7 @@
 import { COMMON, SETTINGS_GROUP_SWITCH } from '@/constants/string';
 import { BILLING_CYCLES, GROUP_TYPES } from '@/constants/types';
 import { GroupSettings } from '@/features/settings/model/Group';
+import { ModalHeader } from '@/components/ModalHeader';
 import * as Clipboard from 'expo-clipboard';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Modal, Platform, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
@@ -12,6 +13,7 @@ interface GroupSwitchModalProps {
     activeGroupId: string;                                          // 當前選中 id
     onGroupSelect: (groupId: string, groupName: string) => void;    // 選擇群組
     isLoading?: boolean;                                            // 是否載入中
+    onGroupDelete?: (groupId: string) => Promise<void>
 }
 
 interface GroupCardProps {
@@ -62,7 +64,7 @@ function GroupCard(props: GroupCardProps) {
 
     return (
         <View
-            className={`bg-white rounded-2xl p-4 mb-4 mx-2 shadow-lg relative ${props.isActive
+            className={`bg-white rounded-2xl p-4 my-2 mx-2 shadow-lg relative ${props.isActive
                 ? 'border-2 border-blue-500 bg-blue-50'
                 : 'border border-gray-100'
                 }`}
@@ -153,22 +155,6 @@ function GroupCard(props: GroupCardProps) {
     );
 }
 
-// 標題列 (左上叉叉，選擇群組標題置中)
-function Header(props: GroupSwitchModalProps) {
-    return (
-        <View className="flex-row items-center mb-4 relative">
-            {/* 左上叉叉 */}
-            <TouchableOpacity onPress={props.onClose}>
-                <Text className="text-gray-400 text-4xl px-2">×</Text>
-            </TouchableOpacity>
-            {/* 標題絕對置中 */}
-            <View className="absolute inset-0 items-center justify-center">
-                <Text className="text-lg font-bold">{SETTINGS_GROUP_SWITCH.TITLE_SELECT_GROUP}</Text>
-            </View>
-        </View>
-    );
-}
-
 export function GroupSwitchModal(props: GroupSwitchModalProps) {
     const [loadingGroupId, setLoadingGroupId] = useState<string | null>(null);
 
@@ -185,6 +171,29 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
         }
     };
 
+    const handleDeleteGroup = async (groupId: string, groupName: string) => {
+        Alert.alert(
+            '確認刪除群組',
+            `您確定要刪除群組「${groupName}」嗎？此操作將：\n\n• 移除所有成員\n• 刪除所有群組資料\n• 無法復原\n\n請謹慎操作。`,
+            [
+                { text: '取消', style: 'cancel' },
+                {
+                    text: '確定刪除',
+                    style: 'destructive',
+                    onPress: async () => {
+                        try {
+                            if (props.onGroupDelete) {
+                                await props.onGroupDelete(groupId)
+                            }
+                        } catch (error) {
+                            Alert.alert('錯誤', error instanceof Error ? error.message : '刪除群組失敗')
+                        }
+                    }
+                }
+            ]
+        )
+    }
+
     return (
         <Modal visible={props.visible} animationType="slide" transparent onRequestClose={props.onClose}>
             {/* 黑色遮罩，內容貼近底部 */}
@@ -196,8 +205,12 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                         minHeight: 320,
                     }}
                 >
-                    {/* 標題列 */}
-                    <Header {...props} />
+                    {/* 使用新的 ModalHeader */}
+                    <ModalHeader
+                        title={SETTINGS_GROUP_SWITCH.TITLE_SELECT_GROUP}
+                        onClose={props.onClose}
+                        showBorder={false}
+                    />
 
                     {/* 載入中 */}
                     {props.isLoading ? (
@@ -210,13 +223,25 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                             data={props.groups}
                             keyExtractor={(item) => item.id}
                             renderItem={({ item }) => (
-                                // 群組卡片
-                                <GroupCard
-                                    group={item}
-                                    isActive={item.id === props.activeGroupId}
-                                    onSelect={() => handleGroupSelect(item.id, item.name)}
-                                    isLoading={loadingGroupId === item.id}
-                                />
+                                // 群組卡片 - 恢復原本的完整功能
+                                <View key={item.id} className="relative">
+                                    <GroupCard
+                                        group={item}
+                                        isActive={item.id === props.activeGroupId}
+                                        onSelect={() => handleGroupSelect(item.id, item.name)}
+                                        isLoading={loadingGroupId === item.id}
+                                    />
+                                    
+                                    {/* 刪除按鈕 - 只有管理員可以看到 */}
+                                    {item.isAdmin && (
+                                        <TouchableOpacity
+                                            className="absolute right-0 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center z-20"
+                                            onPress={() => handleDeleteGroup(item.id, item.name)}
+                                        >
+                                            <Text className="text-white text-xs font-bold">×</Text>
+                                        </TouchableOpacity>
+                                    )}
+                                </View>
                             )}
                             ListEmptyComponent={
                                 <Text className="text-gray-400 text-center py-8">
@@ -226,7 +251,7 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                             contentContainerStyle={{
                                 paddingBottom: 12,
                                 paddingTop: 2,
-                                flexGrow: 0, // 內容區少時不會被強制拉高
+                                flexGrow: 0,
                             }}
                             showsVerticalScrollIndicator={true}
                         />

@@ -6,8 +6,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { MemberPaymentRecord, RecordListItem } from '../model/Record'
 import { RecordsService } from '../services/RecordsService'
 
-export const useRecordsViewModel = (groupId: string) => {
-    const { user } = useAuthStore()
+export const useRecordsViewModel = (initialGroupId?: string) => {
+    const { user, activeGroupId } = useAuthStore()
     const [loading, setLoading] = useState(false)
     const [activeTab, setActiveTab] = useState<'group' | 'member'>('group')
     const [groupTransactions, setGroupTransactions] = useState<Transaction[]>([])
@@ -17,15 +17,23 @@ export const useRecordsViewModel = (groupId: string) => {
         endDate: new Date()
     })
 
+    // 使用 activeGroupId 而不是傳入的 groupId
+    const currentGroupId = activeGroupId || initialGroupId || ''
+
     // 獲取數據
     const fetchRecords = useCallback(async () => {
-        if (!groupId) return
+        if (!currentGroupId) {
+            setGroupTransactions([])
+            setMemberPayments([])
+            setLoading(false)
+            return
+        }
 
         setLoading(true)
         try {
             const [transactions, payments] = await Promise.all([
-                RecordsService.getGroupTransactions(groupId, dateRange.startDate, dateRange.endDate),
-                RecordsService.getMemberPayments(groupId, dateRange.startDate, dateRange.endDate, user?.uid)
+                RecordsService.getGroupTransactions(currentGroupId, dateRange.startDate, dateRange.endDate),
+                RecordsService.getMemberPayments(currentGroupId, dateRange.startDate, dateRange.endDate, user?.uid)
             ])
 
             setGroupTransactions(transactions)
@@ -35,7 +43,7 @@ export const useRecordsViewModel = (groupId: string) => {
         } finally {
             setLoading(false)
         }
-    }, [groupId, dateRange, user?.uid])
+    }, [currentGroupId, dateRange, user?.uid])
 
     useEffect(() => {
         fetchRecords()
@@ -70,33 +78,37 @@ export const useRecordsViewModel = (groupId: string) => {
 
     // 編輯記錄
     const editRecord = useCallback(async (recordId: string, type: RecordType, data: any) => {
+        if (!currentGroupId) return
+        
         try {
             if (type === RECORD_TYPES.GROUP_TRANSACTION) {
-                await RecordsService.updateGroupTransaction(recordId, data, groupId)
+                await RecordsService.updateGroupTransaction(recordId, data, currentGroupId)
             } else {
-                await RecordsService.updateMemberPayment(recordId, data, groupId)
+                await RecordsService.updateMemberPayment(recordId, data, currentGroupId)
             }
             await fetchRecords() // 重新獲取數據
         } catch (error) {
             console.error('Error editing record:', error)
             throw error
         }
-    }, [fetchRecords, groupId])
+    }, [fetchRecords, currentGroupId])
 
     // 刪除記錄
     const deleteRecord = useCallback(async (recordId: string, type: RecordType) => {
+        if (!currentGroupId) return
+        
         try {
             if (type === RECORD_TYPES.GROUP_TRANSACTION) {
-                await RecordsService.deleteGroupTransaction(recordId, groupId)
+                await RecordsService.deleteGroupTransaction(recordId, currentGroupId)
             } else {
-                await RecordsService.deleteMemberPayment(recordId, groupId)
+                await RecordsService.deleteMemberPayment(recordId, currentGroupId)
             }
             await fetchRecords() // 重新獲取數據
         } catch (error) {
             console.error('Error deleting record:', error)
             throw error
         }
-    }, [fetchRecords, groupId])
+    }, [fetchRecords, currentGroupId])
 
     // 更新日期範圍
     const updateDateRange = useCallback((startDate: Date, endDate: Date) => {

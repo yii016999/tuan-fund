@@ -25,7 +25,7 @@ export interface UseMembersViewModelResult {
   isCurrentUser: (memberId: string) => boolean
 }
 
-export const useMembersViewModel = (groupId: string): UseMembersViewModelResult => {
+export const useMembersViewModel = (initialGroupId?: string): UseMembersViewModelResult => {
   // 狀態管理
   const [members, setMembers] = useState<MemberWithDetails[]>([])
   const [loading, setLoading] = useState(true)
@@ -33,19 +33,27 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
   const [error, setError] = useState<string | null>(null)
   const [inviteCode, setInviteCode] = useState('')
 
-  // 獲取當前用戶
-  const { user } = useAuthStore()
+  // 獲取當前用戶和群組ID
+  const { user, activeGroupId } = useAuthStore()
   const currentUserId = user?.uid || ''
+  const currentGroupId = activeGroupId || initialGroupId || ''
 
   // 載入成員列表
   const loadMembers = useCallback(async () => {
+    if (!currentGroupId) {
+      setMembers([])
+      setInviteCode('')
+      setLoading(false)
+      return
+    }
+
     try {
       setError(null)
 
       // 並行載入成員列表和邀請碼
       const [membersData, inviteCodeData] = await Promise.all([
-        MemberService.getGroupMembers(groupId, currentUserId),
-        MemberService.getGroupInviteCode(groupId)
+        MemberService.getGroupMembers(currentGroupId, currentUserId),
+        MemberService.getGroupInviteCode(currentGroupId)
       ])
 
       setMembers(membersData)
@@ -57,7 +65,7 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
     } finally {
       setLoading(false)
     }
-  }, [groupId, currentUserId])
+  }, [currentGroupId, currentUserId])
 
   // 刷新成員列表
   const refreshMembers = useCallback(async () => {
@@ -71,6 +79,8 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
 
   // 移除成員
   const removeMember = useCallback(async (memberId: string) => {
+    if (!currentGroupId) return
+    
     try {
       // 找到要移除的成員
       const memberToRemove = members.find(m => m.uid === memberId)
@@ -90,7 +100,7 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
             onPress: async () => {
               try {
                 setError(null)
-                await MemberService.removeMember(groupId, memberId, currentUserId)
+                await MemberService.removeMember(currentGroupId, memberId, currentUserId)
 
                 // 更新本地狀態
                 setMembers(prevMembers =>
@@ -112,7 +122,7 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
       setError(errorMessage)
       Alert.alert(COMMON.ERROR, errorMessage)
     }
-  }, [groupId, currentUserId, members])
+  }, [currentGroupId, currentUserId, members])
 
   // 複製邀請碼
   const copyInviteCode = useCallback(() => {
@@ -142,12 +152,6 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
 
   // 初始載入
   useEffect(() => {
-    // 如果沒有 groupId 或 currentUserId，直接返回
-    if (!groupId || !groupId.trim() || !currentUserId) {
-      setLoading(false)
-      return
-    }
-
     loadMembers()
 
     // 清理函數
@@ -156,7 +160,7 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
       setError(null)
       setInviteCode('')
     }
-  }, [groupId, currentUserId, loadMembers])
+  }, [currentGroupId, currentUserId, loadMembers])
 
   // 錯誤處理
   useEffect(() => {
@@ -170,10 +174,10 @@ export const useMembersViewModel = (groupId: string): UseMembersViewModelResult 
   useFocusEffect(
     useCallback(() => {
       // 當頁面獲得焦點時，重新載入成員數據
-      if (groupId && groupId.trim() && currentUserId) {
+      if (currentGroupId && currentGroupId.trim() && currentUserId) {
         loadMembers()
       }
-    }, [groupId, currentUserId, loadMembers])
+    }, [currentGroupId, currentUserId, loadMembers])
   )
 
   return {
