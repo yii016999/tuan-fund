@@ -1,18 +1,14 @@
 import { COMMON, TRANSACTION_OVERVIEW_CARD } from '@/constants/string';
-import { RECORD_TRANSACTION_TYPES, RecordTransactionType } from '@/constants/types';
+import { RECORD_TRANSACTION_TYPES } from '@/constants/types';
+import { Transaction } from '@/features/home/model/Home';
 import React from 'react';
 import { Text, View } from 'react-native';
-
-interface Transaction {
-    type: RecordTransactionType;
-    amount: number;
-    description: string;
-}
 
 interface TransactionOverviewCardProps {
     monthlyIncome: number;
     monthlyExpense: number;
     recentTransactions: Transaction[];
+    createdBy: string;
     minHeight: number;
 }
 
@@ -20,20 +16,28 @@ export default function TransactionOverviewCard(props: TransactionOverviewCardPr
     // 最近交易渲染函數
     const renderRecentTransactions = () => (
         <View className="flex-1 justify-start">
-            <View className="space-y-2">
-                {props.recentTransactions.slice(0, 2).map((transaction, index) => (
-                    <View key={index} className="flex-row justify-between items-center py-2">
-                        <View className="flex-1 mr-2">
-                            <Text className="text-sm text-gray-700" numberOfLines={1}>
-                                {transaction.description}
+            {props.recentTransactions.length > 0 ? (
+                <View className="space-y-2">
+                    {props.recentTransactions.slice(0, 4).map((transaction, index) => (
+                        <View key={index} className="flex-row justify-between items-center py-2">
+                            <View className="flex-1 mr-2">
+                                <Text className="text-sm text-gray-700" numberOfLines={1}>
+                                    <Text className="font-medium text-gray-800">{props.createdBy}</Text>
+                                    <Text className="text-gray-500">：</Text>
+                                    <Text>{transaction.description}</Text>
+                                </Text>
+                            </View>
+                            <Text className={`text-sm font-medium ${transaction.type === RECORD_TRANSACTION_TYPES.INCOME ? 'text-green-600' : 'text-red-600'}`}>
+                                {transaction.type === RECORD_TRANSACTION_TYPES.INCOME ? COMMON.INCOME_SIGN : COMMON.EXPENSE_SIGN}{transaction.amount.toLocaleString()}
                             </Text>
                         </View>
-                        <Text className={`text-sm font-medium ${transaction.type === RECORD_TRANSACTION_TYPES.INCOME ? 'text-green-600' : 'text-red-600'}`}>
-                            {transaction.type === RECORD_TRANSACTION_TYPES.INCOME ? COMMON.INCOME_SIGN : COMMON.EXPENSE_SIGN}{transaction.amount.toLocaleString()}
-                        </Text>
-                    </View>
-                ))}
-            </View>
+                    ))}
+                </View>
+            ) : (
+                <View className="flex-1 justify-center items-center">
+                    <Text className="text-gray-400 text-sm">沒有資料</Text>
+                </View>
+            )}
         </View>
     );
 

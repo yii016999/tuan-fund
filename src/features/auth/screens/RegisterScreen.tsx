@@ -4,7 +4,8 @@ import { useRegisterViewModel } from "@/features/auth/viewmodel/useRegisterViewM
 import { AuthParamList } from '@/navigation/types'
 import { useNavigation } from '@react-navigation/native'
 import { NativeStackNavigationProp } from '@react-navigation/native-stack'
-import { Text, TextInput, TouchableOpacity, View } from "react-native"
+import { Text, TextInput, TouchableOpacity, View, ScrollView, Keyboard } from "react-native"
+import { useEffect, useState } from 'react';
 
 export default function RegisterScreen() {
     const {
@@ -17,6 +18,8 @@ export default function RegisterScreen() {
         error,
         handleRegister,
     } = useRegisterViewModel()
+
+    const [keyboardHeight, setKeyboardHeight] = useState(0);
 
     const navigation = useNavigation<NativeStackNavigationProp<AuthParamList>>()
 
@@ -31,8 +34,35 @@ export default function RegisterScreen() {
         }
     }
 
+    useEffect(() => {
+        const keyboardDidShowListener = Keyboard.addListener(
+            'keyboardDidShow',
+            (e) => setKeyboardHeight(e.endCoordinates.height)
+        );
+        const keyboardDidHideListener = Keyboard.addListener(
+            'keyboardDidHide',
+            () => setKeyboardHeight(0)
+        );
+
+        return () => {
+            keyboardDidHideListener.remove();
+            keyboardDidShowListener.remove();
+        };
+    }, []);
+
     return (
-        <View className="flex-1 bg-gray-50 justify-center px-6">
+        <ScrollView 
+            className="flex-1 bg-gray-50"
+            contentContainerStyle={{ 
+                flexGrow: 1, 
+                ...(keyboardHeight === 0 ? { justifyContent: 'center' } : {}),
+                paddingHorizontal: 24,
+                paddingTop: keyboardHeight > 0 ? 60 : 40,
+                paddingBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 40
+            }}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+        >
             {/* 主要容器 */}
             <View className="bg-white rounded-2xl shadow-lg p-8 mx-2">
                 {/* 標題 */}
@@ -108,6 +138,6 @@ export default function RegisterScreen() {
                     </TouchableOpacity>
                 </View>
             </View>
-        </View>
+        </ScrollView>
     )
 }

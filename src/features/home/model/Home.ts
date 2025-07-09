@@ -1,3 +1,5 @@
+import { RecordTransactionType } from "@/constants/types";
+
 // 餘額數據模型
 export interface BalanceData {
     labels: string[];
@@ -11,7 +13,7 @@ export interface BalanceData {
 // 交易記錄模型
 export interface Transaction {
     id: string;
-    type: 'in' | 'out';
+    type: RecordTransactionType;
     amount: number;
     description: string;
     date: Date;
@@ -23,6 +25,7 @@ export interface TransactionOverview {
     monthlyIncome: number;
     monthlyExpense: number;
     recentTransactions: Transaction[];
+    createdBy: string;
 }
 
 // 繳費狀態模型

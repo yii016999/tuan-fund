@@ -18,19 +18,20 @@ export const COMMON = {
     EXPENSE_SIGN: '-',
     DASH: '-',
     DAYS: '天',
+    MONTH: '月',
     MONTHS: '個月',
     YEARS: '年',
     CANCEL: '取消',
     QUESTION: '嗎',
     QUESTION_MARK: '？',
     ADD_SUCCESS: '新增成功',
-}
+} as const;
 
 /** App */
 export const APP = {
     SLUG: 'tuanfund',
     NAME: '團體記帳',
-}
+} as const;
 
 /** TabNavigator */
 export const TAB_NAVIGATOR = {
@@ -39,11 +40,11 @@ export const TAB_NAVIGATOR = {
     TRANSACTION: '群組記帳',
     MEMBERS: '成員',
     SETTINGS: '設定',
-}
+} as const;
 
 /** Login */
 export const LOGIN = {
-    WELCOME: '歡迎回來',
+    WELCOME: '團體記帳',
     WELCOME_MESSAGE: '請登入您的帳號',
     LOGIN: '登入',
     REGISTER: '註冊',
@@ -52,11 +53,11 @@ export const LOGIN = {
     USERNAME_PLACEHOLDER: '請輸入您的帳號',
     PASSWORD_PLACEHOLDER: '請輸入您的密碼',
     CREATE_ACCOUNT: '建立新帳號',
-}
+} as const;
 
 export const LOGIN_MESSAGES = {
     USER_NOT_EXIST: '使用者不存在',
-}
+} as const;
 
 /** Register */
 export const REGISTER = {
@@ -73,7 +74,7 @@ export const REGISTER = {
     USERNAME_PLACEHOLDER: '請輸入您的帳號',
     PASSWORD_PLACEHOLDER: '請輸入您的密碼',
     PASSWORD_CONFIRM_PLACEHOLDER: '請再次輸入您的密碼',
-}
+} as const;
 
 /** Home */
 export const HOME = {
@@ -81,8 +82,8 @@ export const HOME = {
     LOADING_ERROR: '載入失敗：',
     REFRESH: '重試',
     NO_DATA: '暫無數據',
-    BALANCE_CHART_TITLE: '年度餘額趨勢',
-}
+    BALANCE_CHART_TITLE: '總覽',
+} as const;
 
 /** Record */
 export const RECORD = {
@@ -109,7 +110,7 @@ export const RECORD = {
     NO_GROUP_SELECTED: '目前沒有群組資料，請至設定中選擇群組',
     NO_MEMBER_RECORD: '暫無個人繳費記錄',
     NO_MEMBER_RECORD_SELECTED: '目前沒有個人繳費記錄，新增收入記錄時會自動創建繳費記錄',
-}
+} as const;
 
 /** Transaction */
 export const TRANSACTION = {
@@ -128,7 +129,7 @@ export const TRANSACTION = {
     ERROR_MESSAGE_CREATE_TRANSACTION: '新增交易失敗',
     ERROR_PLEASE_INPUT_VALID_AMOUNT: '請輸入有效金額',
     ERROR_PLEASE_INPUT_ITEM_TITLE: '請輸入項目標題',
-}
+} as const;
 
 /** Members */
 export const MEMBERS = {
@@ -168,7 +169,7 @@ export const MEMBERS = {
     INVITE_CODE_TITLE: '邀請碼',
     INVITE_CODE_MESSAGE: '群組邀請碼：',
     INVITE_CODE_INFO: '知道了',
-}
+} as const;
 
 /** Settings */
 export const SETTINGS = {
@@ -177,7 +178,7 @@ export const SETTINGS = {
     LEAVE_GROUP_SUCCESS: '已成功退出群組',
     LEAVE_GROUP_FAILURE: '退出群組失敗',
     LEAVE_GROUP_FAILURE_INFO: '退出群組失敗，請稍後再試',
-}
+} as const;
 
 export const SETTINGS_GROUP_SWITCH = {
     TITLE: '選擇群組',
@@ -211,27 +212,27 @@ export const SETTINGS_GROUP_SWITCH = {
     ERROR_MESSAGE_JOIN_GROUP_ALREADY_JOINED: '您已經是此群組的成員',
     DELETE_GROUP_TITLE: '確認刪除群組',
     ERROR_MESSAGE_USER_NOT_FOUND: '使用者不存在',
-}
+} as const;
 
 /** BalanceChart */
 export const BALANCE_CHART = {
-    TITLE: '年度餘額趨勢',
+    TITLE: '總覽',
     CURRENT_BALANCE: '當前餘額:',
-}
+} as const;
 
 /** PaymentStatusCard */
 export const PAYMENT_STATUS_CARD = {
     TITLE: '本期繳費狀態',
     PAID: '已繳費',
     UNPAID: '未繳費',
-}
+} as const;
 
 /** TransactionOverviewCard */
 export const TRANSACTION_OVERVIEW_CARD = {
     TITLE: '收支總覽',
     MONTHLY_INCOME: '本月收入',
     MONTHLY_EXPENSE: '本月支出',
-}
+} as const;
 
 /** CreateGroup */
 export const SETTINGS_CREATE_GROUP = {
@@ -271,7 +272,7 @@ export const SETTINGS_CREATE_GROUP = {
     JOIN_GROUP_SUCCESS: '群組已加入',
     JOIN_GROUP_FAILURE: '加入群組失敗',
     JOIN_GROUP_FAILURE_INFO: '加入群組失敗，請檢查邀請碼是否正確',
-}
+} as const;
 
 /** NoGroupSelected */
 export const SETTINGS_NO_GROUP_SELECTED = {
@@ -279,4 +280,4 @@ export const SETTINGS_NO_GROUP_SELECTED = {
     MESSAGE: '請先至「設定」切換主頁群組中選擇一個群組',
     NO_GROUP_TITLE: '沒有加入群組',
     NO_GROUP_MESSAGE: '請先至「設定」建立或加入一個群組',
-}
+} as const;

@@ -10,17 +10,15 @@ import { useHomeViewModel } from '../viewmodel/useHomeViewModel';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const { homeData, loading, error, refreshData } = useHomeViewModel();
+  const { homeData, loading, error, refreshData, selectedYear, previousYear, nextYear } = useHomeViewModel();
 
   const cardHeight = (screenHeight - 250) * 0.4;
   const chartHeight = (screenHeight - 250) * 0.45;
 
-  // 載入狀態s
   if (loading && !homeData) {
     return <FullScreenLoader visible={loading} />;
   }
 
-  // 錯誤狀態
   if (error && !homeData) {
     return (
       <View className="flex-1 justify-center items-center p-4 bg-gray-50">
@@ -46,27 +44,31 @@ export default function HomeScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-gray-50"
+      className="flex-1 bg-gray-50 gap-8"
       refreshControl={
         <RefreshControl refreshing={loading} onRefresh={refreshData} />
       }
     >
-      <View className="p-4">
+      <View className="p-4 gap-8">
         {/* 上半部年度餘額趨勢圖表 */}
         <BalanceChart
           data={homeData.balanceData}
           height={chartHeight}
           title={HOME.BALANCE_CHART_TITLE}
+          selectedYear={selectedYear}
+          onPreviousYear={previousYear}
+          onNextYear={nextYear}
         />
 
         {/* 下半部 */}
-        <View className="flex-row flex-1" style={{ gap: 16 }}>
+        <View className="flex-row flex-1 gap-4">
           {/* 左收支總覽 */}
           <View className="flex-1">
             <TransactionOverviewCard
               monthlyIncome={homeData.transactionOverview.monthlyIncome}
               monthlyExpense={homeData.transactionOverview.monthlyExpense}
               recentTransactions={homeData.transactionOverview.recentTransactions}
+              createdBy={homeData.transactionOverview.createdBy}
               minHeight={cardHeight}
             />
           </View>

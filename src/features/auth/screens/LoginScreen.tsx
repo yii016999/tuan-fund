@@ -4,7 +4,8 @@ import { useLoginViewModel } from "@/features/auth/viewmodel/useLoginViewModel";
 import { AuthParamList, RootStackParamList } from '@/navigation/types';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, ScrollView, Platform, Keyboard } from "react-native";
+import { useEffect, useState } from 'react';
 
 export default function LoginScreen() {
   const {
@@ -15,6 +16,8 @@ export default function LoginScreen() {
     error,
     handleLogin,
   } = useLoginViewModel()
+
+  const [keyboardHeight, setKeyboardHeight] = useState(0);
 
   // 判斷當前畫面屬於哪個 Navigator，要看此頁是在哪個 Navigator 中被註冊
   // 因為現在我的系統整合了兩個 Navigator，所以需要使用 MixedNav 來讓 navigation 可以跳轉到兩個 Navigator 分類的畫面
@@ -32,9 +35,37 @@ export default function LoginScreen() {
     await handleLogin()
   }
 
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      (e) => setKeyboardHeight(e.endCoordinates.height)
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => setKeyboardHeight(0)
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+      keyboardDidShowListener.remove();
+    };
+  }, []);
+
   return (
-    <View className="flex-1 bg-gray-50 justify-center px-6">
-      {/* 主要容器 */}
+    <ScrollView 
+      className="flex-1 bg-gray-50"
+      contentContainerStyle={{ 
+        flexGrow: 1, 
+        // 只有在沒有鍵盤時才置中
+        ...(keyboardHeight === 0 ? { justifyContent: 'center' } : {}),
+        paddingHorizontal: 24,
+        paddingTop: keyboardHeight > 0 ? 60 : 40,
+        paddingBottom: keyboardHeight > 0 ? keyboardHeight + 20 : 40
+      }}
+      showsVerticalScrollIndicator={false}
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* 主要容器 - 恢復原本設計 */}
       <View className="bg-white rounded-2xl shadow-lg p-8 mx-2">
         {/* 標題 */}
         <View className="items-center mb-8">
@@ -96,6 +127,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
       </View>
-    </View>
+    </ScrollView>
   )
 }
