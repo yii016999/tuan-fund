@@ -20,6 +20,7 @@ export default function CreateGroupModal({ visible, onClose, onSuccess }: Create
     const [allowPrepay, setAllowPrepay] = useState(false)
     const [enableMonthlyPayment, setEnableMonthlyPayment] = useState(false)
     const [billingCycle, setBillingCycle] = useState<BillingCycle>(BILLING_CYCLES.MONTHLY)
+    const [enableCustomAmount, setEnableCustomAmount] = useState(false)
 
     const { createGroup, isCreatingGroup, createGroupError } = useSettingsViewModel()
 
@@ -33,6 +34,7 @@ export default function CreateGroupModal({ visible, onClose, onSuccess }: Create
             setBillingCycle(BILLING_CYCLES.MONTHLY)
             setMonthlyAmount('')
             setAllowPrepay(false)
+            setEnableCustomAmount(false)
         }
     }, [visible])
 
@@ -44,7 +46,8 @@ export default function CreateGroupModal({ visible, onClose, onSuccess }: Create
             type === GROUP_TYPES.LONG_TERM && enableMonthlyPayment ? {
                 monthlyAmount: parseInt(monthlyAmount) || 0,
                 billingCycle,
-                allowPrepay
+                allowPrepay,
+                enableCustomAmount
             } : undefined
         )
 
@@ -126,12 +129,38 @@ export default function CreateGroupModal({ visible, onClose, onSuccess }: Create
                             </TouchableOpacity>
                         </View>
 
+                        {/* 客製化金額開關 */}
+                        <View className="flex-row items-center justify-between mb-4 p-3 bg-white rounded-lg border border-gray-200">
+                            <View className="flex-1">
+                                <Text className="font-medium text-gray-800 mb-1">{SETTINGS_CREATE_GROUP.ENABLE_CUSTOM_AMOUNT}</Text>
+                                <Text className="text-sm text-gray-600">{SETTINGS_CREATE_GROUP.ENABLE_CUSTOM_AMOUNT_INFO}</Text>
+                            </View>
+                            <TouchableOpacity
+                                onPress={() => setEnableCustomAmount(!enableCustomAmount)}
+                                className={`w-12 h-6 rounded-full ${enableCustomAmount ? 'bg-blue-500' : 'bg-gray-300'}`}
+                            >
+                                <View
+                                    className={`w-5 h-5 bg-white rounded-full mt-0.5 ${enableCustomAmount ? 'ml-6' : 'ml-0.5'}`}
+                                    style={{
+                                        shadowColor: '#000',
+                                        shadowOffset: { width: 0, height: 1 },
+                                        shadowOpacity: 0.2,
+                                        shadowRadius: 2,
+                                        elevation: 2,
+                                    }}
+                                />
+                            </TouchableOpacity>
+                        </View>
+
                         <View className="p-3 bg-blue-50 rounded-lg border-l-4 border-blue-200">
                             <Text className="text-sm text-blue-800 font-medium mb-2">
                                 {SETTINGS_CREATE_GROUP.FIXED_PAYMENT_SYSTEM_ENABLED}
                             </Text>
                             <Text className="text-xs text-blue-700 leading-4">
-                                {SETTINGS_CREATE_GROUP.FIXED_PAYMENT_SYSTEM_NOTICE} ${monthlyAmount || 0}
+                                {enableCustomAmount
+                                    ? `${SETTINGS_CREATE_GROUP.FIXED_PAYMENT_SYSTEM_NOTICE} ${SETTINGS_CREATE_GROUP.FIXED_PAYMENT_SYSTEM_NOTICE_INFO} $${monthlyAmount || 0}\n${SETTINGS_CREATE_GROUP.FIXED_PAYMENT_SYSTEM_NOTICE_INFO_INFO}`
+                                    : `${SETTINGS_CREATE_GROUP.FIXED_PAYMENT_SYSTEM_NOTICE} $${monthlyAmount || 0}`
+                                }
                             </Text>
                         </View>
                     </View>

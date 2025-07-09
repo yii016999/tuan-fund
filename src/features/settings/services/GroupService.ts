@@ -166,7 +166,13 @@ export const GroupService = {
         createdAt: serverTimestamp(),
         inviteCode,
         memberJoinedAt: { [userId]: serverTimestamp() },  // 記錄加入時間
-        ...(monthlyPaymentSettings || {})
+        ...(monthlyPaymentSettings || {}),
+        // 如果啟用客製化金額，初始化成員金額設定
+        ...(monthlyPaymentSettings?.enableCustomAmount ? {
+          memberCustomAmounts: {
+            [userId]: monthlyPaymentSettings.monthlyAmount || 0
+          }
+        } : {})
       }
 
       await setDoc(groupRef, groupData)
@@ -345,6 +351,48 @@ export const GroupService = {
 
     } catch (error) {
       console.error('Error deleting group:', error)
+      throw error
+    }
+  },
+
+  // 更新成員的客製化金額
+  async updateMemberCustomAmount(groupId: string, memberId: string, amount: number): Promise<void> {
+    try {
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
+      const groupSnap = await getDoc(groupRef)
+      
+      if (!groupSnap.exists()) {
+        throw new Error('群組不存在')
+      }
+
+      const groupData = groupSnap.data()
+      const memberCustomAmounts = groupData.memberCustomAmounts || {}
+
+      await updateDoc(groupRef, {
+        memberCustomAmounts: {
+          ...memberCustomAmounts,
+          [memberId]: amount
+        }
+      })
+    } catch (error) {
+      console.error('Error updating member custom amount:', error)
+      throw error
+    }
+  },
+
+  // 獲取群組詳細資訊（包含客製化金額設定）
+  async getGroupDetails(groupId: string): Promise<any> {
+    try {
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
+      const groupSnap = await getDoc(groupRef)
+      
+      if (!groupSnap.exists()) {
+        throw new Error('群組不存在')
+      }
+
+      return groupSnap.data()
+    } catch (error) {
+      console.error('Error fetching group details:', error)
       throw error
     }
   },

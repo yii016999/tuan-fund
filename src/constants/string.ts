@@ -25,6 +25,9 @@ export const COMMON = {
     QUESTION: '嗎',
     QUESTION_MARK: '？',
     ADD_SUCCESS: '新增成功',
+    INPUT: '輸入金額',
+    INPUT_CUSTOM_AMOUNT: '輸入自訂金額',
+    SAVING: '儲存中...',
 } as const;
 
 /** App */
@@ -134,6 +137,8 @@ export const TRANSACTION = {
 /** Members */
 export const MEMBERS = {
     TITLE: '成員',
+    MEMBER: '成員',
+    MEMBER_INFO: '成員：',
     CURRENT_MEMBER: '我',
     ADMIN: '管理員',
     JOINED_AT: '加入時間：',
@@ -143,11 +148,14 @@ export const MEMBERS = {
     UNPAID: '未繳費',
     CURRENT_MONTH_AMOUNT: '本月金額：',
     LATEST_PAYMENT_DATE: '最近繳費：',
+    PAYMENT_AMOUNT_INFO: '繳費金額：',
     STATISTICS: '統計資料',
     TOTAL_PAID_AMOUNT: '累計金額：',
     TOTAL_PAYMENT_COUNT: '繳費次數：',
     TIMES: '次',
     REFRESH: '更新',
+    SET_AMOUNT: '設定金額',
+    DEFAULT_AMOUNT_INFO: '預設金額：',
     CONFIRM_REMOVE_MEMBER: '確認移除成員',
     CONFIRM_REMOVE_MEMBER_MESSAGE: '確定要移除',
     MEMBERS_COUNT: '群組成員',
@@ -169,6 +177,12 @@ export const MEMBERS = {
     INVITE_CODE_TITLE: '邀請碼',
     INVITE_CODE_MESSAGE: '群組邀請碼：',
     INVITE_CODE_INFO: '知道了',
+    CUSTOM_AMOUNT_ENABLED: '客製化金額功能已啟用',
+    CUSTOM_AMOUNT_INFO: '點選成員可設定個別繳費金額',
+    SET_PAYMENT_AMOUNT: '設定繳費金額',
+    ROLE_INFO: '角色：',
+    AMOUNT_UPDATED_SUCCESS: '成員金額已更新',
+    AMOUNT_UPDATE_FAILED: '更新失敗，請重試',
 } as const;
 
 /** Settings */
@@ -261,8 +275,12 @@ export const SETTINGS_CREATE_GROUP = {
     BILLING_CYCLE: '繳費週期',
     BILLING_CYCLE_NOTICE: '請選擇繳費週期',
     PREPAY_NOTICE: '成員可提前繳費',
+    ENABLE_CUSTOM_AMOUNT: '啟用客製化金額',
+    ENABLE_CUSTOM_AMOUNT_INFO: '允許管理員為每位成員設定不同的繳費金額',
     FIXED_PAYMENT_SYSTEM_ENABLED: '💡 固定繳費制度已啟用',
     FIXED_PAYMENT_SYSTEM_NOTICE: '每位成員需要按照設定的週期繳費',
+    FIXED_PAYMENT_SYSTEM_NOTICE_INFO: '預設金額: $',
+    FIXED_PAYMENT_SYSTEM_NOTICE_INFO_INFO: '請到"成員"頁面為成員設定個別金額',
     JOIN_GROUP_NOTICE: '請輸入群組邀請碼',
     JOIN_GROUP_NOTICE_INFO: '💡 邀請碼由群組管理員提供，格式為 6-8 位英數字組合。',
     GROUP_DESCRIPTION: '群組描述',
