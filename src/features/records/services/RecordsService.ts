@@ -1,6 +1,6 @@
 import { db } from '@/config/firebase'
 import { Transaction } from '@/features/transaction/model/Transaction'
-import { collection, deleteDoc, doc, getDocs, limit, orderBy, query, Timestamp, updateDoc, where } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDocs, limit, orderBy, query, Timestamp, updateDoc, where, getDoc } from 'firebase/firestore'
 import { MemberPaymentRecord } from '../model/Record'
 
 export class RecordsService {
@@ -89,7 +89,12 @@ export class RecordsService {
   // 刪除群組收支記錄
   static async deleteGroupTransaction(id: string, groupId: string): Promise<void> {
     try {
+      // 刪除交易記錄
       await deleteDoc(doc(db, `groups/${groupId}/transactions`, id))
+      
+      // 如果這是一個繳費相關的交易，也要刪除對應的 memberPayments 記錄
+      // 可以根據 transaction 的某些特徵來判斷（例如 type、title 等）
+      console.log('已刪除群組交易記錄:', id)
     } catch (error) {
       console.error('Error deleting group transaction:', error)
       throw error
@@ -113,7 +118,32 @@ export class RecordsService {
   // 刪除個人繳費記錄
   static async deleteMemberPayment(id: string, groupId: string): Promise<void> {
     try {
-      await deleteDoc(doc(db, `groups/${groupId}/memberPayments`, id))
+      // 先獲取要刪除的記錄資料
+      const paymentDoc = await getDoc(doc(db, `groups/${groupId}/memberPayments`, id))
+      
+      if (paymentDoc.exists()) {
+        const paymentData = paymentDoc.data() as MemberPaymentRecord
+        
+        // 刪除 memberPayments 記錄
+        await deleteDoc(doc(db, `groups/${groupId}/memberPayments`, id))
+        
+        // 查找並刪除對應的 transactions 記錄
+        const transactionsQuery = query(
+          collection(db, `groups/${groupId}/transactions`),
+          where('userId', '==', paymentData.memberId),
+          where('date', '==', paymentData.paymentDate),
+          where('amount', '==', paymentData.amount)
+        )
+        
+        const transactionSnapshot = await getDocs(transactionsQuery)
+        
+        // 刪除找到的交易記錄
+        for (const doc of transactionSnapshot.docs) {
+          await deleteDoc(doc.ref)
+        }
+        
+        console.log('已刪除繳費記錄和對應的交易記錄:', id)
+      }
     } catch (error) {
       console.error('Error deleting member payment:', error)
       throw error

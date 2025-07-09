@@ -1,36 +1,28 @@
 import FullScreenLoader from '@/components/FullScreenLoader';
+import NoGroupSelected from '@/components/NoGroupSelected';
 import { HOME } from '@/constants/string';
 import BalanceChart from '@/features/home/components/BalanceChart';
 import PaymentStatusCard from '@/features/home/components/PaymentStatusCard';
 import TransactionOverviewCard from '@/features/home/components/TransactionOverviewCard';
 import React from 'react';
-import { Dimensions, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useHomeViewModel } from '../viewmodel/useHomeViewModel';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const { homeData, loading, error, refreshData, selectedYear, previousYear, nextYear } = useHomeViewModel();
+  const { homeData, loading, error, refreshData, selectedYear, previousYear, nextYear, joinedGroupIds, activeGroupId } = useHomeViewModel();
 
   const cardHeight = (screenHeight - 250) * 0.4;
   const chartHeight = (screenHeight - 250) * 0.45;
+  const currentGroupId = activeGroupId || ''
 
   if (loading && !homeData) {
     return <FullScreenLoader visible={loading} />;
   }
 
-  if (error && !homeData) {
-    return (
-      <View className="flex-1 justify-center items-center p-4 bg-gray-50">
-        <Text className="text-red-500 text-center mb-4">{HOME.LOADING_ERROR}{error}</Text>
-        <TouchableOpacity
-          onPress={refreshData}
-          className="bg-blue-500 px-6 py-3 rounded-lg"
-        >
-          <Text className="text-white font-medium">{HOME.REFRESH}</Text>
-        </TouchableOpacity>
-      </View>
-    );
+  if (!currentGroupId) {
+    return <NoGroupSelected joinedGroupIds={joinedGroupIds} />;
   }
 
   // 沒有數據

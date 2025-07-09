@@ -18,6 +18,9 @@ export const useAddViewModel = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
   const [roleLoading, setRoleLoading] = useState(true)
+  const [isPrepayment, setIsPrepayment] = useState(false)
+  const [allowPrepayment, setAllowPrepayment] = useState(false)
+  const [prepaymentMonths, setPrepaymentMonths] = useState(0)
 
   const { user, activeGroupId } = useAuthStore()
 
@@ -50,6 +53,39 @@ export const useAddViewModel = () => {
       setActiveTab(RECORD_TRANSACTION_TYPES.INCOME)
     }
   }, [roleLoading, isAdmin, activeTab])
+
+  // 檢查群組是否允許預繳
+  useEffect(() => {
+    const checkPrepayment = async () => {
+      if (activeGroupId) {
+        const canPrepay = await AddService.checkAllowPrepayment(activeGroupId)
+        setAllowPrepayment(canPrepay)
+      }
+    }
+    
+    checkPrepayment()
+  }, [activeGroupId])
+
+  // 計算預繳月份數
+  useEffect(() => {
+    if (isPrepayment && allowPrepayment && activeTab === RECORD_TRANSACTION_TYPES.INCOME) {
+      const calculateMonths = async () => {
+        if (activeGroupId && user?.uid) {
+          const amountValue = parseInt(amount.replace(/,/g, '')) || 0
+          const currentMonth = new Date().toISOString().slice(0, 7)
+          
+          // 這裡需要獲取當月已繳費總額和群組月繳金額
+          // 暫時簡化處理
+          const months = AddService.calculatePrepaymentMonths(amountValue, 0, 2000) // 需要實際獲取數據
+          setPrepaymentMonths(months)
+        }
+      }
+      
+      calculateMonths()
+    } else {
+      setPrepaymentMonths(0)
+    }
+  }, [isPrepayment, amount, allowPrepayment, activeTab, activeGroupId, user?.uid])
 
   const themeColor = useMemo(() => {
     return activeTab === RECORD_TRANSACTION_TYPES.INCOME ? '#10B981' : '#EF4444'
@@ -164,6 +200,7 @@ export const useAddViewModel = () => {
         date: selectedDate,
         title: title.trim(),
         description: description.trim() || undefined,
+        isPrepayment: isPrepayment, // 添加預繳標記
       }
 
       await AddService.create(
@@ -184,7 +221,7 @@ export const useAddViewModel = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [amount, title, description, selectedDate, activeTab, user, activeGroupId])
+  }, [amount, title, description, selectedDate, activeTab, user, activeGroupId, isPrepayment])
 
   return {
     // States
@@ -198,6 +235,10 @@ export const useAddViewModel = () => {
     isLoading,
     isAdmin,
     roleLoading,
+    isPrepayment,
+    setIsPrepayment,
+    allowPrepayment,
+    prepaymentMonths,
 
     // Computed
     themeColor,

@@ -8,6 +8,7 @@ export const useHomeViewModel = () => {
   const [homeData, setHomeData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { joinedGroupIds } = useAuthStore();
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   
   const { user, activeGroupId } = useAuthStore();
@@ -89,7 +90,8 @@ export const useHomeViewModel = () => {
     loading,
     error,
     selectedYear,
-
+    joinedGroupIds,
+    activeGroupId,
     // 操作
     refreshData,
     loadHomeData,

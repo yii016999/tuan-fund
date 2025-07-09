@@ -138,6 +138,38 @@ export default function AddScreen() {
                 </View>
             </View>
 
+            {/* 預繳選項 (只在收入且群組允許時顯示) */}
+            {viewModel.activeTab === RECORD_TRANSACTION_TYPES.INCOME && viewModel.allowPrepayment && (
+                <View className="mb-6">
+                    <View className="flex-row items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <View className="flex-1">
+                            <Text className="font-medium text-blue-800 mb-1">預繳功能</Text>
+                            <Text className="text-sm text-blue-600">
+                                {viewModel.isPrepayment 
+                                    ? `可預繳 ${viewModel.prepaymentMonths} 個月`
+                                    : '勾選後溢出金額將自動預繳未來月份'
+                                }
+                            </Text>
+                        </View>
+                        <TouchableOpacity
+                            onPress={() => viewModel.setIsPrepayment(!viewModel.isPrepayment)}
+                            className={`w-12 h-6 rounded-full ${viewModel.isPrepayment ? 'bg-blue-500' : 'bg-gray-300'}`}
+                        >
+                            <View
+                                className={`w-5 h-5 bg-white rounded-full mt-0.5 ${viewModel.isPrepayment ? 'ml-6' : 'ml-0.5'}`}
+                                style={{
+                                    shadowColor: '#000',
+                                    shadowOffset: { width: 0, height: 1 },
+                                    shadowOpacity: 0.2,
+                                    shadowRadius: 2,
+                                    elevation: 2,
+                                }}
+                            />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            )}
+
             {/* 備註標籤 */}
             <View className="mb-2">
                 <Text className="text-gray-500 text-sm mb-1">

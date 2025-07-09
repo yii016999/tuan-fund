@@ -1,7 +1,7 @@
 import { db } from '@/config/firebase';
 import { COLLECTIONS, COLUMNS, DATE, DOCUMENTS, QUERIES } from '@/constants/firestorePaths';
 import { COMMON } from '@/constants/string';
-import { RECORD_STATUSES, RECORD_TRANSACTION_TYPES } from '@/constants/types';
+import { RECORD_TRANSACTION_TYPES } from '@/constants/types';
 import { MemberPaymentRecord } from '@/features/records/model/Record';
 import { Transaction } from '@/features/transaction/model/Transaction';
 import { collection, doc, getDoc, getDocs, limit, orderBy, OrderByDirection, query, where, WhereFilterOp } from 'firebase/firestore';
@@ -134,7 +134,7 @@ class HomeService {
   private async getUserNamesMap(userIds: string[]): Promise<Record<string, string>> {
     try {
       const userNamesMap: Record<string, string> = {};
-      
+
       for (const userId of userIds) {
         if (userId) {
           const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId));
@@ -144,7 +144,7 @@ class HomeService {
           }
         }
       }
-      
+
       return userNamesMap;
     } catch (error) {
       console.error('Error fetching user names:', error);
@@ -157,6 +157,7 @@ class HomeService {
     try {
       // 加強參數驗證
       if (!groupId || !userId) {
+        console.log('缺少參數:', { groupId, userId });
         return {
           isPaid: false,
           amount: 0,
@@ -166,12 +167,12 @@ class HomeService {
       }
 
       const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
-      
+
       // 檢查常數是否定義
       if (!COLUMNS.MEMBER_ID || !COLUMNS.BILLING_MONTH) {
-        console.error('Missing column constants:', { 
-          MEMBER_ID: COLUMNS.MEMBER_ID, 
-          BILLING_MONTH: COLUMNS.BILLING_MONTH 
+        console.error('Missing column constants:', {
+          MEMBER_ID: COLUMNS.MEMBER_ID,
+          BILLING_MONTH: COLUMNS.BILLING_MONTH
         });
         throw new Error('系統設定錯誤：缺少欄位定義');
       }
@@ -184,27 +185,30 @@ class HomeService {
       );
 
       const snapshot = await getDocs(q);
-
       const hasPayment = !snapshot.empty;
 
       let paymentData: MemberPaymentRecord | null = null;
       if (hasPayment) {
         paymentData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as MemberPaymentRecord;
+      } else {
+        console.log('沒有找到繳費記錄');
       }
 
       // 如果沒有繳費記錄，從群組設定獲取應繳金額
       const defaultAmount = await this.getGroupMonthlyAmount(groupId);
 
       // 修正狀態比較 - 使用正確的狀態值
-      return {
-        isPaid: hasPayment && paymentData?.status === RECORD_STATUSES.PAID,
-        amount: paymentData?.amount || defaultAmount,
+      const result = {
+        isPaid: hasPayment, // 暫時改為：有記錄就算已繳費
+        amount: hasPayment ? (paymentData?.amount || 0) : 0,
         period: `${new Date().getFullYear()}${COMMON.YEARS}${new Date().getMonth() + 1}${COMMON.MONTH}`,
         dueDate: this.calculateDueDate(),
       };
+
+      return result;
     } catch (error) {
       console.error('Error fetching payment status:', error);
-      
+
       // 返回預設值而不是拋出錯誤
       return {
         isPaid: false,
@@ -261,7 +265,7 @@ class HomeService {
 
     // 數據和標籤都只到當前月份
     const chartData = monthlyBalances.slice(0, currentMonth);
-    const allLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    const allLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const labels = allLabels.slice(0, currentMonth);
 
     return {
@@ -279,8 +283,8 @@ class HomeService {
   // 生成預設的年度餘額數據
   private getDefaultYearlyBalance(year: number) {
     // 英文月份縮寫
-    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
-                        'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 
     // 獲取當前年月
     const currentDate = new Date();
@@ -294,10 +298,10 @@ class HomeService {
     const labels = monthLabels.slice(0, maxMonth);
     const balances = new Array(maxMonth).fill(0);
 
-    return { 
+    return {
       labels: labels, // 標籤也只到當前月份
       balances, // 數據到當前月份
-      maxMonth 
+      maxMonth
     };
   }
 
@@ -340,7 +344,7 @@ class HomeService {
       );
 
       const snapshot = await getDocs(q);
-      
+
       if (snapshot.empty) {
         return new Date().getFullYear();
       }

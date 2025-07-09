@@ -21,4 +21,5 @@ export interface CreateTransactionInput {
   date: string
   title: string
   description?: string
+  isPrepayment?: boolean
 } 
