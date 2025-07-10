@@ -4,8 +4,8 @@ import { useLoginViewModel } from "@/features/auth/viewmodel/useLoginViewModel";
 import { AuthParamList, RootStackParamList } from '@/navigation/types';
 import { CompositeNavigationProp, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Text, TextInput, TouchableOpacity, View, KeyboardAvoidingView, ScrollView, Platform, Keyboard } from "react-native";
 import { useEffect, useState } from 'react';
+import { Keyboard, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 
 export default function LoginScreen() {
   const {
@@ -13,6 +13,7 @@ export default function LoginScreen() {
     setUsername,
     password,
     setPassword,
+    isLoading,
     error,
     handleLogin,
   } = useLoginViewModel()
@@ -51,12 +52,26 @@ export default function LoginScreen() {
     };
   }, []);
 
+  // 提取重複的輸入框樣式
+  const inputStyle = "w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
+  const buttonPrimaryStyle = "bg-blue-600 rounded-xl py-4 shadow-sm active:bg-blue-700"
+  const buttonSecondaryStyle = "bg-gray-100 border border-gray-200 rounded-xl py-4 active:bg-gray-200 mt-3"
+
+  // 提取錯誤顯示邏輯
+  const ErrorDisplay = ({ error }: { error: string }) => (
+    error ? (
+      <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
+        <Text className="text-red-600 text-sm text-center">{error}</Text>
+      </View>
+    ) : null
+  )
+
   return (
-    <ScrollView 
+    <ScrollView
       className="flex-1 bg-gray-50"
-      contentContainerStyle={{ 
-        flexGrow: 1, 
-        // 只有在沒有鍵盤時才置中
+      contentContainerStyle={{
+        flexGrow: 1,
+        // 在沒有鍵盤時置中
         ...(keyboardHeight === 0 ? { justifyContent: 'center' } : {}),
         paddingHorizontal: 24,
         paddingTop: keyboardHeight > 0 ? 60 : 40,
@@ -65,7 +80,7 @@ export default function LoginScreen() {
       showsVerticalScrollIndicator={false}
       keyboardShouldPersistTaps="handled"
     >
-      {/* 主要容器 - 恢復原本設計 */}
+      {/* 主要容器 */}
       <View className="bg-white rounded-2xl shadow-lg p-8 mx-2">
         {/* 標題 */}
         <View className="items-center mb-8">
@@ -80,8 +95,9 @@ export default function LoginScreen() {
             <TextInput
               placeholder={LOGIN.USERNAME_PLACEHOLDER}
               value={username}
+              editable={!isLoading}
               onChangeText={setUsername}
-              className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
+              className={inputStyle}
               keyboardType="email-address"
               autoCapitalize="none"
               placeholderTextColor="#9CA3AF"
@@ -93,8 +109,9 @@ export default function LoginScreen() {
             <TextInput
               placeholder={LOGIN.PASSWORD_PLACEHOLDER}
               value={password}
+              editable={!isLoading}
               onChangeText={setPassword}
-              className="w-full border border-gray-200 rounded-xl px-4 py-4 bg-gray-50 text-gray-800 focus:border-blue-500 focus:bg-white"
+              className={inputStyle}
               secureTextEntry
               placeholderTextColor="#9CA3AF"
             />
@@ -102,18 +119,15 @@ export default function LoginScreen() {
         </View>
 
         {/* 錯誤訊息 */}
-        {error && (
-          <View className="bg-red-50 border border-red-200 rounded-lg p-3 mb-6">
-            <Text className="text-red-600 text-sm text-center">{error}</Text>
-          </View>
-        )}
+        <ErrorDisplay error={error} />
 
         {/* 按鈕區域 */}
         <View>
           {/* 登入按鈕 */}
           <TouchableOpacity
             onPress={onLoginPress}
-            className="bg-blue-600 rounded-xl py-4 shadow-sm active:bg-blue-700"
+            className={buttonPrimaryStyle}
+            disabled={isLoading}
           >
             <Text className="text-white text-center font-semibold text-lg">{LOGIN.LOGIN}</Text>
           </TouchableOpacity>
@@ -121,7 +135,8 @@ export default function LoginScreen() {
           {/* 註冊按鈕 */}
           <TouchableOpacity
             onPress={onRegisterPress}
-            className="bg-gray-100 border border-gray-200 rounded-xl py-4 active:bg-gray-200 mt-3"
+            className={buttonSecondaryStyle}
+            disabled={isLoading}
           >
             <Text className="text-gray-700 text-center font-semibold text-lg">{LOGIN.CREATE_ACCOUNT}</Text>
           </TouchableOpacity>

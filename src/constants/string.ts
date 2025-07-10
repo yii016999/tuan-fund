@@ -56,10 +56,7 @@ export const LOGIN = {
     USERNAME_PLACEHOLDER: '請輸入您的帳號',
     PASSWORD_PLACEHOLDER: '請輸入您的密碼',
     CREATE_ACCOUNT: '建立新帳號',
-} as const;
-
-export const LOGIN_MESSAGES = {
-    USER_NOT_EXIST: '使用者不存在',
+    LOGIN_ERROR: '登入失敗，請聯系開發者',
 } as const;
 
 /** Register */
@@ -298,4 +295,5 @@ export const SETTINGS_NO_GROUP_SELECTED = {
     MESSAGE: '請先至「設定」切換主頁群組中選擇一個群組',
     NO_GROUP_TITLE: '沒有加入群組',
     NO_GROUP_MESSAGE: '請先至「設定」建立或加入一個群組',
+    GO_TO_SETTINGS: '前往設定',
 } as const;

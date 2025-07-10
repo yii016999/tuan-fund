@@ -1,7 +1,7 @@
+import { AppHeader } from '@/components/AppHeader';
 import { COMMON, SETTINGS_GROUP_SWITCH } from '@/constants/string';
 import { BILLING_CYCLES, GROUP_TYPES } from '@/constants/types';
 import { GroupSettings } from '@/features/settings/model/Group';
-import { ModalHeader } from '@/components/ModalHeader';
 import * as Clipboard from 'expo-clipboard';
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, FlatList, Modal, Platform, Text, ToastAndroid, TouchableOpacity, View } from 'react-native';
@@ -205,11 +205,10 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                         minHeight: 320,
                     }}
                 >
-                    {/* 使用新的 ModalHeader */}
-                    <ModalHeader
+                    <AppHeader
                         title={SETTINGS_GROUP_SWITCH.TITLE_SELECT_GROUP}
-                        onClose={props.onClose}
-                        showBorder={false}
+                        onBackPress={props.onClose}
+                        isBorder={false}
                     />
 
                     {/* 載入中 */}
@@ -231,7 +230,7 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                                         onSelect={() => handleGroupSelect(item.id, item.name)}
                                         isLoading={loadingGroupId === item.id}
                                     />
-                                    
+
                                     {/* 刪除按鈕 - 只有管理員可以看到 */}
                                     {item.isAdmin && (
                                         <TouchableOpacity

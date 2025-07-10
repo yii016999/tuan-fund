@@ -1,5 +1,4 @@
 import FullScreenLoader from '@/components/FullScreenLoader'
-import { ModalHeader } from '@/components/ModalHeader'
 import NoGroupSelected from '@/components/NoGroupSelected'
 import RefreshScrollView from '@/components/RefreshScrollView'
 import { COMMON, MEMBERS } from '@/constants/string'
@@ -7,7 +6,8 @@ import { MEMBER_ROLES } from '@/constants/types'
 import { GroupService } from '@/features/settings/services/GroupService'
 import { useAuthStore } from '@/store/useAuthStore'
 import React, { useEffect, useState } from 'react'
-import { Alert, Modal, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Alert, Text, TouchableOpacity, View } from 'react-native'
+import CustomAmountModal from '../components/CustomAmountModal'
 import { useMembersViewModel } from '../viewmodel/useMembersViewModel'
 
 export function MembersScreen() {
@@ -207,50 +207,14 @@ export function MembersScreen() {
       )}
 
       {/* 客製化金額設定 Modal */}
-      <Modal visible={showCustomAmountModal} animationType="slide" transparent>
-        <View className="flex-1 bg-black/30 justify-center items-center">
-          <View className="bg-white rounded-lg p-6 w-4/5 max-w-sm">
-            <ModalHeader
-              title="設定繳費金額"
-              onClose={() => setShowCustomAmountModal(false)}
-              showBorder={false}
-            />
-
-            <View className="mt-4">
-              <Text className="text-gray-700 mb-2">
-                {MEMBERS.MEMBER_INFO} {selectedMember?.displayName}
-              </Text>
-              <Text className="text-sm text-gray-600 mb-4">
-                {MEMBERS.DEFAULT_AMOUNT_INFO} {COMMON.MONEY_SIGN} {groupDetails?.monthlyAmount || 0}
-              </Text>
-
-              <TextInput
-                value={customAmount}
-                onChangeText={setCustomAmount}
-                placeholder={`${COMMON.INPUT} ${COMMON.MONEY_SIGN}`}
-                keyboardType="numeric"
-                className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
-              />
-
-              <View className="flex-row justify-end gap-2">
-                <TouchableOpacity
-                  onPress={() => setShowCustomAmountModal(false)}
-                  className="bg-gray-500 px-4 py-2 rounded-lg"
-                >
-                  <Text className="text-white">{COMMON.CANCEL}</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  onPress={saveCustomAmount}
-                  className="bg-blue-500 px-4 py-2 rounded-lg"
-                >
-                  <Text className="text-white">{COMMON.CONFIRM}</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      <CustomAmountModal
+        visible={showCustomAmountModal}
+        onClose={() => setShowCustomAmountModal(false)}
+        onConfirm={saveCustomAmount}
+        memberName={selectedMember?.displayName || ''}
+        defaultAmount={groupDetails?.monthlyAmount || 0}
+        initialAmount={customAmount}
+      />
     </View>
   )
 }

@@ -1,4 +1,4 @@
-import { ModalHeader } from '@/components/ModalHeader';
+import { AppHeader } from '@/components/AppHeader';
 import { SETTINGS_CREATE_GROUP } from '@/constants/string';
 import { BILLING_CYCLES, BillingCycle, GROUP_TYPES, GroupType } from '@/constants/types';
 import { useSettingsViewModel } from '@/features/settings/viewmodel/useSettingsViewModel';
@@ -199,10 +199,10 @@ export default function CreateGroupModal({ visible, onClose, onSuccess }: Create
         <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
             <View className="flex-1 bg-black/30">
                 <View className="bg-white pt-5 pb-6 px-4 w-full shadow-lg flex-1">
-                    <ModalHeader
+                    <AppHeader
                         title={SETTINGS_CREATE_GROUP.TITLE_CREATE_GROUP}
-                        onClose={onClose}
-                        showBorder={false}
+                        onBackPress={onClose}
+                        isBorder={false}
                     />
 
                     <View className="flex-1">

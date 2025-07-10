@@ -7,19 +7,27 @@ export function useLoginViewModel() {
     const [username, setUsername] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState("")
-    const setUser = useAuthStore((s) => s.setUser)
+    const [isLoading, setIsLoading] = useState(false)
+    const { setUser, setJoinedGroupIds, setActiveGroupId } = useAuthStore()
 
-    // 登入，回傳是否成功
     const handleLogin = async (): Promise<boolean> => {
         setError("")
+        setIsLoading(true)
         try {
             const account = `${username}${REGISTER.MAIL_SUFFIX}`
             const user = await loginWithEmail(account, password)
+
+            // 處理 Store 更新
             setUser({ uid: user.uid, email: user.email ?? "", displayName: user.displayName ?? "", avatarUrl: user.avatarUrl ?? "" })
+            setJoinedGroupIds(user.joinedGroupIds || [])
+            setActiveGroupId(user.activeGroupId || '')
+
             return true
         } catch (err: any) {
             setError(err.message)
             return false
+        } finally {
+            setIsLoading(false)
         }
     }
 
@@ -29,6 +37,7 @@ export function useLoginViewModel() {
         password,
         setPassword,
         error,
+        isLoading,
         handleLogin,
     }
 }
