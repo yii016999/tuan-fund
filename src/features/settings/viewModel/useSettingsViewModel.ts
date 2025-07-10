@@ -15,10 +15,6 @@ import { GroupService } from '../services/GroupService'
 
 const db = getFirestore()
 
-interface MonthlyPaymentSettings {
-    enabled: boolean;
-}
-
 export function useSettingsViewModel() {
     const navigation = useNavigation<NativeStackNavigationProp<AuthParamList>>()
     const { user, logout, activeGroupId, setActiveGroupId } = useAuthStore()
@@ -141,39 +137,48 @@ export function useSettingsViewModel() {
     }, [fetchGroups])
 
     // 加入群組功能
-    const joinGroup = async (inviteCode: string) => {
+    const joinGroup = async (inviteCode: string): Promise<boolean> => {
+        // 如果使用者尚未登入則直接失敗
         if (!user?.uid) return false
 
         setIsJoiningGroup(true)
         setJoinGroupError('')
 
         try {
+            // 嘗試加入群組
             const result = await GroupService.joinGroupByCode(user.uid, inviteCode)
 
-            if (result.success && result.groupId && result.groupName) {
-                // 更新本地狀態
-                setActiveGroupId(result.groupId)
-                setCurrentGroupName(result.groupName)
-
-                // 同步到 AuthStore
-                const authStore = useAuthStore.getState()
-                authStore.setActiveGroupId(result.groupId)
-
-                // 重新載入群組資料
-                await fetchGroups()
-
-                // 同步 joinedGroupIds
-                const userGroups = await GroupService.getGroupsByUserId(user.uid)
-                authStore.setJoinedGroupIds(userGroups.map(g => g.id))
-
-                return true
-            } else {
-                setJoinGroupError(result.error || SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP)
+            if (!result.success) {
+                // 顯示固定錯誤訊息
+                setJoinGroupError(SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP)
                 return false
             }
+
+            // 成功加入後，重新拉取所有群組資料
+            await fetchGroups()
+
+            // 同步 active group 狀態（使用最新資料）
+            const userGroups = await GroupService.getGroupsByUserId(user.uid)
+            const latestGroup = userGroups[userGroups.length - 1] // 加入的群組應該在最後
+
+            if (latestGroup) {
+                // 更新 UI 狀態
+                setActiveGroupId(latestGroup.id)
+                setCurrentGroupName(latestGroup.name)
+
+                // 同步至 AuthStore
+                const authStore = useAuthStore.getState()
+                authStore.setActiveGroupId(latestGroup.id)
+                authStore.setJoinedGroupIds(userGroups.map(g => g.id))
+            }
+
+            return true
+
         } catch (error) {
-            setJoinGroupError(error instanceof Error ? error.message : SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP)
+            // 捕捉非預期錯誤（例如 Firebase 連線問題）
+            setJoinGroupError(SETTINGS_GROUP_SWITCH.ERROR_MESSAGE_JOIN_GROUP)
             return false
+
         } finally {
             setIsJoiningGroup(false)
         }
@@ -205,17 +210,17 @@ export function useSettingsViewModel() {
 
                             // 重新載入用戶群組資料
                             await loadUserGroups()
-                            
+
                             // 重新獲取群組列表
                             await fetchGroups()
 
                             // 獲取最新的群組資訊
                             const userGroups = await GroupService.getGroupsByUserId(user.uid)
                             const authStore = useAuthStore.getState()
-                            
+
                             // 更新 joinedGroupIds
                             authStore.setJoinedGroupIds(userGroups.map(g => g.id))
-                            
+
                             // 檢查是否還有其他群組
                             if (userGroups.length === 0) {
                                 // 沒有群組了，清空 activeGroupId
@@ -249,20 +254,20 @@ export function useSettingsViewModel() {
         setLoading(true)
         try {
             await GroupService.deleteGroup(groupId, user.uid)
-            
+
             // 重新載入群組資料
             await fetchGroups()
-            
+
             // 重新載入用戶群組資料
             await loadUserGroups()
-            
+
             // 獲取最新的群組資訊
             const userGroups = await GroupService.getGroupsByUserId(user.uid)
             const authStore = useAuthStore.getState()
-            
+
             // 更新 joinedGroupIds
             authStore.setJoinedGroupIds(userGroups.map(g => g.id))
-            
+
             // 如果刪除的是當前活躍的群組，需要處理 activeGroupId
             if (activeGroupId === groupId) {
                 if (userGroups.length === 0) {
@@ -278,12 +283,12 @@ export function useSettingsViewModel() {
                     setCurrentGroupName(firstGroup.name)
                 }
             }
-            
+
             // 如果沒有群組了，自動關閉 modal
             if (userGroups.length === 0 && onModalClose) {
                 onModalClose()
             }
-            
+
             Alert.alert('成功', '群組已成功刪除')
         } catch (error) {
             console.error('Error deleting group:', error)

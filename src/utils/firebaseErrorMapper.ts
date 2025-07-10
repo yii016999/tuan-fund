@@ -35,11 +35,20 @@ export function mapFirebaseError(error: any): AppError {
         case 'member/admin-must-transfer':
             return { code: error.code, message: error.message, rawMessage: error }
 
+        // Settings
+        case ERROR_CODE.GROUP_NOT_EXIST:
+            return { code: error.code, message: error.message, rawMessage: error }
+        case ERROR_CODE.NO_PERMISSION_DELETE_GROUP:
+            return { code: error.code, message: error.message, rawMessage: error }
+        case ERROR_CODE.MEMBER_ALREADY_JOINED:
+            return { code: error.code, message: error.message, rawMessage: error }
+
+
         // Default：所有沒列出的都丟 generic 錯誤
         default:
             return {
                 code: 'general/abnormal',
-                message: '系統異常，請稍後再試或聯絡客服',
+                message: '系統異常，請稍後再試或聯絡開發者',
                 rawMessage: error
             }
     }

@@ -19,5 +19,10 @@ export interface GroupSettings {
     memberJoinedAt: Record<string, Timestamp>  // 記錄各成員加入時間
     memberCount: number                    // 成員數量
     isAdmin: boolean                       // 當前用戶是否為管理員
-    updatedAt: Date
+    memberCustomAmounts?: Record<string, number> // 各成員的客製化金額
+}
+
+export interface MonthlyPaymentSettings {
+    enabled: boolean;
+    customAmount: number;
 }

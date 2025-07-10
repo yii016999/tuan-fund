@@ -50,6 +50,11 @@ export const ERROR_CODE = {
     CANNOT_REMOVE_SELF: 'member/cannot-remove-self',
     NOT_IN_GROUP: 'member/not-in-group',
     ADMIN_MUST_TRANSFER: 'member/admin-must-transfer',
+
+    // Settings
+    GROUP_NOT_EXIST: 'group/not-exist',
+    NO_PERMISSION_DELETE_GROUP: 'group/no-permission-delete',
+    MEMBER_ALREADY_JOINED: 'member/already-joined',
 } as const;
 
 /** App */
@@ -139,6 +144,8 @@ export const TRANSACTION = {
     TITLE: '群組記帳',
     INCOME: '收入',
     EXPENSE: '支出',
+    PREPAYMENT: '預繳',
+    PAYMENT_THIS_MONTH: '當月繳費',
     PAYMENT_DESCRIPTION: '繳費',
     ADD_INCOME: '新增收入',
     ADD_EXPENSE: '新增支出',
@@ -311,8 +318,16 @@ export const SETTINGS_CREATE_GROUP = {
     CREATE_GROUP_SUCCESS: '群組已建立',
     CREATE_GROUP_FAILURE: '建立群組失敗',
     JOIN_GROUP_SUCCESS: '群組已加入',
-    JOIN_GROUP_FAILURE: '加入群組失敗',
+} as const;
+
+/** JoinGroup */
+export const JOIN_GROUP = {
+    TITLE: '加入群組',
+    TITLE_JOIN_GROUP: '加入群組',
+    TITLE_GROUP_MEMBERS: '群組成員',
     JOIN_GROUP_FAILURE_INFO: '加入群組失敗，請檢查邀請碼是否正確',
+    JOIN_GROUP_FAILURE: '加入群組失敗',
+    JOIN_GROUP_ALREADY_JOINED: '您已經是此群組的成員',
 } as const;
 
 /** NoGroupSelected */
@@ -322,4 +337,5 @@ export const SETTINGS_NO_GROUP_SELECTED = {
     NO_GROUP_TITLE: '沒有加入群組',
     NO_GROUP_MESSAGE: '請先至「設定」建立或加入一個群組',
     GO_TO_SETTINGS: '前往設定',
+    NO_PERMISSION_DELETE_GROUP: '沒有權限刪除群組',
 } as const;

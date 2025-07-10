@@ -24,10 +24,12 @@ export const COLUMNS = {
     GROUP_ID: 'groupId',
     USER_ID: 'userId',
     MEMBER_ID: 'memberId',
+    PAYMENT_DATE: 'paymentDate',
     BILLING_MONTH: 'billingMonth',
     STATUS: 'status',
     CREATED_AT: 'createdAt',
     UPDATED_AT: 'updatedAt',
+    INVITE_CODE: 'inviteCode',
 }
 
 export const DATE = {

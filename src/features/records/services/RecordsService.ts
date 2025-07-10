@@ -1,21 +1,18 @@
 import { db } from '@/config/firebase'
+import { COLLECTIONS, COLUMNS, DOCUMENTS, QUERIES } from '@/constants/firestorePaths'
 import { Transaction } from '@/features/transaction/model/Transaction'
-import { collection, deleteDoc, doc, getDocs, limit, orderBy, query, Timestamp, updateDoc, where, getDoc } from 'firebase/firestore'
+import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, OrderByDirection, query, Timestamp, updateDoc, where, WhereFilterOp } from 'firebase/firestore'
 import { MemberPaymentRecord } from '../model/Record'
 
 export class RecordsService {
-  // 獲取群組收支記錄 (使用正確的路徑)
-  static async getGroupTransactions(
-    groupId: string,
-    startDate: Date,
-    endDate: Date
-  ): Promise<Transaction[]> {
+  // 獲取群組收支記錄
+  static async getGroupTransactions(groupId: string, startDate: Date, endDate: Date): Promise<Transaction[]> {
     try {
       const q = query(
-        collection(db, `groups/${groupId}/transactions`),
-        where('date', '>=', startDate.toISOString().split('T')[0]),
-        where('date', '<=', endDate.toISOString().split('T')[0]),
-        orderBy('date', 'desc'),
+        collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
+        where(COLUMNS.DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, startDate.toISOString().split('T')[0]),
+        where(COLUMNS.DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDate.toISOString().split('T')[0]),
+        orderBy(COLUMNS.DATE, QUERIES.DESC as OrderByDirection),
         limit(1000)
       )
 
@@ -31,32 +28,27 @@ export class RecordsService {
   }
 
   // 獲取個人繳費記錄
-  static async getMemberPayments(
-    groupId: string,
-    startDate: Date,
-    endDate: Date,
-    currentUserId?: string
-  ): Promise<MemberPaymentRecord[]> {
+  static async getMemberPayments(groupId: string, startDate: Date, endDate: Date, currentUserId?: string): Promise<MemberPaymentRecord[]> {
     try {
       let q;
 
       if (currentUserId) {
         // 如果有 currentUserId，只查詢該用戶的記錄
         q = query(
-          collection(db, `groups/${groupId}/memberPayments`),
-          where('memberId', '==', currentUserId),
-          where('paymentDate', '>=', startDate.toISOString().split('T')[0]),
-          where('paymentDate', '<=', endDate.toISOString().split('T')[0]),
-          orderBy('paymentDate', 'desc'),
+          collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`),
+          where(COLUMNS.MEMBER_ID, QUERIES.EQUALS as WhereFilterOp, currentUserId),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, startDate.toISOString().split('T')[0]),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDate.toISOString().split('T')[0]),
+          orderBy(COLUMNS.PAYMENT_DATE, QUERIES.DESC as OrderByDirection),
           limit(1000)
         )
       } else {
         // 如果沒有 currentUserId，查詢所有記錄
         q = query(
-          collection(db, `groups/${groupId}/memberPayments`),
-          where('paymentDate', '>=', startDate.toISOString().split('T')[0]),
-          where('paymentDate', '<=', endDate.toISOString().split('T')[0]),
-          orderBy('paymentDate', 'desc'),
+          collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, startDate.toISOString().split('T')[0]),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDate.toISOString().split('T')[0]),
+          orderBy(COLUMNS.PAYMENT_DATE, QUERIES.DESC as OrderByDirection),
           limit(1000)
         )
       }
@@ -75,7 +67,7 @@ export class RecordsService {
   // 更新群組收支記錄
   static async updateGroupTransaction(id: string, data: Partial<Transaction>, groupId: string): Promise<void> {
     try {
-      const docRef = doc(db, `groups/${groupId}/transactions`, id)
+      const docRef = doc(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`, id)
       await updateDoc(docRef, {
         ...data,
         updatedAt: new Date()
@@ -90,11 +82,7 @@ export class RecordsService {
   static async deleteGroupTransaction(id: string, groupId: string): Promise<void> {
     try {
       // 刪除交易記錄
-      await deleteDoc(doc(db, `groups/${groupId}/transactions`, id))
-      
-      // 如果這是一個繳費相關的交易，也要刪除對應的 memberPayments 記錄
-      // 可以根據 transaction 的某些特徵來判斷（例如 type、title 等）
-      console.log('已刪除群組交易記錄:', id)
+      await deleteDoc(doc(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`, id))
     } catch (error) {
       console.error('Error deleting group transaction:', error)
       throw error
@@ -104,7 +92,7 @@ export class RecordsService {
   // 更新個人繳費記錄
   static async updateMemberPayment(id: string, data: Partial<MemberPaymentRecord>, groupId: string): Promise<void> {
     try {
-      const docRef = doc(db, `groups/${groupId}/memberPayments`, id)
+      const docRef = doc(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`, id)
       await updateDoc(docRef, {
         ...data,
         updatedAt: Timestamp.now()
@@ -119,30 +107,28 @@ export class RecordsService {
   static async deleteMemberPayment(id: string, groupId: string): Promise<void> {
     try {
       // 先獲取要刪除的記錄資料
-      const paymentDoc = await getDoc(doc(db, `groups/${groupId}/memberPayments`, id))
-      
+      const paymentDoc = await getDoc(doc(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`, id))
+
       if (paymentDoc.exists()) {
         const paymentData = paymentDoc.data() as MemberPaymentRecord
-        
+
         // 刪除 memberPayments 記錄
-        await deleteDoc(doc(db, `groups/${groupId}/memberPayments`, id))
-        
+        await deleteDoc(doc(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`, id))
+
         // 查找並刪除對應的 transactions 記錄
         const transactionsQuery = query(
-          collection(db, `groups/${groupId}/transactions`),
-          where('userId', '==', paymentData.memberId),
-          where('date', '==', paymentData.paymentDate),
-          where('amount', '==', paymentData.amount)
+          collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
+          where(COLUMNS.USER_ID, QUERIES.EQUALS as WhereFilterOp, paymentData.memberId),
+          where(COLUMNS.DATE, QUERIES.EQUALS as WhereFilterOp, paymentData.paymentDate),
+          where(COLUMNS.AMOUNT, QUERIES.EQUALS as WhereFilterOp, paymentData.amount)
         )
-        
+
         const transactionSnapshot = await getDocs(transactionsQuery)
-        
+
         // 刪除找到的交易記錄
         for (const doc of transactionSnapshot.docs) {
           await deleteDoc(doc.ref)
         }
-        
-        console.log('已刪除繳費記錄和對應的交易記錄:', id)
       }
     } catch (error) {
       console.error('Error deleting member payment:', error)
