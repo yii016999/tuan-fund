@@ -30,6 +30,28 @@ export const COMMON = {
     SAVING: '儲存中...',
 } as const;
 
+/** Error */
+export const ERROR_CODE = {
+    // Auth
+    INVALID_EMAIL: 'auth/invalid-email',
+    ACCOUNT_ABNORMAL: 'user/account-abnormal',
+    WRONG_PASSWORD: 'auth/wrong-password',
+    USER_NOT_FOUND: 'auth/user-not-found',
+
+    // Storage
+    STORAGE_QUOTA_EXCEEDED: 'storage/quota-exceeded',
+
+    // Firestore
+    FIRESTORE_PERMISSION_DENIED: 'firestore/permission-denied',
+
+    // Member
+    MEMBER_NOT_EXIST: 'member/not-exist',
+    NO_PERMISSION_REMOVE_MEMBER: 'member/no-permission',
+    CANNOT_REMOVE_SELF: 'member/cannot-remove-self',
+    NOT_IN_GROUP: 'member/not-in-group',
+    ADMIN_MUST_TRANSFER: 'member/admin-must-transfer',
+} as const;
+
 /** App */
 export const APP = {
     SLUG: 'tuanfund',
@@ -180,6 +202,10 @@ export const MEMBERS = {
     ROLE_INFO: '角色：',
     AMOUNT_UPDATED_SUCCESS: '成員金額已更新',
     AMOUNT_UPDATE_FAILED: '更新失敗，請重試',
+    CANNOT_REMOVE_SELF: '不能移除自己',
+    NOT_IN_GROUP: '您不在此群組中',
+    ADMIN_MUST_TRANSFER: '身為管理員，您無法退出群組。請先將管理員權限轉移給其他成員，或刪除群組。',
+    MEMBER_NOT_EXIST: '成員不存在',
 } as const;
 
 /** Settings */

@@ -1,9 +1,13 @@
 import { db } from '@/config/firebase'
-import { COLLECTIONS } from '@/constants/firestorePaths'
-import { COMMON, MEMBERS } from '@/constants/string'
+import { COLLECTIONS, COLUMNS, DOCUMENTS, GROUP_JOINED_AT_FIELD, GROUP_ROLE_FIELD, QUERIES } from '@/constants/firestorePaths'
+import { COMMON, ERROR_CODE, MEMBERS } from '@/constants/string'
+import { DAYS_PER_MONTH, DAYS_PER_YEAR, MS_PER_DAY } from '@/constants/time'
 import { MEMBER_ROLES, MemberRole, RECORD_STATUSES } from '@/constants/types'
+import { User } from '@/features/auth/model/User'
 import { MemberPaymentRecord } from '@/features/records/model/Record'
-import { arrayRemove, collection, deleteField, doc, getDoc, getDocs, orderBy, query, updateDoc, where } from 'firebase/firestore'
+import type { GroupSettings } from "@/features/settings/model/Group"
+import { getDocOrThrow } from '@/utils/collectionErrorMapping'
+import { arrayRemove, collection, deleteField, doc, DocumentReference, getDocs, orderBy, OrderByDirection, Query, query, Timestamp, updateDoc, where, WhereFilterOp } from 'firebase/firestore'
 import { MemberPaymentStatus, MemberStatistics, MemberWithDetails } from '../model/Member'
 
 export class MemberService {
@@ -11,28 +15,18 @@ export class MemberService {
   static async getGroupMembers(groupId: string, currentUserId: string): Promise<MemberWithDetails[]> {
     try {
       // 獲取群組資料
-      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
-      const groupSnap = await getDoc(groupRef)
-
-      if (!groupSnap.exists()) {
-        throw new Error(MEMBERS.GROUP_ERROR)
-      }
-
-      const groupData = groupSnap.data()
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId) as DocumentReference<GroupSettings>
+      const groupSnap = await getDocOrThrow<GroupSettings>(groupRef)
+      const groupData = groupSnap.data() as GroupSettings
       const memberIds: string[] = groupData.members ?? []
       const roles: Record<string, MemberRole> = groupData.roles ?? {}
-      const memberJoinedAt: Record<string, any> = groupData.memberJoinedAt ?? {}
+      const memberJoinedAt: Record<string, Timestamp> = groupData.memberJoinedAt ?? {}
 
       // 批次獲取成員的基本資料和詳細資料
       const memberPromises = memberIds.map(async (uid) => {
-        const userRef = doc(db, COLLECTIONS.USERS, uid)
-        const userSnap = await getDoc(userRef)
-
-        if (!userSnap.exists()) {
-          return null
-        }
-
-        const userData = userSnap.data()
+        const userRef = doc(db, COLLECTIONS.USERS, uid) as DocumentReference<User>
+        const userSnap = await getDocOrThrow<User>(userRef)
+        const userData = userSnap.data() as User
 
         // 組合基本成員資料
         const basicMember = {
@@ -73,17 +67,22 @@ export class MemberService {
     }
   }
 
+  // 建立成員繳費記錄查詢
+  private static createMemberPaymentsQuery(groupId: string, memberId: string): Query {
+    return query(
+      collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`),
+      where(COLUMNS.MEMBER_ID, QUERIES.EQUALS as WhereFilterOp, memberId),
+      orderBy(COLUMNS.DATE, QUERIES.DESC as OrderByDirection)
+    )
+  }
+
   // 獲取成員繳費狀態
   static async getMemberPaymentStatus(groupId: string, memberId: string): Promise<MemberPaymentStatus> {
     try {
-      const currentMonth = new Date().toISOString().substring(0, 7) // YYYY-MM
+      const currentMonth = new Date().toISOString().substring(0, 7)
 
       // 查詢該成員的繳費記錄
-      const paymentsQuery = query(
-        collection(db, `groups/${groupId}/memberPayments`),
-        where('memberId', '==', memberId),
-        orderBy('paymentDate', 'desc')
-      )
+      const paymentsQuery = this.createMemberPaymentsQuery(groupId, memberId)
 
       const paymentsSnap = await getDocs(paymentsQuery)
       const payments = paymentsSnap.docs.map(doc => doc.data() as MemberPaymentRecord)
@@ -115,11 +114,7 @@ export class MemberService {
   static async getMemberStatistics(groupId: string, memberId: string): Promise<MemberStatistics> {
     try {
       // 查詢該成員的所有繳費記錄
-      const paymentsQuery = query(
-        collection(db, `groups/${groupId}/memberPayments`),
-        where('memberId', '==', memberId),
-        orderBy('paymentDate', 'desc')
-      )
+      const paymentsQuery = this.createMemberPaymentsQuery(groupId, memberId)
 
       const paymentsSnap = await getDocs(paymentsQuery)
       const payments = paymentsSnap.docs.map(doc => doc.data() as MemberPaymentRecord)
@@ -157,7 +152,7 @@ export class MemberService {
       const member = members.find(m => m.uid === memberId)
 
       if (!member) {
-        throw new Error(MEMBERS.MEMBER_ERROR)
+        throw { code: ERROR_CODE.MEMBER_NOT_EXIST, message: MEMBERS.MEMBER_NOT_EXIST }
       }
 
       // 獲取繳費狀態和統計資料
@@ -191,19 +186,19 @@ export class MemberService {
       // 驗證權限
       const currentUserRole = await this.getCurrentUserRole(groupId, currentUserId)
       if (currentUserRole !== MEMBER_ROLES.ADMIN) {
-        throw new Error('沒有權限移除成員')
+        throw { code: ERROR_CODE.NO_PERMISSION_REMOVE_MEMBER, message: MEMBERS.NO_PERMISSION_REMOVE_MEMBER }
       }
 
       if (memberId === currentUserId) {
-        throw new Error('不能移除自己')
+        throw { code: ERROR_CODE.CANNOT_REMOVE_SELF, message: MEMBERS.CANNOT_REMOVE_SELF }
       }
 
       // 更新群組資料
       const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
       await updateDoc(groupRef, {
         members: arrayRemove(memberId),
-        [`roles.${memberId}`]: deleteField(),
-        [`memberJoinedAt.${memberId}`]: deleteField()
+        [GROUP_ROLE_FIELD(memberId)]: deleteField(),
+        [GROUP_JOINED_AT_FIELD(memberId)]: deleteField()
       })
 
       // 更新用戶資料
@@ -220,14 +215,9 @@ export class MemberService {
   // 獲取群組邀請碼
   static async getGroupInviteCode(groupId: string): Promise<string> {
     try {
-      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
-      const groupSnap = await getDoc(groupRef)
-
-      if (!groupSnap.exists()) {
-        throw new Error(MEMBERS.GROUP_ERROR)
-      }
-
-      const groupData = groupSnap.data()
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId) as DocumentReference<GroupSettings>
+      const groupSnap = await getDocOrThrow<GroupSettings>(groupRef)
+      const groupData = groupSnap.data() as GroupSettings
       return groupData.inviteCode || ''
     } catch (error) {
       console.error('Error fetching invite code:', error)
@@ -238,14 +228,9 @@ export class MemberService {
   // 獲取當前用戶角色
   static async getCurrentUserRole(groupId: string, userId: string): Promise<MemberRole> {
     try {
-      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
-      const groupSnap = await getDoc(groupRef)
-
-      if (!groupSnap.exists()) {
-        return MEMBER_ROLES.MEMBER
-      }
-
-      const groupData = groupSnap.data()
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId) as DocumentReference<GroupSettings>
+      const groupSnap = await getDocOrThrow<GroupSettings>(groupRef)
+      const groupData = groupSnap.data() as GroupSettings
       const roles: Record<string, MemberRole> = groupData.roles ?? {}
       return roles[userId] || MEMBER_ROLES.MEMBER
     } catch (error) {
@@ -258,16 +243,16 @@ export class MemberService {
   private static calculateMemberSince(joinedAt: Date): string {
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - joinedAt.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const diffDays = Math.ceil(diffTime / MS_PER_DAY)
 
-    if (diffDays < 30) {
-      return `${diffDays}${COMMON.DAYS}`  
-    } else if (diffDays < 365) {
-      const months = Math.floor(diffDays / 30)
+    if (diffDays < DAYS_PER_MONTH) {
+      return `${diffDays}${COMMON.DAYS}`
+    } else if (diffDays < DAYS_PER_YEAR) {
+      const months = Math.floor(diffDays / DAYS_PER_MONTH)
       return `${months}${COMMON.MONTHS}`
     } else {
-      const years = Math.floor(diffDays / 365)
-      const months = Math.floor((diffDays % 365) / 30)
+      const years = Math.floor(diffDays / DAYS_PER_YEAR)
+      const months = Math.floor((diffDays % DAYS_PER_YEAR) / DAYS_PER_MONTH)
       return years > 0 ? `${years}${COMMON.YEARS}${months}${COMMON.MONTHS}` : `${months}${COMMON.MONTHS}`
     }
   }
@@ -276,46 +261,34 @@ export class MemberService {
   static async leaveGroup(groupId: string, userId: string): Promise<void> {
     try {
       // 檢查用戶是否在群組中
-      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId)
-      const groupSnap = await getDoc(groupRef)
-
-      if (!groupSnap.exists()) {
-        throw new Error('群組不存在')
-      }
-
-      const groupData = groupSnap.data()
+      const groupRef = doc(db, COLLECTIONS.GROUPS, groupId) as DocumentReference<GroupSettings>
+      const groupSnap = await getDocOrThrow<GroupSettings>(groupRef)
+      const groupData = groupSnap.data() as GroupSettings
       const members: string[] = groupData.members ?? []
       const roles: Record<string, MemberRole> = groupData.roles ?? {}
 
+      // 先檢查用戶是否在群組中
       if (!members.includes(userId)) {
-        throw new Error('您不在此群組中')
+        throw { code: ERROR_CODE.NOT_IN_GROUP, message: MEMBERS.NOT_IN_GROUP }
       }
 
       // 檢查是否為管理員且群組中還有其他成員
       const isAdmin = roles[userId] === MEMBER_ROLES.ADMIN
       const otherMembers = members.filter(id => id !== userId)
-      
+
+      // 如果用戶是管理員且群組中還有其他成員，則不能退出群組
       if (isAdmin && otherMembers.length > 0) {
-        throw new Error('身為管理員，您無法退出群組。請先將管理員權限轉移給其他成員，或刪除群組。')
+        throw {
+          code: ERROR_CODE.ADMIN_MUST_TRANSFER,
+          message: MEMBERS.ADMIN_MUST_TRANSFER
+        }
       }
 
-      // 如果是最後一個成員，刪除整個群組
-      if (members.length === 1) {
-        // TODO: 可能需要刪除群組相關的所有資料
-        // 這裡先簡單處理，實際可能需要更複雜的清理邏輯
-        await updateDoc(groupRef, {
-          members: arrayRemove(userId),
-          [`roles.${userId}`]: deleteField(),
-          [`memberJoinedAt.${userId}`]: deleteField()
-        })
-      } else {
-        // 從群組中移除用戶
-        await updateDoc(groupRef, {
-          members: arrayRemove(userId),
-          [`roles.${userId}`]: deleteField(),
-          [`memberJoinedAt.${userId}`]: deleteField()
-        })
-      }
+      await updateDoc(groupRef, {
+        members: arrayRemove(userId),
+        [GROUP_ROLE_FIELD(userId)]: deleteField(),
+        [GROUP_JOINED_AT_FIELD(userId)]: deleteField()
+      })
 
       // 更新用戶的joinedGroupIds
       const userRef = doc(db, COLLECTIONS.USERS, userId)

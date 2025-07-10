@@ -41,7 +41,7 @@ export default function CustomAmountModal(props: CustomAmountModalProps) {
             <View className="flex-1 bg-black/30 justify-center items-center">
                 <View className="bg-white rounded-lg p-6 w-4/5 max-w-sm">
                     {/* 標題 */}
-                    <View className="mb-4 mb-6">
+                    <View className="mb-6">
                         <Text className="text-lg font-semibold text-center">{MEMBERS.SET_PAYMENT_AMOUNT}</Text>
                     </View>
 

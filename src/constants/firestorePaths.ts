@@ -11,10 +11,15 @@ export const DOCUMENTS = {
     GROUP_PAYMENT: 'groupPayment',
 }
 
+export const GROUP_ROLE_FIELD = (userId: string) => `roles.${userId}`
+export const GROUP_JOINED_AT_FIELD = (userId: string) => `memberJoinedAt.${userId}`
+
 export const COLUMNS = {
     TYPE: 'type',
     AMOUNT: 'amount',
     DATE: 'date',
+    JOINED_AT: 'joinedAt',
+    ROLE: 'role',
     DESCRIPTION: 'description',
     GROUP_ID: 'groupId',
     USER_ID: 'userId',
