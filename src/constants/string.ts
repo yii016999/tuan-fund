@@ -318,6 +318,7 @@ export const SETTINGS_CREATE_GROUP = {
     CREATE_GROUP_SUCCESS: '群組已建立',
     CREATE_GROUP_FAILURE: '建立群組失敗',
     JOIN_GROUP_SUCCESS: '群組已加入',
+    JOIN_GROUP_FAILURE: '加入群組失敗'
 } as const;
 
 /** JoinGroup */

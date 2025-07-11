@@ -200,7 +200,7 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
             <View className="flex-1 bg-black/30">
                 {/* 主內容區：最大高度為螢幕92%，圓角、白底、padding */}
                 <View
-                    className="bg-white pt-5 pb-6 px-3 w-full shadow-lg flex-1"
+                    className="bg-white pb-6 px-3 w-full shadow-lg flex-1"
                     style={{
                         minHeight: 320,
                     }}
@@ -209,6 +209,7 @@ export function GroupSwitchModal(props: GroupSwitchModalProps) {
                         title={SETTINGS_GROUP_SWITCH.TITLE_SELECT_GROUP}
                         onBackPress={props.onClose}
                         isBorder={false}
+                        showBack={true}
                     />
 
                     {/* 載入中 */}

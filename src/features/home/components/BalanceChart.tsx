@@ -76,9 +76,14 @@ export default function BalanceChart(props: BalanceChartProps) {
 
   const navigationState = useMemo(() => {
     const currentYear = new Date().getFullYear();
+    
+    // 只有當 props.earliestYear 有值時才允許往前導航
+    const canGoPrevious = props.earliestYear ? props.selectedYear > props.earliestYear : false;
+    const canGoNext = props.selectedYear < currentYear;
+    
     return {
-      canGoPrevious: props.earliestYear ? props.selectedYear > (props.earliestYear ?? 0) : false,
-      canGoNext: props.selectedYear < currentYear,
+      canGoPrevious,
+      canGoNext,
     };
   }, [props.selectedYear, props.earliestYear]);
 

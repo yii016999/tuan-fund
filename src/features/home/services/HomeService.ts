@@ -26,6 +26,11 @@ class HomeService {
         };
       }
 
+      // 確保所有查詢參數都不是 undefined
+      if (!COLUMNS.DATE || !QUERIES.GREATER_THAN_OR_EQUAL_TO || !QUERIES.LESS_THAN_OR_EQUAL_TO) {
+        throw new Error('查詢常數未正確定義');
+      }
+
       // 查詢指定年份的所有交易
       const q = query(
         collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
@@ -41,8 +46,11 @@ class HomeService {
         ...doc.data()
       } as Transaction));
 
+      // 獲取該年份之前的累計餘額
+      const previousBalance = await this.getPreviousYearBalance(groupId, year);
+
       // 計算年度月度餘額變化
-      const monthlyBalance = this.calculateYearlyBalance(transactions, year);
+      const monthlyBalance = this.calculateYearlyBalance(transactions, year, previousBalance);
 
       return {
         labels: monthlyBalance.labels,
@@ -69,22 +77,97 @@ class HomeService {
           monthlyIncome: 0,
           monthlyExpense: 0,
           recentTransactions: [],
-          createdBy: '', // 添加默認值
+          createdBy: '',
         };
       }
 
-      const currentMonth = new Date().toISOString().slice(0, 7); // YYYY-MM
+      // 修正：確保日期計算正確
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth(); // 0-11
+      
+      const startOfMonth = new Date(currentYear, currentMonth, 1);
+      const endOfMonth = new Date(currentYear, currentMonth + 1, 0);
+      
+      const startDateStr = startOfMonth.toISOString().split('T')[0];
+      const endDateStr = endOfMonth.toISOString().split('T')[0];
+
+      // 確保所有查詢參數都不是 undefined
+      if (!COLUMNS.DATE || !QUERIES.GREATER_THAN_OR_EQUAL_TO || !QUERIES.LESS_THAN_OR_EQUAL_TO) {
+        throw new Error('查詢常數未正確定義');
+      }
 
       const q = query(
         collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
-        where(COLUMNS.DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, `${currentMonth}${COMMON.DASH}${DATE.START_OF_MONTH}`),
-        where(COLUMNS.DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, `${currentMonth}${COMMON.DASH}${DATE.END_OF_MONTH}`),
+        where(COLUMNS.DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, startDateStr),
+        where(COLUMNS.DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDateStr),
         orderBy(COLUMNS.DATE, QUERIES.DESC as OrderByDirection),
         limit(50)
       );
 
       const snapshot = await getDocs(q);
 
+      // 如果當月沒有資料，擴大查詢範圍到最近3個月
+      if (snapshot.size === 0) {
+        const threeMonthsAgo = new Date(currentYear, currentMonth - 3, 1);
+        const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0];
+        
+        const expandedQuery = query(
+          collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
+          where(COLUMNS.DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, threeMonthsAgoStr),
+          where(COLUMNS.DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDateStr),
+          orderBy(COLUMNS.DATE, QUERIES.DESC as OrderByDirection),
+          limit(50)
+        );
+        
+        const expandedSnapshot = await getDocs(expandedQuery);
+        
+        // 使用擴大查詢的結果
+        const allTransactions: Transaction[] = expandedSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        } as Transaction));
+        
+        // 只計算當月的收支
+        const currentMonthTransactions = allTransactions.filter(t => 
+          t.date >= startDateStr && t.date <= endDateStr
+        );
+        
+        let monthlyIncome = 0;
+        let monthlyExpense = 0;
+        
+        currentMonthTransactions.forEach(transaction => {
+          if (transaction.type === RECORD_TRANSACTION_TYPES.INCOME) {
+            monthlyIncome += transaction.amount;
+          } else {
+            monthlyExpense += transaction.amount;
+          }
+        });
+        
+        // 取最近的交易記錄（不限當月）
+        const recentTransactions = allTransactions.slice(0, 5);
+        
+        const userIds = [...new Set(recentTransactions.map(t => t.userId))];
+        const userNamesMap = await this.getUserNamesMap(userIds);
+        
+        const recentTransactionsWithNames = recentTransactions.map(transaction => ({
+          id: transaction.id || '',
+          type: transaction.type,
+          amount: transaction.amount,
+          description: transaction.title,
+          date: new Date(transaction.date),
+          createdBy: userNamesMap[transaction.userId] || 'Unknown',
+        }));
+        
+        return {
+          monthlyIncome,
+          monthlyExpense,
+          recentTransactions: recentTransactionsWithNames,
+          createdBy: userNamesMap[allTransactions[0]?.userId] || 'Unknown',
+        };
+      }
+
+      // 原本的邏輯保持不變
       const transactions: Transaction[] = snapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
@@ -190,8 +273,6 @@ class HomeService {
       let paymentData: MemberPaymentRecord | null = null;
       if (hasPayment) {
         paymentData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as MemberPaymentRecord;
-      } else {
-        console.log('沒有找到繳費記錄');
       }
 
       // 如果沒有繳費記錄，從群組設定獲取應繳金額
@@ -243,18 +324,55 @@ class HomeService {
     }
   }
 
+  // 獲取指定年份之前的累計餘額
+  private async getPreviousYearBalance(groupId: string, year: number): Promise<number> {
+    try {
+      if (year <= 2020) return 0; // 假設2020年之前沒有資料
+
+      // 檢查常數是否定義
+      if (!COLUMNS.DATE || !QUERIES.LESS_THAN) {
+        console.error('查詢常數未定義:', { COLUMNS_DATE: COLUMNS.DATE, QUERIES_LESS_THAN: QUERIES.LESS_THAN });
+        return 0;
+      }
+
+      const q = query(
+        collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
+        where(COLUMNS.DATE, QUERIES.LESS_THAN as WhereFilterOp, `${year}-01-01`),
+        orderBy(COLUMNS.DATE, QUERIES.ASC as OrderByDirection)
+      );
+
+      const snapshot = await getDocs(q);
+      let balance = 0;
+
+      snapshot.docs.forEach(doc => {
+        const transaction = doc.data() as Transaction;
+        balance += transaction.type === RECORD_TRANSACTION_TYPES.INCOME ? transaction.amount : -transaction.amount;
+      });
+
+      return balance;
+    } catch (error) {
+      console.error('Error fetching previous year balance:', error);
+      return 0;
+    }
+  }
+
   // 計算指定年份的月度餘額變化
-  private calculateYearlyBalance(transactions: Transaction[], year: number) {
+  private calculateYearlyBalance(transactions: Transaction[], year: number, startingBalance: number = 0) {
     const monthlyBalances: number[] = [];
-    let runningBalance = 0;
+    let runningBalance = startingBalance; // 從之前的餘額開始
 
     // 先算出每月餘額
     for (let m = 1; m <= 12; m++) {
       const monthStr = `${year}-${m.toString().padStart(2, '0')}`;
       const monthTxs = transactions.filter(tx => tx.date.startsWith(monthStr));
+      
+      // 計算該月的變化
+      let monthlyChange = 0;
       monthTxs.forEach(tx => {
-        runningBalance += tx.type === RECORD_TRANSACTION_TYPES.INCOME ? tx.amount : -tx.amount;
+        monthlyChange += tx.type === RECORD_TRANSACTION_TYPES.INCOME ? tx.amount : -tx.amount;
       });
+      
+      runningBalance += monthlyChange;
       monthlyBalances.push(runningBalance);
     }
 
@@ -269,10 +387,10 @@ class HomeService {
     const labels = allLabels.slice(0, currentMonth);
 
     return {
-      labels: labels, // 標籤也只到當前月份
+      labels: labels,
       datasets: [
         {
-          data: chartData, // 數據到當前月份
+          data: chartData,
           color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
           strokeWidth: 3,
         },
@@ -334,6 +452,13 @@ class HomeService {
   async getEarliestTransactionYear(groupId: string): Promise<number> {
     try {
       if (!groupId) {
+        console.warn('Missing groupId for earliest year');
+        return new Date().getFullYear();
+      }
+
+      // 檢查常數是否定義
+      if (!COLUMNS.DATE || !QUERIES.ASC) {
+        console.error('查詢常數未定義:', { COLUMNS_DATE: COLUMNS.DATE, QUERIES_ASC: QUERIES.ASC });
         return new Date().getFullYear();
       }
 
@@ -350,7 +475,9 @@ class HomeService {
       }
 
       const earliestTransaction = snapshot.docs[0].data() as Transaction;
-      return new Date(earliestTransaction.date).getFullYear();
+      const earliestYear = new Date(earliestTransaction.date).getFullYear();
+
+      return earliestYear;
     } catch (error) {
       console.error('Error fetching earliest transaction year:', error);
       return new Date().getFullYear();

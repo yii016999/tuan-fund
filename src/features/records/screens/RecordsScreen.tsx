@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/useAuthStore'
 import { Ionicons } from '@expo/vector-icons'
 import React, { useState } from 'react'
 import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import DateRangeSelector from '../components/DateRangeSelector'
 import RecordItem from '../components/RecordItem'
 import RecordsEmptyState from '../components/RecordsEmptyState'
 import { RecordListItem } from '../model/Record'
@@ -14,6 +15,7 @@ import { useRecordsViewModel } from '../viewmodel/useRecordsViewModel'
 export default function RecordsScreen() {
     const { activeGroupId, joinedGroupIds } = useAuthStore()
     const [refreshing, setRefreshing] = useState(false)
+    const [datePickerVisible, setDatePickerVisible] = useState(false)
 
     const {
         loading,
@@ -25,6 +27,7 @@ export default function RecordsScreen() {
         dateRange,
         deleteRecord,
         refreshRecords,
+        updateDateRange,
     } = useRecordsViewModel(activeGroupId || '')
 
     // 如果沒有選擇群組
@@ -65,7 +68,12 @@ export default function RecordsScreen() {
     }
 
     const handleDateRangePress = () => {
-        Alert.alert('日期選擇', '日期選擇功能開發中...')
+        setDatePickerVisible(true)
+    }
+
+    const handleDateRangeChange = (startDate: Date, endDate: Date) => {
+        updateDateRange(startDate, endDate)
+        setDatePickerVisible(false)
     }
 
     const formatAmount = (amount: number, type?: string) => {
@@ -131,10 +139,13 @@ export default function RecordsScreen() {
                     className="flex-row items-center justify-between"
                     onPress={handleDateRangePress}
                 >
-                    <View>
+                    <View className="flex-1">
                         <Text className="text-sm text-gray-500 mb-1">{RECORD.DATE_RANGE}</Text>
                         <Text className="text-base text-gray-900">
                             {dateRange.startDate.toLocaleDateString(COMMON.ZH_TW)} - {dateRange.endDate.toLocaleDateString(COMMON.ZH_TW)}
+                        </Text>
+                        <Text className="text-xs text-gray-400 mt-1">
+                            點擊此處可更改查詢範圍
                         </Text>
                     </View>
                     <Ionicons name="calendar" size={20} color="#6B7280" />
@@ -188,6 +199,15 @@ export default function RecordsScreen() {
                     </View>
                 </View>
             )}
+
+            {/* 日期選擇器 */}
+            <DateRangeSelector
+                visible={datePickerVisible}
+                startDate={dateRange.startDate}
+                endDate={dateRange.endDate}
+                onDateRangeChange={handleDateRangeChange}
+                onClose={() => setDatePickerVisible(false)}
+            />
         </View>
     )
 }

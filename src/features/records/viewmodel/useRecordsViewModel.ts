@@ -3,6 +3,7 @@ import { RECORD_TYPES, RecordTabType, RecordType } from '@/constants/types'
 import { Transaction } from '@/features/transaction/model/Transaction'
 import { useAuthStore } from '@/store/useAuthStore'
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { Alert } from 'react-native'
 import { MemberPaymentRecord, RecordListItem } from '../model/Record'
 import { RecordsService } from '../services/RecordsService'
 
@@ -12,9 +13,15 @@ export const useRecordsViewModel = (initialGroupId?: string) => {
     const [activeTab, setActiveTab] = useState<'group' | 'member'>('group')
     const [groupTransactions, setGroupTransactions] = useState<Transaction[]>([])
     const [memberPayments, setMemberPayments] = useState<MemberPaymentRecord[]>([])
-    const [dateRange, setDateRange] = useState({
-        startDate: new Date(new Date().getFullYear() - 1, new Date().getMonth(), new Date().getDate()),
-        endDate: new Date()
+    
+    // 修改預設日期範圍 - 今年
+    const [dateRange, setDateRange] = useState(() => {
+        const now = new Date()
+        const currentYear = now.getFullYear()
+        return {
+            startDate: new Date(currentYear, 0, 1), // 今年1月1日
+            endDate: now // 今天
+        }
     })
 
     // 使用 activeGroupId 而不是傳入的 groupId
@@ -110,14 +117,35 @@ export const useRecordsViewModel = (initialGroupId?: string) => {
         }
     }, [fetchRecords, currentGroupId])
 
-    // 更新日期範圍
+    // 更新日期範圍 - 加入三年限制
     const updateDateRange = useCallback((startDate: Date, endDate: Date) => {
-        // 限制最多查詢三年
+        const now = new Date()
         const threeYearsAgo = new Date()
-        threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3)
+        threeYearsAgo.setFullYear(now.getFullYear() - 3)
 
+        // 檢查是否超過三年限制
         if (startDate < threeYearsAgo) {
+            Alert.alert(
+                '日期範圍限制',
+                '查詢範圍不能超過三年，已自動調整為三年前開始。',
+                [{ text: '確定', style: 'default' }]
+            )
             startDate = threeYearsAgo
+        }
+
+        // 檢查結束日期不能是未來
+        if (endDate > now) {
+            endDate = now
+        }
+
+        // 檢查開始日期不能晚於結束日期
+        if (startDate > endDate) {
+            Alert.alert(
+                '日期範圍錯誤',
+                '開始日期不能晚於結束日期。',
+                [{ text: '確定', style: 'default' }]
+            )
+            return
         }
 
         setDateRange({ startDate, endDate })

@@ -11,7 +11,18 @@ import { useHomeViewModel } from '../viewmodel/useHomeViewModel';
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 export default function HomeScreen() {
-  const { homeData, loading, error, refreshData, selectedYear, previousYear, nextYear, joinedGroupIds, activeGroupId } = useHomeViewModel();
+  const { 
+    homeData, 
+    loading, 
+    error, 
+    refreshData, 
+    selectedYear, 
+    earliestYear,
+    previousYear, 
+    nextYear, 
+    joinedGroupIds, 
+    activeGroupId 
+  } = useHomeViewModel();
 
   const cardHeight = (screenHeight - 250) * 0.4;
   const chartHeight = (screenHeight - 250) * 0.45;
@@ -48,6 +59,7 @@ export default function HomeScreen() {
           height={chartHeight}
           title={HOME.BALANCE_CHART_TITLE}
           selectedYear={selectedYear}
+          earliestYear={earliestYear}
           onPreviousYear={previousYear}
           onNextYear={nextYear}
         />

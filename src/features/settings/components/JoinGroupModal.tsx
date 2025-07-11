@@ -46,10 +46,10 @@ export default function JoinGroupModal({ visible, onClose, onSuccess }: JoinGrou
                 onSuccess?.()
             } else {
                 // 錯誤訊息已經在 ViewModel 中設定
-                setJoinError(joinGroupError || SETTINGS_CREATE_GROUP.JOIN_GROUP_FAILURE_INFO)
+                setJoinError(joinGroupError || SETTINGS_CREATE_GROUP.JOIN_GROUP_FAILURE)
             }
         } catch (err) {
-            setJoinError(SETTINGS_CREATE_GROUP.JOIN_GROUP_FAILURE_INFO)
+            setJoinError(SETTINGS_CREATE_GROUP.JOIN_GROUP_FAILURE)
         }
     }
 
@@ -58,11 +58,12 @@ export default function JoinGroupModal({ visible, onClose, onSuccess }: JoinGrou
             {/* 黑色遮罩 */}
             <View className="flex-1 bg-black/30">
                 {/* 主內容區 */}
-                <View className="bg-white pt-5 pb-6 px-4 w-full shadow-lg flex-1">
+                <View className="bg-white pb-6 px-4 w-full shadow-lg flex-1">
                     <AppHeader
                         title={SETTINGS_CREATE_GROUP.TITLE_JOIN_GROUP}
                         onBackPress={onClose}
                         isBorder={false}
+                        showBack={true}
                     />
 
                     <View className="flex-1">

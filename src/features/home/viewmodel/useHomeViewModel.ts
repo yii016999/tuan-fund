@@ -8,10 +8,23 @@ export const useHomeViewModel = () => {
   const [homeData, setHomeData] = useState<DashboardSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [earliestYear, setEarliestYear] = useState<number | undefined>(undefined);
   const { joinedGroupIds } = useAuthStore();
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   
   const { user, activeGroupId } = useAuthStore();
+
+  // 載入最早交易年份
+  const loadEarliestYear = async () => {
+    try {
+      if (!activeGroupId) return;
+      
+      const earliest = await homeService.getEarliestTransactionYear(activeGroupId);
+      setEarliestYear(earliest);
+    } catch (err) {
+      console.error('Error loading earliest year:', err);
+    }
+  };
 
   // 載入首頁數據
   const loadHomeData = async (year?: number) => {
@@ -33,7 +46,13 @@ export const useHomeViewModel = () => {
 
       setLoading(true);
       setError(null);
-      const data = await homeService.getHomeData(activeGroupId, user.uid, targetYear);
+      
+      // 同時載入首頁數據和最早年份
+      const [data] = await Promise.all([
+        homeService.getHomeData(activeGroupId, user.uid, targetYear),
+        earliestYear === undefined ? loadEarliestYear() : Promise.resolve()
+      ]);
+      
       setHomeData(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : '載入數據失敗');
@@ -90,6 +109,7 @@ export const useHomeViewModel = () => {
     loading,
     error,
     selectedYear,
+    earliestYear, // 新增：回傳最早年份
     joinedGroupIds,
     activeGroupId,
     // 操作

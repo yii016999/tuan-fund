@@ -50,4 +50,6 @@ export const QUERIES = {
     SLASH: '/',
     GREATER_THAN_OR_EQUAL_TO: '>=',
     LESS_THAN_OR_EQUAL_TO: '<=',
+    LESS_THAN: '<',
+    GREATER_THAN: '>',
 }

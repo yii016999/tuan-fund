@@ -198,11 +198,12 @@ export default function CreateGroupModal({ visible, onClose, onSuccess }: Create
     return (
         <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
             <View className="flex-1 bg-black/30">
-                <View className="bg-white pt-5 pb-6 px-4 w-full shadow-lg flex-1">
+                <View className="bg-white pb-5 px-4 w-full shadow-lg flex-1">
                     <AppHeader
                         title={SETTINGS_CREATE_GROUP.TITLE_CREATE_GROUP}
                         onBackPress={onClose}
                         isBorder={false}
+                        showBack={true}
                     />
 
                     <View className="flex-1">
