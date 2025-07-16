@@ -27,7 +27,7 @@ export interface CreateTransactionInput {
   prepaymentCustomDate?: string  // 自訂預繳開始日期 (YYYYMM 格式)
 }
 
-// 新增：交易錯誤類型 (修改 originalError 類型為 unknown)
+// 交易錯誤類型
 export class TransactionError extends Error {
   constructor(
     message: string,

@@ -1,4 +1,5 @@
 import { RECORD } from '@/constants/string'
+import { COLORS, STYLES } from '@/constants/config'
 import { RecordTabType } from '@/constants/types'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
@@ -8,16 +9,27 @@ interface RecordsEmptyStateProps {
   activeTab: RecordTabType
 }
 
-// 當目前選擇的tab沒有資料時，需要顯示沒有資料的樣式
-export default function RecordsEmptyState({ activeTab }: RecordsEmptyStateProps) {
+const RecordsEmptyState = React.memo<RecordsEmptyStateProps>(({ activeTab }) => {
+  const iconSize = 48
+  const iconColor = COLORS.GRAY[400]
+
   if (activeTab === 'member') {
     return (
-      <View className="flex-1 justify-center items-center py-20">
-        <Ionicons name="wallet-outline" size={48} color="#9CA3AF" />
-        <Text className="text-gray-500 mt-4 text-center">
+      <View 
+        className="flex-1 justify-center items-center"
+        style={{ paddingVertical: STYLES.SPACING.XL * 2.5 }}
+      >
+        <Ionicons name="wallet-outline" size={iconSize} color={iconColor} />
+        <Text 
+          className="mt-4 text-center"
+          style={{ color: COLORS.GRAY[500] }}
+        >
           {RECORD.NO_MEMBER_RECORD}
         </Text>
-        <Text className="text-gray-400 mt-2 text-center text-sm">
+        <Text 
+          className="mt-2 text-center text-sm"
+          style={{ color: COLORS.GRAY[400] }}
+        >
           {RECORD.NO_MEMBER_RECORD_SELECTED}
         </Text>
       </View>
@@ -25,11 +37,21 @@ export default function RecordsEmptyState({ activeTab }: RecordsEmptyStateProps)
   }
 
   return (
-    <View className="flex-1 justify-center items-center py-20">
-      <Ionicons name="document-text-outline" size={48} color="#9CA3AF" />
-      <Text className="text-gray-500 mt-4">
+    <View 
+      className="flex-1 justify-center items-center"
+      style={{ paddingVertical: STYLES.SPACING.XL * 2.5 }}
+    >
+      <Ionicons name="document-text-outline" size={iconSize} color={iconColor} />
+      <Text 
+        className="mt-4"
+        style={{ color: COLORS.GRAY[500] }}
+      >
         {RECORD.NO_RECORD}
       </Text>
     </View>
   )
-} 
+})
+
+RecordsEmptyState.displayName = 'RecordsEmptyState'
+
+export default RecordsEmptyState 

@@ -7,7 +7,28 @@ export const UI = {
   DESCRIPTION_INPUT_HEIGHT: 88,
   SCROLL_PADDING_BOTTOM: 40,
   DEFAULT_YEAR_RANGE: 3,
-  DEFAULT_GROUP_MONTHLY_AMOUNT: 2000, // 群組預設月繳金額
+  DEFAULT_GROUP_MONTHLY_AMOUNT: 2000,
+  
+  // 記錄相關常數
+  RECORDS_QUERY_LIMIT: 1000,
+  DATE_RANGE_YEARS_LIMIT: 3,
+  CALENDAR_FUTURE_YEARS: 1,
+  CALENDAR_PAST_YEARS: 5,
+  
+  // 預繳相關常數
+  PREPAYMENT: {
+    YEAR_START_INDEX: 0,
+    YEAR_END_INDEX: 4,
+    MONTH_START_INDEX: 4,
+    MONTH_END_INDEX: 6,
+    FIRESTORE_RANGE_SUFFIX: '\uf8ff',
+  },
+  
+  // 刪除相關常數
+  DELETE: {
+    BATCH_SIZE: 100, // 批次刪除大小
+    RETRY_COUNT: 3,  // 重試次數
+  },
 } as const
 
 /** 驗證相關常數 */
@@ -39,6 +60,14 @@ export const STYLES = {
     LG: 24,
     XL: 32,
   },
+  // 組件特定樣式
+  RECORD_ITEM: {
+    MARGIN_HORIZONTAL: 16,
+    MARGIN_BOTTOM: 12,
+    PADDING: 16,
+    ICON_SIZE: 16,
+    ICON_CONTAINER_SIZE: 32,
+  },
 } as const
 
 /** 顏色相關常數 */
@@ -58,5 +87,16 @@ export const COLORS = {
     700: '#374151',
     800: '#1F2937',
     900: '#111827',
+  },
+  // 語意化顏色
+  INCOME: '#10B981',
+  EXPENSE: '#EF4444',
+  CALENDAR: {
+    TODAY: '#EF4444',
+    SELECTED: '#3B82F6',
+    SELECTED_END: '#10B981',
+    RANGE: '#E5E7EB',
+    RANGE_TEXT: '#374151',
+    DISABLED: '#d3d3d3',
   },
 } as const 

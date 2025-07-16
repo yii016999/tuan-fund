@@ -2,6 +2,7 @@ import { COMMON } from '@/constants/string';
 import React, { useMemo, useState } from 'react';
 import { Alert, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import { UI, COLORS } from '@/constants/config';
 
 interface DateRangeSelectorProps {
   startDate: Date;
@@ -22,21 +23,21 @@ interface MarkedDate {
   dotColor?: string;
 }
 
-// 樣式配置
+// 使用常數替代硬編碼
 const CALENDAR_STYLES = {
   // 日曆主題
   theme: {
-    todayTextColor: '#EF4444',
-    arrowColor: '#3B82F6',
-    monthTextColor: '#1F2937',
-    indicatorColor: '#3B82F6',
+    todayTextColor: COLORS.CALENDAR.TODAY,
+    arrowColor: COLORS.PRIMARY,
+    monthTextColor: COLORS.GRAY[800],
+    indicatorColor: COLORS.PRIMARY,
     textDayFontWeight: '500' as const,
     textMonthFontWeight: '600' as const,
     textDayHeaderFontWeight: '500' as const,
-    selectedDayBackgroundColor: '#3B82F6',
+    selectedDayBackgroundColor: COLORS.PRIMARY,
     selectedDayTextColor: '#FFFFFF',
-    disabledArrowColor: '#d9e1e8',
-    textDisabledColor: '#d3d3d3',
+    disabledArrowColor: COLORS.GRAY[300],
+    textDisabledColor: COLORS.CALENDAR.DISABLED,
   },
   
   // 標記樣式
@@ -44,23 +45,23 @@ const CALENDAR_STYLES = {
     startDate: {
       selected: true,
       startingDay: true,
-      color: '#3B82F6',
+      color: COLORS.PRIMARY,
       textColor: 'white',
     },
     endDate: {
       selected: true,
       endingDay: true,
-      color: '#10B981',
+      color: COLORS.SUCCESS,
       textColor: 'white',
     },
     rangeDate: {
       selected: true,
-      color: '#E5E7EB',
-      textColor: '#374151',
+      color: COLORS.CALENDAR.RANGE,
+      textColor: COLORS.CALENDAR.RANGE_TEXT,
     },
     disabledDate: {
       disabled: true,
-      textColor: '#d3d3d3',
+      textColor: COLORS.CALENDAR.DISABLED,
     },
   },
 } as const;
@@ -70,13 +71,13 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
   const [selectedEndDate, setSelectedEndDate] = useState<string | null>(null);
   const [currentMonth, setCurrentMonth] = useState<string>(new Date().toISOString().split('T')[0].slice(0, 7));
 
-  // 取得日期限制
+  // 使用常數設定日期限制
   const getDateLimits = () => {
     const now = new Date();
-    const threeYearsAgo = new Date();
-    threeYearsAgo.setFullYear(now.getFullYear() - 3);
+    const yearsAgo = new Date();
+    yearsAgo.setFullYear(now.getFullYear() - UI.DATE_RANGE_YEARS_LIMIT);
     return {
-      minDate: threeYearsAgo.toISOString().split('T')[0],
+      minDate: yearsAgo.toISOString().split('T')[0],
       maxDate: now.toISOString().split('T')[0],
     };
   };
@@ -94,7 +95,7 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
 
     // 檢查是否在允許範圍內
     if (selectedDate < minDate || selectedDate > maxDate) {
-      Alert.alert('日期限制', '已超出可選擇範圍，請選擇三年內的日期');
+      Alert.alert('日期限制', `已超出可選擇範圍，請選擇${UI.DATE_RANGE_YEARS_LIMIT}年內的日期`);
       return;
     }
 
@@ -119,13 +120,15 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
     }
   };
 
-  // 生成標記的日期
+  // 優化禁用日期生成邏輯
   const markedDates = useMemo(() => {
     const marked: { [key: string]: MarkedDate } = {};
 
-    // 標記禁用的日期
+    // 使用常數設定禁用日期範圍
     const startYear = new Date(minDate).getFullYear() - 1;
-    for (let year = startYear; year >= startYear - 5; year--) {
+    const endYear = startYear - UI.CALENDAR_PAST_YEARS;
+
+    for (let year = startYear; year >= endYear; year--) {
       for (let month = 0; month < 12; month++) {
         const daysInMonth = new Date(year, month + 1, 0).getDate();
         for (let day = 1; day <= daysInMonth; day++) {
@@ -140,7 +143,8 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
     // 標記未來日期為禁用
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    const futureYear = tomorrow.getFullYear() + 1;
+    const futureYear = tomorrow.getFullYear() + UI.CALENDAR_FUTURE_YEARS;
+    
     for (let year = tomorrow.getFullYear(); year <= futureYear; year++) {
       for (let month = 0; month < 12; month++) {
         const daysInMonth = new Date(year, month + 1, 0).getDate();

@@ -137,6 +137,10 @@ export const RECORD = {
     NO_GROUP_SELECTED: '目前沒有群組資料，請至設定中選擇群組',
     NO_MEMBER_RECORD: '暫無個人繳費記錄',
     NO_MEMBER_RECORD_SELECTED: '目前沒有個人繳費記錄，新增收入記錄時會自動創建繳費記錄',
+    
+    // 錯誤訊息
+    ERROR_TRANSACTION_NOT_FOUND: '交易記錄不存在',
+    ERROR_DELETE_RELATED_PAYMENTS: '刪除相關繳費記錄失敗',
 } as const;
 
 /** Transaction */
@@ -164,6 +168,12 @@ export const TRANSACTION = {
     ERROR_MESSAGE_CREATE_TRANSACTION: '新增交易失敗',
     ERROR_PLEASE_INPUT_VALID_AMOUNT: '請輸入有效金額',
     ERROR_PLEASE_INPUT_ITEM_TITLE: '請輸入項目標題',
+    
+    // 預繳顯示相關 - 確保半形括號
+    PREPAYMENT_KEYWORD: '預繳',
+    PREPAYMENT_RANGE_SEPARATOR: '~',
+    PREPAYMENT_RANGE_PREFIX: '(',  // 半形括號
+    PREPAYMENT_RANGE_SUFFIX: ')',  // 半形括號
 } as const;
 
 /** Members */
