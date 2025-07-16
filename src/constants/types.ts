@@ -65,3 +65,10 @@ export const CREATE_GROUP_TAB_TYPES = {
   CREATE: 'create',
   JOIN: 'join',
 } as const
+
+export type PrepaymentStartType = 'previous' | 'current' | 'custom'
+export const PREPAYMENT_START_TYPES = {
+  PREVIOUS: 'previous',  // 前月
+  CURRENT: 'current',    // 本月
+  CUSTOM: 'custom',      // 自訂
+} as const

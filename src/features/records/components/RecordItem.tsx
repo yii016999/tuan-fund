@@ -12,51 +12,44 @@ interface RecordItemProps {
   formatDate: (dateStr: string) => string
 }
 
-export default function RecordItem({
-  record,
-  transactionType,
-  onEdit,
-  onDelete,
-  formatAmount,
-  formatDate
-}: RecordItemProps) {
+export default function RecordItem(props: RecordItemProps) {
   return (
     <View className="bg-white mx-4 mb-3 p-4 rounded-lg shadow-sm">
       <View className="flex-row justify-between items-start">
         <View className="flex-1">
           <Text className="text-lg font-medium text-gray-900 mb-1">
-            {record.title}
+            {props.record.title}
           </Text>
-          {record.description && (
+          {props.record.description && (
             <Text className="text-sm text-gray-600 mb-2">
-              {record.description}
+              {props.record.description}
             </Text>
           )}
           <Text className="text-xs text-gray-500">
-            {formatDate(record.date)}
+            {props.formatDate(props.record.date)}
           </Text>
         </View>
 
         <View className="items-end">
           <View className="mb-2">
-            {formatAmount(record.amount, transactionType)}
+            {props.formatAmount(props.record.amount, props.transactionType)}
           </View>
 
-          {(record.canEdit || record.canDelete) && (
+          {(props.record.canEdit || props.record.canDelete) && (
             <View className="flex-row space-x-2 gap-2">
-              {record.canEdit && (
+              {props.record.canEdit && (
                 <TouchableOpacity
                   className="p-2 bg-blue-50 rounded-full"
-                  onPress={onEdit}
+                  onPress={props.onEdit}
                 >
                   <Ionicons name="pencil" size={16} color="#3B82F6" />
                 </TouchableOpacity>
               )}
 
-              {record.canDelete && (
+              {props.record.canDelete && (
                 <TouchableOpacity
                   className="p-2 bg-red-50 rounded-full"
-                  onPress={() => onDelete(record)}
+                  onPress={() => props.onDelete(props.record)}
                 >
                   <Ionicons name="trash" size={16} color="#EF4444" />
                 </TouchableOpacity>

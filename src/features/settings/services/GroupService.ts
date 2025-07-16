@@ -169,9 +169,9 @@ export class GroupService {
         memberJoinedAt: { [userId]: serverTimestamp() },  // 記錄加入時間
         ...(monthlyPaymentSettings || {}),
         // 如果啟用客製化金額，初始化成員金額設定
-        ...(monthlyPaymentSettings?.enabled ? {
+        ...(monthlyPaymentSettings?.enableCustomAmount ? {
           memberCustomAmounts: {
-            [userId]: monthlyPaymentSettings.customAmount || 0
+            [userId]: monthlyPaymentSettings.monthlyAmount || 0
           }
         } : {})
       }

@@ -24,7 +24,6 @@ export default function CustomAmountModal(props: CustomAmountModalProps) {
 
     const handleConfirm = () => {
         onConfirm(customAmount);
-        onClose();
     };
 
     const handleCancel = () => {

@@ -19,7 +19,7 @@ export const useRecordsViewModel = (initialGroupId?: string) => {
         const now = new Date()
         const currentYear = now.getFullYear()
         return {
-            startDate: new Date(currentYear, 0, 1), // 今年1月1日
+            startDate: new Date(currentYear-3, 0, 1), // 3年前1月1日
             endDate: now // 今天
         }
     })

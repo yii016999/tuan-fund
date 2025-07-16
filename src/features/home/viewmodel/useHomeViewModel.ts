@@ -109,7 +109,7 @@ export const useHomeViewModel = () => {
     loading,
     error,
     selectedYear,
-    earliestYear, // 新增：回傳最早年份
+    earliestYear, // 回傳最早年份
     joinedGroupIds,
     activeGroupId,
     // 操作

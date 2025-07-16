@@ -65,11 +65,13 @@ export function MembersScreen() {
   }
 
   // 儲存客製化金額
-  const saveCustomAmount = async () => {
+  const saveCustomAmount = async (inputAmount?: string) => {
     if (!selectedMember || !currentGroupId) return
 
     try {
-      const amount = parseInt(customAmount) || 0
+      // 使用傳入的參數或者 state 中的值
+      const amountToSave = inputAmount || customAmount
+      const amount = parseInt(amountToSave) || 0
       await GroupService.updateMemberCustomAmount(currentGroupId, selectedMember.uid, amount)
 
       // 重新載入群組詳細資訊
@@ -116,7 +118,7 @@ export function MembersScreen() {
 
   // 檢查是否為管理員且群組啟用客製化金額
   const isAdmin = groupDetails?.roles?.[user.uid] === 'admin'
-  const enableCustomAmount = groupDetails?.enableCustomAmount || false
+  const enableCustomAmount = !!(groupDetails?.memberCustomAmounts) || false
 
   return (
     <View className="flex-1">

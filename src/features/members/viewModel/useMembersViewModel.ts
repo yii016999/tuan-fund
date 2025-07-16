@@ -170,7 +170,7 @@ export const useMembersViewModel = (initialGroupId?: string): UseMembersViewMode
     }
   }, [error])
 
-  // 新增：使用 useFocusEffect 在頁面獲得焦點時重新載入數據
+  // 使用 useFocusEffect 在頁面獲得焦點時重新載入數據
   useFocusEffect(
     useCallback(() => {
       // 當頁面獲得焦點時，重新載入成員數據

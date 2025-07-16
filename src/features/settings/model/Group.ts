@@ -23,6 +23,10 @@ export interface GroupSettings {
 }
 
 export interface MonthlyPaymentSettings {
-    enabled: boolean;
-    customAmount: number;
+    enabled?: boolean;
+    customAmount?: number;
+    monthlyAmount?: number;
+    billingCycle?: BillingCycle;
+    allowPrepay?: boolean;
+    enableCustomAmount?: boolean;
 }

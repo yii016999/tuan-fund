@@ -36,7 +36,7 @@ export default function SettingsScreen() {
     // 點選上傳頭像
     const handleAvatarPress = () => {
         // TODO: 打開圖片選擇器，選完上傳至 server/firebase
-        // 這裡先留 TODO
+        // 留 TODO
     };
 
     // 點選添加群組

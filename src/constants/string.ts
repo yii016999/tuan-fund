@@ -155,6 +155,12 @@ export const TRANSACTION = {
     AMOUNT: '金額',
     DESCRIPTION: '備註 (選填)',
     DESCRIPTION_PLACEHOLDER: '輸入備註',
+    PREPAYMENT_START_TIME: '預繳開始時間',
+    PREPAYMENT_START_PREVIOUS: '前月',
+    PREPAYMENT_START_CURRENT: '本月',
+    PREPAYMENT_START_CUSTOM: '自訂',
+    PREPAYMENT_CUSTOM_DATE: '自訂開始月份',
+    PREPAYMENT_CUSTOM_DATE_PLACEHOLDER: '請輸入月份 (YYYYMM)',
     ERROR_MESSAGE_CREATE_TRANSACTION: '新增交易失敗',
     ERROR_PLEASE_INPUT_VALID_AMOUNT: '請輸入有效金額',
     ERROR_PLEASE_INPUT_ITEM_TITLE: '請輸入項目標題',
@@ -340,3 +346,46 @@ export const SETTINGS_NO_GROUP_SELECTED = {
     GO_TO_SETTINGS: '前往設定',
     NO_PERMISSION_DELETE_GROUP: '沒有權限刪除群組',
 } as const;
+
+/** 樣式相關常數 */
+export const STYLES = {
+  SHADOW: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  BORDER_RADIUS: {
+    SMALL: 8,
+    MEDIUM: 12,
+    LARGE: 16,
+  },
+  SPACING: {
+    XS: 4,
+    SM: 8,
+    MD: 16,
+    LG: 24,
+    XL: 32,
+  },
+} as const
+
+/** 顏色相關常數 */
+export const COLORS = {
+  PRIMARY: '#3B82F6',
+  SUCCESS: '#10B981',
+  ERROR: '#EF4444',
+  WARNING: '#F59E0B',
+  GRAY: {
+    50: '#F9FAFB',
+    100: '#F3F4F6',
+    200: '#E5E7EB',
+    300: '#D1D5DB',
+    400: '#9CA3AF',
+    500: '#6B7280',
+    600: '#4B5563',
+    700: '#374151',
+    800: '#1F2937',
+    900: '#111827',
+  },
+} as const
