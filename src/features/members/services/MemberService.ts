@@ -1,7 +1,7 @@
 import { db } from '@/config/firebase'
 import { COLLECTIONS, COLUMNS, DOCUMENTS, GROUP_JOINED_AT_FIELD, GROUP_ROLE_FIELD, QUERIES } from '@/constants/firestorePaths'
 import { COMMON, ERROR_CODE, MEMBERS } from '@/constants/string'
-import { DAYS_PER_MONTH, DAYS_PER_YEAR, MS_PER_DAY } from '@/constants/time'
+import { UI, VALIDATION } from '@/constants/config'
 import { MEMBER_ROLES, MemberRole, RECORD_STATUSES } from '@/constants/types'
 import { User } from '@/features/auth/model/User'
 import { MemberPaymentRecord } from '@/features/records/model/Record'
@@ -110,7 +110,7 @@ export class MemberService {
     }
   }
 
-  // 計算成員統計資料
+  // 計算成員統計資料 - 使用配置常數
   static async getMemberStatistics(groupId: string, memberId: string): Promise<MemberStatistics> {
     try {
       // 查詢該成員的所有繳費記錄
@@ -239,20 +239,21 @@ export class MemberService {
     }
   }
 
-  // 私有方法：計算成員時長
+  // 私有方法：計算成員時長 - 使用配置常數
   private static calculateMemberSince(joinedAt: Date): string {
+    const { TIME } = UI
     const now = new Date()
     const diffTime = Math.abs(now.getTime() - joinedAt.getTime())
-    const diffDays = Math.ceil(diffTime / MS_PER_DAY)
+    const diffDays = Math.ceil(diffTime / TIME.MS_PER_DAY)
 
-    if (diffDays < DAYS_PER_MONTH) {
+    if (diffDays < TIME.DAYS_PER_MONTH) {
       return `${diffDays}${COMMON.DAYS}`
-    } else if (diffDays < DAYS_PER_YEAR) {
-      const months = Math.floor(diffDays / DAYS_PER_MONTH)
+    } else if (diffDays < TIME.DAYS_PER_YEAR) {
+      const months = Math.floor(diffDays / TIME.DAYS_PER_MONTH)
       return `${months}${COMMON.MONTHS}`
     } else {
-      const years = Math.floor(diffDays / DAYS_PER_YEAR)
-      const months = Math.floor((diffDays % DAYS_PER_YEAR) / DAYS_PER_MONTH)
+      const years = Math.floor(diffDays / TIME.DAYS_PER_YEAR)
+      const months = Math.floor((diffDays % TIME.DAYS_PER_YEAR) / TIME.DAYS_PER_MONTH)
       return years > 0 ? `${years}${COMMON.YEARS}${months}${COMMON.MONTHS}` : `${months}${COMMON.MONTHS}`
     }
   }

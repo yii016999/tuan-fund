@@ -8,7 +8,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, OrderByDir
 import { MemberPaymentRecord } from '../model/Record'
 
 export class RecordsService {
-  // 獲取群組收支記錄
+  // 獲取群組收支記錄（包含創建者資訊）
   static async getGroupTransactions(groupId: string, startDate: Date, endDate: Date): Promise<Transaction[]> {
     try {
       const q = query(
@@ -20,14 +20,41 @@ export class RecordsService {
       )
 
       const querySnapshot = await getDocs(q)
-
-      return querySnapshot.docs.map(doc => ({
+      const transactions = querySnapshot.docs.map(doc => ({
         id: doc.id,
         ...doc.data()
       })) as Transaction[]
+
+      // 獲取創建者的 displayName
+      const transactionsWithCreator = await Promise.all(
+        transactions.map(async (transaction) => {
+          const creatorDisplayName = await this.getUserDisplayName(transaction.userId)
+          return {
+            ...transaction,
+            creatorDisplayName
+          }
+        })
+      )
+
+      return transactionsWithCreator
     } catch (error) {
       console.error('Error fetching group transactions:', error)
       throw error
+    }
+  }
+
+  // 獲取用戶的 displayName
+  private static async getUserDisplayName(userId: string): Promise<string> {
+    try {
+      const userDoc = await getDoc(doc(db, COLLECTIONS.USERS, userId))
+      if (userDoc.exists()) {
+        const userData = userDoc.data()
+        return userData.displayName || userData.email || '未知用戶'
+      }
+      return '未知用戶'
+    } catch (error) {
+      console.error('Error fetching user displayName:', error)
+      return '未知用戶'
     }
   }
 

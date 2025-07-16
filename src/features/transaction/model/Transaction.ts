@@ -13,6 +13,8 @@ export interface Transaction {
   userId: string
   createdAt: Date
   updatedAt: Date
+  // 創建者顯示名稱（用於記錄頁面顯示）
+  creatorDisplayName?: string
 }
 
 // 創建交易時的輸入資料（僅業務邏輯欄位）

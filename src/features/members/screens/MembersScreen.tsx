@@ -6,7 +6,7 @@ import { MEMBER_ROLES } from '@/constants/types'
 import { GroupService } from '@/features/settings/services/GroupService'
 import { useAuthStore } from '@/store/useAuthStore'
 import React, { useEffect, useState } from 'react'
-import { Alert, Text, TouchableOpacity, View } from 'react-native'
+import { Alert, Text, TouchableOpacity, View, ScrollView } from 'react-native'
 import CustomAmountModal from '../components/CustomAmountModal'
 import { useMembersViewModel } from '../viewmodel/useMembersViewModel'
 
@@ -72,6 +72,13 @@ export function MembersScreen() {
       // 使用傳入的參數或者 state 中的值
       const amountToSave = inputAmount || customAmount
       const amount = parseInt(amountToSave) || 0
+      
+      // 驗證金額範圍
+      if (amount < 0 || amount > 999999) {
+        Alert.alert(COMMON.ERROR, '金額必須在 0-999999 之間')
+        return
+      }
+
       await GroupService.updateMemberCustomAmount(currentGroupId, selectedMember.uid, amount)
 
       // 重新載入群組詳細資訊
@@ -82,12 +89,23 @@ export function MembersScreen() {
       setSelectedMember(null)
       setCustomAmount('')
 
-      Alert.alert('成功', '成員金額已更新')
+      Alert.alert(COMMON.SUCCESS, MEMBERS.AMOUNT_UPDATED_SUCCESS)
     } catch (error) {
       console.error('Error updating custom amount:', error)
-      Alert.alert('錯誤', '更新失敗，請重試')
+      Alert.alert(COMMON.ERROR, MEMBERS.AMOUNT_UPDATE_FAILED)
     }
   }
+
+  // 關閉 Modal
+  const handleCloseModal = () => {
+    setShowCustomAmountModal(false)
+    setSelectedMember(null)
+    setCustomAmount('')
+  }
+
+  // 檢查是否為管理員且群組啟用客製化金額
+  const isAdmin = groupDetails?.roles?.[user.uid] === MEMBER_ROLES.ADMIN
+  const enableCustomAmount = !!(groupDetails?.memberCustomAmounts) || false
 
   // 如果沒有選擇群組
   if (!activeGroupId) {
@@ -115,10 +133,6 @@ export function MembersScreen() {
       </View>
     )
   }
-
-  // 檢查是否為管理員且群組啟用客製化金額
-  const isAdmin = groupDetails?.roles?.[user.uid] === 'admin'
-  const enableCustomAmount = !!(groupDetails?.memberCustomAmounts) || false
 
   return (
     <View className="flex-1">
@@ -150,7 +164,7 @@ export function MembersScreen() {
         )}
       </View>
 
-      {/* 成員列表 */}
+      {/* 成員列表 - 只是加入 ScrollView */}
       {members.length === 0 ? (
         <RefreshScrollView
           onRefresh={refreshMembers}
@@ -162,7 +176,7 @@ export function MembersScreen() {
           </View>
         </RefreshScrollView>
       ) : (
-        <View className="flex-1">
+        <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
           {members.map((member) => (
             <View key={member.uid} className="p-4 border-b border-gray-100 bg-white">
               <View className="flex-row items-center justify-between">
@@ -181,7 +195,7 @@ export function MembersScreen() {
                   )}
                 </View>
 
-                <View className="flex-row items-center space-x-2">
+                <View className="flex-row items-center gap-2">
                   {/* 客製化金額設定按鈕 */}
                   {enableCustomAmount && isAdmin && (
                     <TouchableOpacity
@@ -205,13 +219,13 @@ export function MembersScreen() {
               </View>
             </View>
           ))}
-        </View>
+        </ScrollView>
       )}
 
       {/* 客製化金額設定 Modal */}
       <CustomAmountModal
         visible={showCustomAmountModal}
-        onClose={() => setShowCustomAmountModal(false)}
+        onClose={handleCloseModal}
         onConfirm={saveCustomAmount}
         memberName={selectedMember?.displayName || ''}
         defaultAmount={groupDetails?.monthlyAmount || 0}
@@ -221,5 +235,4 @@ export function MembersScreen() {
   )
 }
 
-// 添加 default export
 export default MembersScreen

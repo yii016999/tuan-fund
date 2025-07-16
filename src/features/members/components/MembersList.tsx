@@ -1,3 +1,4 @@
+import { COLORS, STYLES } from '@/constants/config'
 import { COMMON, MEMBERS } from '@/constants/string'
 import { MEMBER_ROLES } from '@/constants/types'
 import React from 'react'
@@ -11,27 +12,52 @@ interface MembersListProps {
   isCurrentUser: (memberId: string) => boolean
 }
 
-export function MembersList(props: MembersListProps) {
-
-  const renderMemberItem = (item: MemberWithDetails) => {
+const MembersList = React.memo<MembersListProps>(({
+  members,
+  onRemoveMember,
+  canRemoveMember,
+  isCurrentUser
+}) => {
+  const renderMemberItem = React.useCallback((item: MemberWithDetails) => {
     const isAdmin = item.role === MEMBER_ROLES.ADMIN
-    const canRemove = props.canRemoveMember(item.uid)
-    const isCurrent = props.isCurrentUser(item.uid)
+    const canRemove = canRemoveMember(item.uid)
+    const isCurrent = isCurrentUser(item.uid)
 
     return (
-      <View className="bg-white border-b border-gray-100 p-4">
+      <View
+        className="bg-white border-b border-gray-100"
+        style={{ padding: STYLES.SPACING.MD }}
+      >
         <View className="flex-row items-center justify-between">
           {/* 左側頭像與基本資料 */}
           <View className="flex-row items-center flex-1">
             {/* 頭像 */}
-            <View className="w-12 h-12 rounded-full bg-gray-200 mr-3 justify-center items-center">
+            <View
+              className="justify-center items-center mr-3"
+              style={{
+                width: STYLES.MEMBER.AVATAR_SIZE,
+                height: STYLES.MEMBER.AVATAR_SIZE,
+                borderRadius: STYLES.MEMBER.AVATAR_SIZE / 2,
+                backgroundColor: COLORS.GRAY[200],
+              }}
+            >
               {item.avatarUrl ? (
                 <Image
                   source={{ uri: item.avatarUrl }}
-                  className="w-12 h-12 rounded-full"
+                  style={{
+                    width: STYLES.MEMBER.AVATAR_SIZE,
+                    height: STYLES.MEMBER.AVATAR_SIZE,
+                    borderRadius: STYLES.MEMBER.AVATAR_SIZE / 2,
+                  }}
                 />
               ) : (
-                <Text className="text-lg font-bold text-gray-600">
+                <Text
+                  className="font-bold"
+                  style={{
+                    fontSize: STYLES.MEMBER.AVATAR_PLACEHOLDER_SIZE,
+                    color: COLORS.GRAY[600],
+                  }}
+                >
                   {item.displayName.charAt(0).toUpperCase()}
                 </Text>
               )}
@@ -44,12 +70,24 @@ export function MembersList(props: MembersListProps) {
                   {item.displayName}
                 </Text>
                 {isCurrent && (
-                  <Text className="ml-2 text-xs bg-blue-100 text-blue-600 px-2 py-1 rounded">
+                  <Text
+                    className="ml-2 text-xs px-2 py-1 rounded"
+                    style={{
+                      backgroundColor: COLORS.MEMBER.CURRENT_BADGE_BG,
+                      color: COLORS.MEMBER.CURRENT_BADGE_TEXT,
+                    }}
+                  >
                     {MEMBERS.CURRENT_MEMBER}
                   </Text>
                 )}
                 {isAdmin && (
-                  <Text className="ml-2 text-xs bg-orange-100 text-orange-600 px-2 py-1 rounded">
+                  <Text
+                    className="ml-2 text-xs px-2 py-1 rounded"
+                    style={{
+                      backgroundColor: COLORS.MEMBER.ADMIN_BADGE_BG,
+                      color: COLORS.MEMBER.ADMIN_BADGE_TEXT,
+                    }}
+                  >
                     {MEMBERS.ADMIN}
                   </Text>
                 )}
@@ -69,8 +107,10 @@ export function MembersList(props: MembersListProps) {
           <View className="flex-row items-center">
             {canRemove && (
               <TouchableOpacity
-                onPress={() => props.onRemoveMember(item.uid)}
-                className="bg-red-500 px-3 py-1 rounded ml-2"
+                onPress={() => onRemoveMember(item.uid)}
+                className="px-3 py-1 rounded ml-2"
+                style={{ backgroundColor: COLORS.ERROR }}
+                activeOpacity={0.7}
               >
                 <Text className="text-white text-sm">{MEMBERS.REMOVE}</Text>
               </TouchableOpacity>
@@ -79,16 +119,31 @@ export function MembersList(props: MembersListProps) {
         </View>
 
         {/* 繳費狀態 */}
-        <View className="mt-3 p-3 bg-gray-50 rounded-lg">
+        <View
+          className="mt-3 p-3 rounded-lg"
+          style={{ backgroundColor: COLORS.MEMBER.PAYMENT_STATUS_BG }}
+        >
           <View className="flex-row justify-between items-center">
             <Text className="text-sm font-medium text-gray-700">{MEMBERS.PAYMENT_STATUS}</Text>
             <View className="flex-row items-center">
               {item.paymentStatus.currentMonthPaid ? (
-                <Text className="text-xs bg-green-100 text-green-600 px-2 py-1 rounded">
+                <Text
+                  className="text-xs px-2 py-1 rounded"
+                  style={{
+                    backgroundColor: COLORS.MEMBER.PAID_BADGE_BG,
+                    color: COLORS.MEMBER.PAID_BADGE_TEXT,
+                  }}
+                >
                   {MEMBERS.PAID}
                 </Text>
               ) : (
-                <Text className="text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                <Text
+                  className="text-xs px-2 py-1 rounded"
+                  style={{
+                    backgroundColor: COLORS.MEMBER.UNPAID_BADGE_BG,
+                    color: COLORS.MEMBER.UNPAID_BADGE_TEXT,
+                  }}
+                >
                   {MEMBERS.UNPAID}
                 </Text>
               )}
@@ -108,7 +163,10 @@ export function MembersList(props: MembersListProps) {
         </View>
 
         {/* 統計資料 */}
-        <View className="mt-2 p-3 bg-blue-50 rounded-lg">
+        <View
+          className="mt-2 p-3 rounded-lg"
+          style={{ backgroundColor: COLORS.MEMBER.STATISTICS_BG }}
+        >
           <Text className="text-sm font-medium text-gray-700 mb-2">{MEMBERS.STATISTICS}</Text>
           <View className="flex-row justify-between">
             <View className="flex-1">
@@ -127,15 +185,19 @@ export function MembersList(props: MembersListProps) {
         </View>
       </View>
     )
-  }
+  }, [canRemoveMember, isCurrentUser, onRemoveMember])
 
   return (
     <FlatList
-      data={props.members}
+      data={members}
       keyExtractor={(item) => item.uid}
-      renderItem={(item) => renderMemberItem(item.item)}
+      renderItem={({ item }) => renderMemberItem(item)}
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{ paddingBottom: 20 }}
+      contentContainerStyle={{ paddingBottom: STYLES.SPACING.LG }}
     />
   )
-}
+})
+
+MembersList.displayName = 'MembersList'
+
+export { MembersList }

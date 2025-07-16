@@ -50,6 +50,8 @@ export interface RecordListItem {
   description?: string
   canEdit: boolean
   canDelete: boolean
+  // 創建者顯示名稱（僅群組收支記錄使用）
+  creatorDisplayName?: string
   // 預繳顯示資訊
   prepaymentInfo?: {
     startMonth: string

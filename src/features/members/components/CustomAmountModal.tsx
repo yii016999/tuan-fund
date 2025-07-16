@@ -1,47 +1,76 @@
-import { COMMON, MEMBERS } from '@/constants/string';
-import React, { useEffect, useState } from 'react';
-import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { COMMON, MEMBERS } from '@/constants/string'
+import { COLORS, STYLES, UI, VALIDATION } from '@/constants/config'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 interface CustomAmountModalProps {
-    visible: boolean;                       // 是否顯示
-    onClose: () => void;                    // 關閉
-    onConfirm: (amount: string) => void;    // 確認
-    memberName: string;                     // 成員名稱
-    defaultAmount: number;                  // 預設金額
-    initialAmount?: string;                 // 初始金額
+    visible: boolean
+    onClose: () => void
+    onConfirm: (amount: string) => void
+    memberName: string
+    defaultAmount: number
+    initialAmount?: string
 }
 
-export default function CustomAmountModal(props: CustomAmountModalProps) {
-    const { visible, onClose, onConfirm, memberName, defaultAmount, initialAmount = '' } = props;
-    const [customAmount, setCustomAmount] = useState(initialAmount);
+const CustomAmountModal = React.memo<CustomAmountModalProps>(({
+    visible,
+    onClose,
+    onConfirm,
+    memberName,
+    defaultAmount,
+    initialAmount = ''
+}) => {
+    const [customAmount, setCustomAmount] = useState(initialAmount)
 
     // 當 Modal 開啟時重置輸入值
     useEffect(() => {
         if (visible) {
-            setCustomAmount(initialAmount);
+            setCustomAmount(initialAmount)
         }
-    }, [visible, initialAmount]);
+    }, [visible, initialAmount])
 
-    const handleConfirm = () => {
-        onConfirm(customAmount);
-    };
+    const handleConfirm = useCallback(() => {
+        // 驗證金額
+        const amount = parseInt(customAmount) || 0
+        if (amount < VALIDATION.MEMBER.MIN_CUSTOM_AMOUNT || amount > VALIDATION.MEMBER.MAX_CUSTOM_AMOUNT) {
+            return
+        }
 
-    const handleCancel = () => {
-        setCustomAmount(initialAmount); // 重置為初始值
-        onClose();
-    };
+        onConfirm(customAmount)
+    }, [customAmount, onConfirm])
+
+    const handleCancel = useCallback(() => {
+        setCustomAmount(initialAmount)
+        onClose()
+    }, [initialAmount, onClose])
+
+    const handleAmountChange = useCallback((text: string) => {
+        // 只允許數字輸入
+        const numericValue = text.replace(/[^0-9]/g, '')
+        setCustomAmount(numericValue)
+    }, [])
 
     return (
         <Modal
             visible={visible}
-            animationType="fade"  // 改為淡入淡出
+            animationType="fade"
             transparent
+            onRequestClose={onClose}
         >
-            <View className="flex-1 bg-black/30 justify-center items-center">
-                <View className="bg-white rounded-lg p-6 w-4/5 max-w-sm">
+            <View className="flex-1 justify-center items-center" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
+                <View
+                    className="bg-white w-4/5 max-w-sm"
+                    style={{
+                        borderRadius: STYLES.MEMBER.MODAL_BORDER_RADIUS,
+                        padding: STYLES.MEMBER.MODAL_PADDING,
+                        ...STYLES.SHADOW,
+                    }}
+                >
                     {/* 標題 */}
-                    <View className="mb-6">
-                        <Text className="text-lg font-semibold text-center">{MEMBERS.SET_PAYMENT_AMOUNT}</Text>
+                    <View style={{ marginBottom: STYLES.SPACING.LG }}>
+                        <Text className="text-lg font-semibold text-center">
+                            {MEMBERS.SET_PAYMENT_AMOUNT}
+                        </Text>
                     </View>
 
                     {/* 內容區域 */}
@@ -55,25 +84,34 @@ export default function CustomAmountModal(props: CustomAmountModalProps) {
 
                         <TextInput
                             value={customAmount}
-                            onChangeText={setCustomAmount}
+                            onChangeText={handleAmountChange}
                             placeholder={`${COMMON.INPUT} ${COMMON.MONEY_SIGN}`}
                             keyboardType="numeric"
                             className="border border-gray-300 rounded-lg px-4 py-3 mb-4"
                             autoFocus
+                            maxLength={6}
+                            style={{
+                                borderRadius: STYLES.BORDER_RADIUS.MEDIUM,
+                                fontSize: 16,
+                            }}
                         />
 
                         {/* 按鈕區域 */}
                         <View className="flex-row justify-end gap-2">
                             <TouchableOpacity
                                 onPress={handleCancel}
-                                className="bg-gray-500 px-4 py-2 rounded-lg"
+                                className="px-4 py-2 rounded-lg"
+                                style={{ backgroundColor: COLORS.GRAY[500] }}
+                                activeOpacity={0.7}
                             >
                                 <Text className="text-white">{COMMON.CANCEL}</Text>
                             </TouchableOpacity>
 
                             <TouchableOpacity
                                 onPress={handleConfirm}
-                                className="bg-blue-500 px-4 py-2 rounded-lg"
+                                className="px-4 py-2 rounded-lg"
+                                style={{ backgroundColor: COLORS.PRIMARY }}
+                                activeOpacity={0.7}
                             >
                                 <Text className="text-white">{COMMON.CONFIRM}</Text>
                             </TouchableOpacity>
@@ -82,5 +120,9 @@ export default function CustomAmountModal(props: CustomAmountModalProps) {
                 </View>
             </View>
         </Modal>
-    );
-}; 
+    )
+})
+
+CustomAmountModal.displayName = 'CustomAmountModal'
+
+export default CustomAmountModal 

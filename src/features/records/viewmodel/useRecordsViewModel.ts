@@ -156,6 +156,7 @@ export const useRecordsViewModel = (initialGroupId?: string) => {
                 description: transaction.description,
                 canEdit: transaction.userId === user?.uid,
                 canDelete: transaction.userId === user?.uid,
+                creatorDisplayName: (transaction as any).creatorDisplayName,
                 prepaymentInfo,
             }
         })

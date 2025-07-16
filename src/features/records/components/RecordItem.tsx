@@ -3,6 +3,7 @@ import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { COLORS, STYLES, UI } from '@/constants/config'
 import { TRANSACTION } from '@/constants/string'
+import { RECORD_TYPES } from '@/constants/types'
 import { RecordListItem } from '../model/Record'
 
 interface RecordItemProps {
@@ -43,6 +44,7 @@ const RecordItem = React.memo<RecordItemProps>(({
   formatDate 
 }) => {
   const { RECORD_ITEM } = STYLES
+  const isGroupTransaction = record.type === RECORD_TYPES.GROUP_TRANSACTION
 
   return (
     <View 
@@ -57,6 +59,15 @@ const RecordItem = React.memo<RecordItemProps>(({
       <View className="flex-row justify-between items-start">
         <View className="flex-1">
           <View className="flex-row items-center flex-wrap">
+            {/* 群組收支記錄顯示創建者名稱 */}
+            {isGroupTransaction && record.creatorDisplayName && (
+              <Text 
+                className="text-lg font-medium mr-1"
+                style={{ color: COLORS.PRIMARY }}
+              >
+                {record.creatorDisplayName}：
+              </Text>
+            )}
             <Text className="text-lg font-medium text-gray-900 mb-1">
               {record.title}
             </Text>

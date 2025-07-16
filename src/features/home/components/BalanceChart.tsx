@@ -1,7 +1,9 @@
 import { BALANCE_CHART, COMMON } from '@/constants/string';
+import { COLORS, STYLES, UI } from '@/constants/config';
 import React, { useCallback, useMemo } from 'react';
-import { Dimensions, Text, TouchableOpacity, View } from 'react-native';
+import { Dimensions, Text, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import YearNavigator from './YearNavigator';
 
 // 取得螢幕寬度
 const { width: screenWidth } = Dimensions.get('window');
@@ -26,100 +28,48 @@ interface BalanceChartProps {
   isLoading?: boolean;                        // 載入狀態
 }
 
-interface YearNavigatorProps {
-  selectedYear: number;                       // 選擇的年份
-  title?: string;                             // 標題
-  canGoPrevious: boolean;                     // 是否可以前一年
-  canGoNext: boolean;                         // 是否可以後一年
-  onPreviousYear: () => void;                 // 前一年
-  onNextYear: () => void;                     // 後一年
-}
-
-interface NavigationButtonProps {
-  onPress: () => void;                        // 按鈕按下
-  disabled: boolean;                          // 是否禁用
-  icon: string;                               // 圖示
-}
-
-const CHART_CONFIG = {
-  backgroundColor: '#ffffff',
-  backgroundGradientFrom: '#ffffff',
-  backgroundGradientTo: '#ffffff',
-  decimalPlaces: 0,
-  color: (opacity = 1) => `rgba(0, 0, 0, ${opacity})`,
-  style: { borderRadius: 16 },
-  propsForLabels: { fontSize: 10 },
-  propsForDots: { r: '4' },
-  horizontalOffset: 0,
-} as const;
-
-export default function BalanceChart(props: BalanceChartProps) {
+const BalanceChart = React.memo<BalanceChartProps>(({
+  data,
+  height,
+  title,
+  selectedYear,
+  onPreviousYear,
+  onNextYear,
+  earliestYear,
+  isLoading
+}) => {
   // 使用 useMemo 優化計算
   const { cleanedData, currentBalance, safeData } = useMemo(() => {
-    const filtered = props.data?.datasets?.[0]?.data?.filter(value => value !== null && value !== undefined) ?? [];
+    const filtered = data?.datasets?.[0]?.data?.filter(value => value !== null && value !== undefined) ?? [];
     const balance = filtered[filtered.length - 1] ?? 0;
 
     return {
       cleanedData: filtered,
       currentBalance: balance,
       safeData: {
-        labels: props.data?.labels ?? [],
+        labels: data?.labels ?? [],
         datasets: [
           {
-            ...(props.data?.datasets?.[0] ?? { data: [] }),
+            ...(data?.datasets?.[0] ?? { data: [] }),
             data: filtered,
           }
         ]
       }
     };
-  }, [props.data]);
+  }, [data]);
 
   const navigationState = useMemo(() => {
     const currentYear = new Date().getFullYear();
     
     // 只有當 props.earliestYear 有值時才允許往前導航
-    const canGoPrevious = props.earliestYear ? props.selectedYear > props.earliestYear : false;
-    const canGoNext = props.selectedYear < currentYear;
+    const canGoPrevious = earliestYear ? selectedYear > earliestYear : false;
+    const canGoNext = selectedYear < currentYear;
     
     return {
       canGoPrevious,
       canGoNext,
     };
-  }, [props.selectedYear, props.earliestYear]);
-
-  const YearNavigator = useCallback((props: YearNavigatorProps) => {
-    return (
-      <View className="flex-row justify-between items-center mb-4">
-        <Text className="text-lg font-bold">{props.selectedYear} {props.title}</Text>
-        <View className="flex-row gap-8">
-          <NavigationButton
-            onPress={props.onPreviousYear}
-            disabled={!props.canGoPrevious}
-            icon="◀"
-          />
-          <NavigationButton
-            onPress={props.onNextYear}
-            disabled={!props.canGoNext}
-            icon="▶"
-          />
-        </View>
-      </View>
-    );
-  }, []);
-
-  const NavigationButton = useCallback((props: NavigationButtonProps) => {
-    return (
-      <TouchableOpacity
-        onPress={props.disabled ? undefined : props.onPress}
-        disabled={props.disabled}
-        className={`p-2 ${props.disabled ? 'opacity-30' : 'opacity-100'}`}
-      >
-        <Text className={`text-lg ${props.disabled ? 'text-gray-300' : 'text-black'}`}>
-          {props.icon}
-        </Text>
-      </TouchableOpacity>
-    );
-  }, []);
+  }, [selectedYear, earliestYear]);
 
   const formatYLabel = useCallback((value: number | string): string => {
     if (value === null || value === undefined || value === '') return '';
@@ -129,49 +79,71 @@ export default function BalanceChart(props: BalanceChartProps) {
   }, []);
 
   const chartConfig = useMemo(() => ({
-    ...CHART_CONFIG,
+    backgroundColor: COLORS.HOME.CHART_BACKGROUND,
+    backgroundGradientFrom: COLORS.HOME.CHART_BACKGROUND,
+    backgroundGradientTo: COLORS.HOME.CHART_BACKGROUND,
+    decimalPlaces: UI.HOME.BALANCE_DECIMAL_PLACES,
+    color: (opacity = 1) => `rgba(59, 130, 246, ${opacity})`,
+    style: { borderRadius: STYLES.HOME.CHART_BORDER_RADIUS },
+    propsForLabels: { fontSize: 10 },
+    propsForDots: { r: UI.HOME.CHART_DOT_RADIUS.toString() },
+    horizontalOffset: 0,
     formatYLabel: formatYLabel,
   }), [formatYLabel]);
 
   // 空的資料時顯示空畫面
   if (!cleanedData.length) {
     return (
-      <View className="bg-white rounded-xl p-4">
-        <Text className="text-lg font-bold mb-4">{props.selectedYear} {props.title}</Text>
-        <View className="h-48 justify-center items-center">
+      <View 
+        className="bg-white rounded-xl"
+        style={{ 
+          padding: STYLES.HOME.CARD_PADDING,
+          borderRadius: STYLES.HOME.CARD_BORDER_RADIUS,
+          backgroundColor: COLORS.HOME.CARD_BACKGROUND,
+        }}
+      >
+        <Text className="text-lg font-bold mb-4">{selectedYear} {title}</Text>
+        <View className="justify-center items-center" style={{ height: height * 0.8 }}>
           <Text className="text-gray-500">暫無資料</Text>
         </View>
       </View>
-    );
+    )
   }
 
   return (
-    <View className="bg-white rounded-xl p-4">
+    <View 
+      className="bg-white rounded-xl"
+      style={{ 
+        padding: STYLES.HOME.CARD_PADDING,
+        borderRadius: STYLES.HOME.CARD_BORDER_RADIUS,
+        backgroundColor: COLORS.HOME.CARD_BACKGROUND,
+      }}
+    >
       {/* 年份導航組件 */}
       <YearNavigator
-        selectedYear={props.selectedYear}
-        title={props.title}
+        selectedYear={selectedYear}
+        title={title}
         canGoPrevious={navigationState.canGoPrevious}
         canGoNext={navigationState.canGoNext}
-        onPreviousYear={props.onPreviousYear}
-        onNextYear={props.onNextYear}
+        onPreviousYear={onPreviousYear}
+        onNextYear={onNextYear}
       />
 
       <LineChart
         data={safeData}
-        width={screenWidth - 16}
-        height={props.height}
+        width={screenWidth - UI.HOME.SCREEN_PADDING}
+        height={height}
         chartConfig={chartConfig}
         bezier
         style={{
-          marginVertical: 8,
-          borderRadius: 16,
-          marginLeft: -32,
+          marginVertical: UI.HOME.CHART_MARGIN_VERTICAL,
+          borderRadius: STYLES.HOME.CHART_BORDER_RADIUS,
+          marginLeft: UI.HOME.CHART_MARGIN_LEFT,
         }}
         withDots={true}
         withShadow={false}
         fromZero={true}
-        segments={4}
+        segments={UI.HOME.CHART_SEGMENTS}
         withHorizontalLines={true}
         withVerticalLines={false}
       />
@@ -180,5 +152,9 @@ export default function BalanceChart(props: BalanceChartProps) {
         {BALANCE_CHART.CURRENT_BALANCE} {COMMON.MONEY_SIGN} {currentBalance.toLocaleString()}
       </Text>
     </View>
-  );
-} 
+  )
+})
+
+BalanceChart.displayName = 'BalanceChart'
+
+export default BalanceChart 
