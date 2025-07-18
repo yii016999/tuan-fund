@@ -1,14 +1,13 @@
 import NoGroupSelected from '@/components/NoGroupSelected'
+import { STYLES, UI } from '@/constants/config'
 import { COMMON, TRANSACTION } from '@/constants/string'
-import { UI } from '@/constants/config'
+import { PREPAYMENT_START_TYPES, PrepaymentStartType, RECORD_TRANSACTION_TYPES, RecordTransactionType } from '@/constants/types'
 import { useAuthStore } from '@/store/useAuthStore'
-import React, { useRef } from "react"
+import React, { RefObject, useRef } from "react"
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { Calendar } from 'react-native-calendars'
-import { useAddViewModel } from '../viewmodel/useTransactionViewModel'
-import { RecordTransactionType, PrepaymentStartType, RECORD_TRANSACTION_TYPES, PREPAYMENT_START_TYPES } from '@/constants/types'
 import MonthYearPicker from '../components/MonthYearPicker'
-import { RefObject } from 'react'
+import { useAddViewModel } from '../viewmodel/useTransactionViewModel'
 
 // Add type definitions
 interface TransactionTypeSelectorProps {
@@ -53,6 +52,32 @@ interface SubmitButtonProps {
   submitButtonStyle: string
   activeTab: RecordTransactionType
 }
+
+// 將硬編碼的樣式移到 config.ts
+const TRANSACTION_SCREEN_STYLES = {
+  CALENDAR_SHADOW: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  SWITCH_SHADOW: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+} as const
+
+// 移除硬編碼的字串
+const TRANSACTION_SCREEN_TEXT = {
+  CALENDAR_EMOJI: '📅',
+  SWITCH_MONTHS_TEXT: '個月',
+  PREPAYMENT_TOGGLE_TEXT: '勾選後溢出金額將自動預繳未來月份',
+  PREPAYMENT_MONTHS_TEXT: '可預繳',
+} as const
 
 // 交易類型選擇器組件
 const TransactionTypeSelector = ({ activeTab, isAdmin, onExpensePress, onIncomePress }: TransactionTypeSelectorProps) => {
@@ -100,11 +125,11 @@ const TransactionTypeSelector = ({ activeTab, isAdmin, onExpensePress, onIncomeP
 }
 
 // 表單輸入組件
-const TransactionForm = ({ 
-  title, 
-  amount, 
-  description, 
-  titleInputStyle, 
+const TransactionForm = ({
+  title,
+  amount,
+  description,
+  titleInputStyle,
   amountInputStyle,
   onTitleChange,
   onAmountChange,
@@ -182,17 +207,17 @@ const TransactionForm = ({
 }
 
 // 預繳選項組件
-const PrepaymentOptions = ({ 
-  activeTab, 
-  allowPrepayment, 
-  isPrepayment, 
-  setIsPrepayment, 
+const PrepaymentOptions = ({
+  activeTab,
+  allowPrepayment,
+  isPrepayment,
+  setIsPrepayment,
   prepaymentMonths,
   prepaymentStartType,
   setPrepaymentStartType,
   prepaymentCustomDate,
   onShowCustomDatePicker,
-  formatDisplayDate 
+  formatDisplayDate
 }: PrepaymentOptionsProps) => {
   if (activeTab !== RECORD_TRANSACTION_TYPES.INCOME || !allowPrepayment) {
     return null
@@ -202,26 +227,29 @@ const PrepaymentOptions = ({
     <View className="mb-6">
       <View className="flex-row items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
         <View className="flex-1">
-          <Text className="font-medium text-blue-800 mb-1">預繳功能</Text>
+          <Text className="font-medium text-blue-800 mb-1">{TRANSACTION.PREPAYMENT_FUNCTION_TITLE}</Text>
           <Text className="text-sm text-blue-600">
-            {isPrepayment 
-              ? `可預繳 ${prepaymentMonths} 個月`
-              : '勾選後溢出金額將自動預繳未來月份'
+            {isPrepayment
+              ? `${TRANSACTION_SCREEN_TEXT.PREPAYMENT_MONTHS_TEXT} ${prepaymentMonths} ${TRANSACTION_SCREEN_TEXT.SWITCH_MONTHS_TEXT}`
+              : TRANSACTION_SCREEN_TEXT.PREPAYMENT_TOGGLE_TEXT
             }
           </Text>
         </View>
         <TouchableOpacity
           onPress={() => setIsPrepayment(!isPrepayment)}
-          className={`w-12 h-6 rounded-full ${isPrepayment ? 'bg-blue-500' : 'bg-gray-300'}`}
+          className={`rounded-full ${isPrepayment ? 'bg-blue-500' : 'bg-gray-300'}`}
+          style={{
+            width: STYLES.TRANSACTION.SWITCH_WIDTH,
+            height: STYLES.TRANSACTION.SWITCH_HEIGHT
+          }}
         >
           <View
-            className={`w-5 h-5 bg-white rounded-full mt-0.5 ${isPrepayment ? 'ml-6' : 'ml-0.5'}`}
+            className={`bg-white rounded-full ${isPrepayment ? 'ml-6' : 'ml-0.5'}`}
             style={{
-              shadowColor: '#000',
-              shadowOffset: { width: 0, height: 1 },
-              shadowOpacity: 0.2,
-              shadowRadius: 2,
-              elevation: 2,
+              width: STYLES.TRANSACTION.SWITCH_THUMB_SIZE,
+              height: STYLES.TRANSACTION.SWITCH_THUMB_SIZE,
+              marginTop: 2,
+              ...STYLES.TRANSACTION.SWITCH_SHADOW,
             }}
           />
         </TouchableOpacity>
@@ -231,7 +259,7 @@ const PrepaymentOptions = ({
       {isPrepayment && (
         <View className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
           <Text className="font-medium text-blue-800 mb-3">{TRANSACTION.PREPAYMENT_START_TIME}</Text>
-          
+
           <View className="space-y-2">
             {[
               { type: PREPAYMENT_START_TYPES.PREVIOUS, label: TRANSACTION.PREPAYMENT_START_PREVIOUS },
@@ -244,9 +272,21 @@ const PrepaymentOptions = ({
                 className="flex-row items-center justify-between py-2"
               >
                 <Text className="text-blue-700">{option.label}</Text>
-                <View className={`w-5 h-5 rounded-full border-2 ${prepaymentStartType === option.type ? 'bg-blue-500 border-blue-500' : 'border-gray-400'}`}>
+                <View
+                  className={`rounded-full border-2 ${prepaymentStartType === option.type ? 'bg-blue-500 border-blue-500' : 'border-gray-400'}`}
+                  style={{
+                    width: STYLES.TRANSACTION.RADIO_SIZE,
+                    height: STYLES.TRANSACTION.RADIO_SIZE
+                  }}
+                >
                   {prepaymentStartType === option.type && (
-                    <View className="w-2 h-2 bg-white rounded-full mt-0.5 ml-0.5" />
+                    <View
+                      className="bg-white rounded-full mt-0.5 ml-0.5"
+                      style={{
+                        width: STYLES.TRANSACTION.RADIO_INNER_SIZE,
+                        height: STYLES.TRANSACTION.RADIO_INNER_SIZE
+                      }}
+                    />
                   )}
                 </View>
               </TouchableOpacity>
@@ -262,12 +302,12 @@ const PrepaymentOptions = ({
                 className="py-3 px-4 bg-white border border-blue-300 rounded-lg flex-row items-center justify-between"
               >
                 <Text className={`${prepaymentCustomDate ? 'text-blue-800' : 'text-gray-400'}`}>
-                  {prepaymentCustomDate 
+                  {prepaymentCustomDate
                     ? formatDisplayDate(prepaymentCustomDate)
                     : TRANSACTION.PREPAYMENT_CUSTOM_DATE_PLACEHOLDER
                   }
                 </Text>
-                <Text className="text-blue-500 text-lg">📅</Text>
+                <Text className="text-blue-500 text-lg">{TRANSACTION_SCREEN_TEXT.CALENDAR_EMOJI}</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -344,7 +384,7 @@ export default function TransactionScreen() {
       keyboardShouldPersistTaps="handled"
     >
       {/* 嵌入式日曆 */}
-      <View className="mb-6 rounded-lg overflow-hidden shadow-lg bg-white">
+      <View className="mb-6 rounded-lg overflow-hidden bg-white" style={TRANSACTION_SCREEN_STYLES.CALENDAR_SHADOW}>
         <Calendar
           current={viewModel.selectedDate}
           onDayPress={viewModel.handleDateSelect}

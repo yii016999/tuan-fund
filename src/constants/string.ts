@@ -137,10 +137,13 @@ export const RECORD = {
     NO_GROUP_SELECTED: '目前沒有群組資料，請至設定中選擇群組',
     NO_MEMBER_RECORD: '暫無個人繳費記錄',
     NO_MEMBER_RECORD_SELECTED: '目前沒有個人繳費記錄，新增收入記錄時會自動創建繳費記錄',
-    
+
     // 錯誤訊息
     ERROR_TRANSACTION_NOT_FOUND: '交易記錄不存在',
     ERROR_DELETE_RELATED_PAYMENTS: '刪除相關繳費記錄失敗',
+    RECORD_NOT_FOUND: '記錄不存在',
+    TRANSACTION_NOT_FOUND: '交易記錄不存在',
+    PAYMENT_NOT_FOUND: '繳費記錄不存在',
 } as const;
 
 /** Transaction */
@@ -168,12 +171,23 @@ export const TRANSACTION = {
     ERROR_MESSAGE_CREATE_TRANSACTION: '新增交易失敗',
     ERROR_PLEASE_INPUT_VALID_AMOUNT: '請輸入有效金額',
     ERROR_PLEASE_INPUT_ITEM_TITLE: '請輸入項目標題',
-    
+
     // 預繳顯示相關 - 確保半形括號
     PREPAYMENT_KEYWORD: '預繳',
     PREPAYMENT_RANGE_SEPARATOR: '~',
     PREPAYMENT_RANGE_PREFIX: '(',  // 半形括號
     PREPAYMENT_RANGE_SUFFIX: ')',  // 半形括號
+
+    // 預繳相關文字
+    PREPAYMENT_TOGGLE_DESCRIPTION: '勾選後溢出金額將自動預繳未來月份',
+    PREPAYMENT_MONTHS_SUFFIX: '個月',
+    PREPAYMENT_AVAILABLE_PREFIX: '可預繳',
+    PREPAYMENT_FUNCTION_TITLE: '預繳功能',
+
+    // 錯誤訊息
+    ERROR_CREATING_PAYMENT_RECORD: '創建繳費記錄失敗',
+    ERROR_HANDLING_PREPAYMENT: '處理預繳邏輯失敗',
+    ERROR_DELETING_TRANSACTION: '刪除交易記錄失敗',
 } as const;
 
 /** Members */
@@ -359,43 +373,43 @@ export const SETTINGS_NO_GROUP_SELECTED = {
 
 /** 樣式相關常數 */
 export const STYLES = {
-  SHADOW: {
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  BORDER_RADIUS: {
-    SMALL: 8,
-    MEDIUM: 12,
-    LARGE: 16,
-  },
-  SPACING: {
-    XS: 4,
-    SM: 8,
-    MD: 16,
-    LG: 24,
-    XL: 32,
-  },
+    SHADOW: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+        elevation: 2,
+    },
+    BORDER_RADIUS: {
+        SMALL: 8,
+        MEDIUM: 12,
+        LARGE: 16,
+    },
+    SPACING: {
+        XS: 4,
+        SM: 8,
+        MD: 16,
+        LG: 24,
+        XL: 32,
+    },
 } as const
 
 /** 顏色相關常數 */
 export const COLORS = {
-  PRIMARY: '#3B82F6',
-  SUCCESS: '#10B981',
-  ERROR: '#EF4444',
-  WARNING: '#F59E0B',
-  GRAY: {
-    50: '#F9FAFB',
-    100: '#F3F4F6',
-    200: '#E5E7EB',
-    300: '#D1D5DB',
-    400: '#9CA3AF',
-    500: '#6B7280',
-    600: '#4B5563',
-    700: '#374151',
-    800: '#1F2937',
-    900: '#111827',
-  },
+    PRIMARY: '#3B82F6',
+    SUCCESS: '#10B981',
+    ERROR: '#EF4444',
+    WARNING: '#F59E0B',
+    GRAY: {
+        50: '#F9FAFB',
+        100: '#F3F4F6',
+        200: '#E5E7EB',
+        300: '#D1D5DB',
+        400: '#9CA3AF',
+        500: '#6B7280',
+        600: '#4B5563',
+        700: '#374151',
+        800: '#1F2937',
+        900: '#111827',
+    },
 } as const

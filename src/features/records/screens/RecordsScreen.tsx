@@ -1,11 +1,11 @@
 import NoGroupSelected from '@/components/NoGroupSelected'
-import { COMMON, RECORD } from '@/constants/string'
 import { COLORS, STYLES } from '@/constants/config'
+import { COMMON, RECORD } from '@/constants/string'
 import { RECORD_TAB_TYPES, RECORD_TRANSACTION_TYPES, RECORD_TYPES, RecordTabType } from '@/constants/types'
 import RecordTab from '@/features/records/components/RecordTab'
 import { useAuthStore } from '@/store/useAuthStore'
 import { Ionicons } from '@expo/vector-icons'
-import React, { useState, useCallback, useMemo } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Alert, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import DateRangeSelector from '../components/DateRangeSelector'
 import RecordItem from '../components/RecordItem'
@@ -87,6 +87,7 @@ export default function RecordsScreen() {
     const formatDate = useCallback((dateStr: string) => {
         const date = new Date(dateStr)
         return date.toLocaleDateString(COMMON.ZH_TW, {
+            year: 'numeric',  // 加入年份
             month: '2-digit',
             day: '2-digit',
         })
@@ -121,9 +122,9 @@ export default function RecordsScreen() {
         { key: RECORD_TAB_TYPES.MEMBER, title: RECORD.MEMBER_RECORDS },
     ], [])
 
-    const currentRecords = useMemo(() => 
+    const currentRecords = useMemo(() =>
         activeTab === RECORD_TAB_TYPES.GROUP ? groupRecords : memberRecords
-    , [activeTab, groupRecords, memberRecords])
+        , [activeTab, groupRecords, memberRecords])
 
     // 如果沒有選擇群組
     if (!activeGroupId) {

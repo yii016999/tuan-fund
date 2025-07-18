@@ -1,8 +1,8 @@
+import { COLORS, UI } from '@/constants/config';
 import { COMMON } from '@/constants/string';
 import React, { useMemo, useState } from 'react';
 import { Alert, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
-import { UI, COLORS } from '@/constants/config';
 
 interface DateRangeSelectorProps {
   startDate: Date;
@@ -39,7 +39,7 @@ const CALENDAR_STYLES = {
     disabledArrowColor: COLORS.GRAY[300],
     textDisabledColor: COLORS.CALENDAR.DISABLED,
   },
-  
+
   // 標記樣式
   markers: {
     startDate: {
@@ -144,7 +144,7 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     const futureYear = tomorrow.getFullYear() + UI.CALENDAR_FUTURE_YEARS;
-    
+
     for (let year = tomorrow.getFullYear(); year <= futureYear; year++) {
       for (let month = 0; month < 12; month++) {
         const daysInMonth = new Date(year, month + 1, 0).getDate();

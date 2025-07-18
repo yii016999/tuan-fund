@@ -28,10 +28,12 @@ export interface MemberPaymentRecord extends BaseRecord {
   groupId: string
   memberId: string
   amount: number
-  paymentDate: string   // YYYY-MM-DD格式
-  billingMonth: string  // YYYY-MM格式
+  paymentDate: string
+  billingMonth: string
+  title?: string // 確保有 title 欄位
   description?: string
   status: RecordStatus
+  transactionId?: string
   // 預繳相關欄位
   isPrepayment?: boolean
   prepaymentRange?: {
@@ -52,11 +54,6 @@ export interface RecordListItem {
   canDelete: boolean
   // 創建者顯示名稱（僅群組收支記錄使用）
   creatorDisplayName?: string
-  // 預繳顯示資訊
-  prepaymentInfo?: {
-    startMonth: string
-    endMonth: string
-  }
 }
 
 // 記錄查詢參數

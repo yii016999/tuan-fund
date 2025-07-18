@@ -1,9 +1,8 @@
+import { COLORS, STYLES } from '@/constants/config'
+import { RECORD_TYPES } from '@/constants/types'
 import { Ionicons } from '@expo/vector-icons'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
-import { COLORS, STYLES, UI } from '@/constants/config'
-import { TRANSACTION } from '@/constants/string'
-import { RECORD_TYPES } from '@/constants/types'
 import { RecordListItem } from '../model/Record'
 
 interface RecordItemProps {
@@ -15,41 +14,21 @@ interface RecordItemProps {
   formatDate: (dateStr: string) => string
 }
 
-// 格式化預繳範圍顯示 - 移除硬編碼
-const formatPrepaymentRange = (startMonth: string, endMonth: string): string => {
-  const { PREPAYMENT } = UI
-  
-  const formatMonth = (month: string) => {
-    const year = month.substring(PREPAYMENT.YEAR_START_INDEX, PREPAYMENT.YEAR_END_INDEX)
-    const monthNum = month.substring(PREPAYMENT.MONTH_START_INDEX, PREPAYMENT.MONTH_END_INDEX)
-    return `${year}${monthNum}`
-  }
-  
-  const formattedStart = formatMonth(startMonth)
-  const formattedEnd = formatMonth(endMonth)
-  
-  if (startMonth === endMonth) {
-    return `${TRANSACTION.PREPAYMENT_RANGE_PREFIX}${TRANSACTION.PREPAYMENT_KEYWORD}${formattedStart}${TRANSACTION.PREPAYMENT_RANGE_SUFFIX}`
-  }
-  
-  return `${TRANSACTION.PREPAYMENT_RANGE_PREFIX}${TRANSACTION.PREPAYMENT_KEYWORD}${formattedStart}${TRANSACTION.PREPAYMENT_RANGE_SEPARATOR}${formattedEnd}${TRANSACTION.PREPAYMENT_RANGE_SUFFIX}`
-}
-
-const RecordItem = React.memo<RecordItemProps>(({ 
-  record, 
-  transactionType, 
-  onEdit, 
-  onDelete, 
-  formatAmount, 
-  formatDate 
+const RecordItem = React.memo<RecordItemProps>(({
+  record,
+  transactionType,
+  onEdit,
+  onDelete,
+  formatAmount,
+  formatDate
 }) => {
   const { RECORD_ITEM } = STYLES
   const isGroupTransaction = record.type === RECORD_TYPES.GROUP_TRANSACTION
 
   return (
-    <View 
+    <View
       className="bg-white rounded-lg shadow-sm"
-      style={{ 
+      style={{
         marginHorizontal: RECORD_ITEM.MARGIN_HORIZONTAL,
         marginBottom: RECORD_ITEM.MARGIN_BOTTOM,
         padding: RECORD_ITEM.PADDING,
@@ -61,7 +40,7 @@ const RecordItem = React.memo<RecordItemProps>(({
           <View className="flex-row items-center flex-wrap">
             {/* 群組收支記錄顯示創建者名稱 */}
             {isGroupTransaction && record.creatorDisplayName && (
-              <Text 
+              <Text
                 className="text-lg font-medium mr-1"
                 style={{ color: COLORS.PRIMARY }}
               >
@@ -71,17 +50,6 @@ const RecordItem = React.memo<RecordItemProps>(({
             <Text className="text-lg font-medium text-gray-900 mb-1">
               {record.title}
             </Text>
-            {record.prepaymentInfo && (
-              <Text 
-                className="text-sm ml-2 mb-1"
-                style={{ color: COLORS.GRAY[500] }}
-              >
-                {formatPrepaymentRange(
-                  record.prepaymentInfo.startMonth, 
-                  record.prepaymentInfo.endMonth
-                )}
-              </Text>
-            )}
           </View>
           {record.description && (
             <Text className="text-sm text-gray-600 mb-2">
@@ -103,7 +71,7 @@ const RecordItem = React.memo<RecordItemProps>(({
               {record.canEdit && (
                 <TouchableOpacity
                   className="rounded-full"
-                  style={{ 
+                  style={{
                     padding: STYLES.SPACING.XS,
                     backgroundColor: COLORS.PRIMARY + '20',
                     width: RECORD_ITEM.ICON_CONTAINER_SIZE,
@@ -114,10 +82,10 @@ const RecordItem = React.memo<RecordItemProps>(({
                   onPress={onEdit}
                   activeOpacity={0.7}
                 >
-                  <Ionicons 
-                    name="pencil" 
-                    size={RECORD_ITEM.ICON_SIZE} 
-                    color={COLORS.PRIMARY} 
+                  <Ionicons
+                    name="pencil"
+                    size={RECORD_ITEM.ICON_SIZE}
+                    color={COLORS.PRIMARY}
                   />
                 </TouchableOpacity>
               )}
@@ -125,7 +93,7 @@ const RecordItem = React.memo<RecordItemProps>(({
               {record.canDelete && (
                 <TouchableOpacity
                   className="rounded-full"
-                  style={{ 
+                  style={{
                     padding: STYLES.SPACING.XS,
                     backgroundColor: COLORS.ERROR + '20',
                     width: RECORD_ITEM.ICON_CONTAINER_SIZE,
@@ -136,10 +104,10 @@ const RecordItem = React.memo<RecordItemProps>(({
                   onPress={() => onDelete(record)}
                   activeOpacity={0.7}
                 >
-                  <Ionicons 
-                    name="trash" 
-                    size={RECORD_ITEM.ICON_SIZE} 
-                    color={COLORS.ERROR} 
+                  <Ionicons
+                    name="trash"
+                    size={RECORD_ITEM.ICON_SIZE}
+                    color={COLORS.ERROR}
                   />
                 </TouchableOpacity>
               )}

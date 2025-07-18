@@ -1,6 +1,6 @@
+import { COLORS, STYLES } from '@/constants/config'
 import React from 'react'
 import { Text, TouchableOpacity, View } from 'react-native'
-import { COLORS, STYLES } from '@/constants/config'
 
 interface TabItem {
   key: string
@@ -15,7 +15,7 @@ interface RecordTabProps {
 
 const RecordTab = React.memo<RecordTabProps>(({ tabs, activeTab, onTabChange }) => {
   return (
-    <View 
+    <View
       className="flex-row rounded-lg p-1 mx-4 mb-4"
       style={{ backgroundColor: COLORS.GRAY[100] }}
     >
@@ -32,7 +32,7 @@ const RecordTab = React.memo<RecordTabProps>(({ tabs, activeTab, onTabChange }) 
             onPress={() => onTabChange(tab.key)}
             activeOpacity={0.7}
           >
-            <Text 
+            <Text
               className="text-center font-medium"
               style={{
                 color: isActive ? COLORS.PRIMARY : COLORS.GRAY[600]

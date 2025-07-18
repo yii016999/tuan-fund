@@ -82,7 +82,7 @@ class HomeService {
         }
       }
 
-      // 修正：確保日期計算正確
+      // 確保日期計算正確
       const now = new Date()
       const currentYear = now.getFullYear()
       const currentMonth = now.getMonth() // 0-11
@@ -251,6 +251,7 @@ class HomeService {
       }
 
       const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
+      const currentMonthNum = currentMonth.replace('-', '') // YYYYMM
 
       // 檢查常數是否定義
       if (!COLUMNS.MEMBER_ID || !COLUMNS.BILLING_MONTH) {
@@ -261,33 +262,65 @@ class HomeService {
         throw new Error('系統設定錯誤：缺少欄位定義')
       }
 
-      const q = query(
+      // 1. 先查詢當前月份的直接繳費記錄
+      const currentMonthQuery = query(
         collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`),
         where(COLUMNS.MEMBER_ID, QUERIES.EQUALS as WhereFilterOp, userId),
         where(COLUMNS.BILLING_MONTH, QUERIES.EQUALS as WhereFilterOp, currentMonth),
         limit(1)
       )
 
-      const snapshot = await getDocs(q)
-      const hasPayment = !snapshot.empty
-
-      let paymentData: MemberPaymentRecord | null = null
-      if (hasPayment) {
-        paymentData = { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as MemberPaymentRecord
+      const currentMonthSnapshot = await getDocs(currentMonthQuery)
+      
+      if (!currentMonthSnapshot.empty) {
+        const paymentData = { id: currentMonthSnapshot.docs[0].id, ...currentMonthSnapshot.docs[0].data() } as MemberPaymentRecord
+        return {
+          isPaid: true,
+          amount: paymentData.amount || 0,
+          period: `${new Date().getFullYear()}${COMMON.YEARS}${new Date().getMonth() + 1}${COMMON.MONTH}`,
+          dueDate: this.calculateDueDate(),
+        }
       }
 
-      // 如果沒有繳費記錄，從群組設定獲取應繳金額
-      const defaultAmount = await this.getGroupMonthlyAmount(groupId)
+      // 2. 如果沒有當月記錄，查詢預繳記錄
+      const prepaymentQuery = query(
+        collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`),
+        where(COLUMNS.MEMBER_ID, QUERIES.EQUALS as WhereFilterOp, userId)
+      )
 
-      // 修正狀態比較 - 使用正確的狀態值
-      const result = {
-        isPaid: hasPayment, // 暫時改為：有記錄就算已繳費
-        amount: hasPayment ? (paymentData?.amount || 0) : 0,
+      const prepaymentSnapshot = await getDocs(prepaymentQuery)
+      
+      // 檢查預繳記錄是否涵蓋當前月份
+      for (const doc of prepaymentSnapshot.docs) {
+        const paymentData = doc.data() as MemberPaymentRecord
+        
+        // 檢查是否為預繳記錄
+        if (paymentData.description?.includes('預繳')) {
+          const prepaymentMatch = paymentData.description.match(/預繳\s*(\d{6})-(\d{6})/)
+          if (prepaymentMatch) {
+            const startMonth = prepaymentMatch[1]
+            const endMonth = prepaymentMatch[2]
+            
+            // 檢查當前月份是否在預繳範圍內
+            if (currentMonthNum >= startMonth && currentMonthNum <= endMonth) {
+              return {
+                isPaid: true,
+                amount: paymentData.amount || 0,
+                period: `${new Date().getFullYear()}${COMMON.YEARS}${new Date().getMonth() + 1}${COMMON.MONTH}`,
+                dueDate: this.calculateDueDate(),
+              }
+            }
+          }
+        }
+      }
+
+      // 3. 如果沒有任何繳費記錄，返回未繳費狀態
+      return {
+        isPaid: false,
+        amount: 0,
         period: `${new Date().getFullYear()}${COMMON.YEARS}${new Date().getMonth() + 1}${COMMON.MONTH}`,
         dueDate: this.calculateDueDate(),
       }
-
-      return result
     } catch (error) {
       console.error('Error fetching payment status:', error)
 

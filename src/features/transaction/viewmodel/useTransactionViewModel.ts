@@ -1,14 +1,14 @@
+import { UI } from '@/constants/config'
 import { COMMON, TRANSACTION } from '@/constants/string'
 import { MEMBER_ROLES, PREPAYMENT_START_TYPES, PrepaymentStartType, RECORD_TRANSACTION_TYPES, RecordTransactionType } from '@/constants/types'
+import { useDebounce } from '@/hooks/useDebounce'
 import { mapFirebaseError } from '@/utils/firebaseErrorMapper'
-import { useCallback, useEffect, useMemo, useReducer, useRef } from 'react'
+import { useCallback, useEffect, useMemo, useReducer } from 'react'
 import { Alert } from 'react-native'
 import { useAuthStore } from '../../../store/useAuthStore'
 import { MemberService } from '../../members/services/MemberService'
 import { CreateTransactionInput, TransactionError } from '../model/Transaction'
 import { TransactionService } from '../services/TransactionService'
-import { UI } from '@/constants/config'
-import { useDebounce } from '@/hooks/useDebounce'
 
 // 狀態介面
 interface TransactionState {
@@ -180,17 +180,33 @@ export const useAddViewModel = () => {
       const calculateMonths = async () => {
         if (activeGroupId && user?.uid) {
           const amountValue = parseInt(state.amount.replace(/,/g, '')) || 0
-          const months = TransactionService.calculatePrepaymentMonths(amountValue, 0, UI.DEFAULT_GROUP_MONTHLY_AMOUNT)
-          dispatch({ type: 'SET_PREPAYMENT_MONTHS', payload: months })
+          
+          // 取得個人月繳金額（考慮客製化金額）
+          const memberMonthlyAmount = await getMemberMonthlyAmount(activeGroupId, user.uid)
+          
+          // 計算可預繳的月份數
+          const prepaymentMonths = Math.floor(amountValue / memberMonthlyAmount)
+          
+          dispatch({ type: 'SET_PREPAYMENT_MONTHS', payload: prepaymentMonths })
         }
       }
 
-      // 使用新的防抖 hook
+      // 使用防抖優化
       debounce(calculateMonths)
     } else {
       dispatch({ type: 'SET_PREPAYMENT_MONTHS', payload: 0 })
     }
   }, [state.isPrepayment, state.amount, state.allowPrepayment, state.activeTab, activeGroupId, user?.uid, debounce])
+
+  // 取得個人月繳金額的輔助函數
+  const getMemberMonthlyAmount = async (groupId: string, userId: string): Promise<number> => {
+    try {
+      return await TransactionService.getMemberMonthlyAmount(groupId, userId)
+    } catch (error) {
+      console.error('Error getting member monthly amount:', error)
+      return UI.DEFAULT_GROUP_MONTHLY_AMOUNT
+    }
+  }
 
   // 計算樣式
   const themeColor = useMemo(() => {
@@ -305,9 +321,12 @@ export const useAddViewModel = () => {
   }, [])
 
   const handleDatePickerConfirm = useCallback((date: Date) => {
-    const formattedDate = formatDateToYYYYMM(date)
-    dispatch({ type: 'SET_PREPAYMENT_CUSTOM_DATE', payload: formattedDate })
-    dispatch({ type: 'SET_SHOW_DATE_PICKER', payload: false })
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const yyyymm = `${year}${month}`;
+    
+    setPrepaymentCustomDate(yyyymm);
+    setShowDatePicker(false);
   }, [])
 
   const handleDatePickerCancel = useCallback(() => {
@@ -341,17 +360,34 @@ export const useAddViewModel = () => {
     dispatch({ type: 'SET_IS_LOADING', payload: true })
 
     try {
-      const transactionData: CreateTransactionInput = {
-        type: state.activeTab,
-        amount: parseInt(amountValue),
-        date: state.selectedDate,
-        title: state.title.trim(),
-        description: state.description.trim() || undefined,
-        isPrepayment: state.isPrepayment,
-        prepaymentStartType: state.isPrepayment ? state.prepaymentStartType : undefined,
-        prepaymentCustomDate: state.isPrepayment && state.prepaymentStartType === PREPAYMENT_START_TYPES.CUSTOM ? state.prepaymentCustomDate : undefined,
+      // 映射 prepaymentStartType 到 prepaymentStartOption
+      let prepaymentStartOption: string | undefined;
+      switch (state.prepaymentStartType) {
+        case PREPAYMENT_START_TYPES.PREVIOUS:
+          prepaymentStartOption = 'previousMonth';
+          break;
+        case PREPAYMENT_START_TYPES.CURRENT:
+          prepaymentStartOption = 'currentMonth';
+          break;
+        case PREPAYMENT_START_TYPES.CUSTOM:
+          prepaymentStartOption = 'customMonth';
+          break;
       }
 
+      const transactionData: CreateTransactionInput = {
+        title: state.title.trim(),
+        amount: parseInt(amountValue),
+        date: state.selectedDate,
+        description: state.description.trim() || undefined,
+        type: state.activeTab,
+        // 只有開啟預繳時才傳遞預繳相關參數
+        prepaymentStartOption: state.isPrepayment ? prepaymentStartOption : undefined,
+        customStartMonth: state.isPrepayment && state.prepaymentStartType === PREPAYMENT_START_TYPES.CUSTOM 
+          ? state.prepaymentCustomDate 
+          : undefined,
+      }
+
+      // 使用正確的方法名稱
       await TransactionService.create(activeGroupId, user.uid, transactionData)
 
       // 重置表單

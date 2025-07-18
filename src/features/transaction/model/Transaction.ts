@@ -19,14 +19,13 @@ export interface Transaction {
 
 // 創建交易時的輸入資料（僅業務邏輯欄位）
 export interface CreateTransactionInput {
-  type: RecordTransactionType
+  title: string
   amount: number
   date: string
-  title: string
   description?: string
-  isPrepayment?: boolean
-  prepaymentStartType?: PrepaymentStartType
-  prepaymentCustomDate?: string  // 自訂預繳開始日期 (YYYYMM 格式)
+  type: RecordTransactionType
+  prepaymentStartOption?: string // 預繳開始選項
+  customStartMonth?: string // 自訂開始月份
 }
 
 // 交易錯誤類型
@@ -64,7 +63,8 @@ export const validateCreateTransactionInput = (input: CreateTransactionInput): v
     throw new TransactionError('日期格式不正確', 'INVALID_DATE_FORMAT')
   }
   
-  if (input.prepaymentCustomDate && !VALIDATION.PREPAYMENT_DATE_PATTERN.test(input.prepaymentCustomDate)) {
+  // 驗證自訂開始月份
+  if (input.customStartMonth && !VALIDATION.PREPAYMENT_DATE_PATTERN.test(input.customStartMonth)) {
     throw new TransactionError('預繳自訂日期格式不正確', 'INVALID_PREPAYMENT_DATE_FORMAT')
   }
 } 
