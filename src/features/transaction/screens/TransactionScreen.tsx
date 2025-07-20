@@ -4,7 +4,7 @@ import { COMMON, TRANSACTION } from '@/constants/string'
 import { PREPAYMENT_START_TYPES, PrepaymentStartType, RECORD_TRANSACTION_TYPES, RecordTransactionType } from '@/constants/types'
 import { useAuthStore } from '@/store/useAuthStore'
 import React, { RefObject, useRef } from "react"
-import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native"
 import { Calendar } from 'react-native-calendars'
 import MonthYearPicker from '../components/MonthYearPicker'
 import { useAddViewModel } from '../viewmodel/useTransactionViewModel'
@@ -377,74 +377,80 @@ export default function TransactionScreen() {
   }
 
   return (
-    <ScrollView
-      className="flex-1 bg-white px-4 py-6"
-      contentContainerStyle={{ paddingBottom: UI.SCROLL_PADDING_BOTTOM }}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
+    <KeyboardAvoidingView 
+      style={{ flex: 1 }} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
     >
-      {/* 嵌入式日曆 */}
-      <View className="mb-6 rounded-lg overflow-hidden bg-white" style={TRANSACTION_SCREEN_STYLES.CALENDAR_SHADOW}>
-        <Calendar
-          current={viewModel.selectedDate}
-          onDayPress={viewModel.handleDateSelect}
-          markedDates={viewModel.markedDates}
-        />
-      </View>
+      <ScrollView
+        className="flex-1 bg-white px-4 py-6"
+        contentContainerStyle={{ paddingBottom: UI.SCROLL_PADDING_BOTTOM }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* 嵌入式日曆 */}
+        <View className="mb-6 rounded-lg overflow-hidden bg-white" style={TRANSACTION_SCREEN_STYLES.CALENDAR_SHADOW}>
+          <Calendar
+            current={viewModel.selectedDate}
+            onDayPress={viewModel.handleDateSelect}
+            markedDates={viewModel.markedDates}
+          />
+        </View>
 
-      {/* 收入支出選擇 */}
-      <View className="mb-2">
-        <Text className="text-gray-500 text-sm mb-1">
-          {TRANSACTION.INCOME_OR_EXPENSE}
-        </Text>
-      </View>
-      <View className="mb-8">
-        <TransactionTypeSelector
+        {/* 收入支出選擇 */}
+        <View className="mb-2">
+          <Text className="text-gray-500 text-sm mb-1">
+            {TRANSACTION.INCOME_OR_EXPENSE}
+          </Text>
+        </View>
+        <View className="mb-8">
+          <TransactionTypeSelector
+            activeTab={viewModel.activeTab}
+            isAdmin={viewModel.isAdmin}
+            onExpensePress={viewModel.handleExpensePress}
+            onIncomePress={viewModel.handleIncomePress}
+          />
+        </View>
+
+        {/* 表單輸入 */}
+        <TransactionForm
+          title={viewModel.title}
+          amount={viewModel.amount}
+          description={viewModel.description}
+          titleInputStyle={viewModel.titleInputStyle}
+          amountInputStyle={viewModel.amountInputStyle}
+          onTitleChange={viewModel.setTitle}
+          onAmountChange={viewModel.handleAmountChange}
+          onDescriptionChange={viewModel.setDescription}
+          onTitleFocus={viewModel.handleTitleFocus}
+          onTitleBlur={viewModel.handleTitleBlur}
+          onAmountFocus={viewModel.handleAmountFocus}
+          onAmountBlur={viewModel.handleAmountBlur}
+          amountInputRef={amountInputRef}
+        />
+
+        {/* 預繳選項 */}
+        <PrepaymentOptions
           activeTab={viewModel.activeTab}
-          isAdmin={viewModel.isAdmin}
-          onExpensePress={viewModel.handleExpensePress}
-          onIncomePress={viewModel.handleIncomePress}
+          allowPrepayment={viewModel.allowPrepayment}
+          isPrepayment={viewModel.isPrepayment}
+          setIsPrepayment={viewModel.setIsPrepayment}
+          prepaymentMonths={viewModel.prepaymentMonths}
+          prepaymentStartType={viewModel.prepaymentStartType}
+          setPrepaymentStartType={viewModel.setPrepaymentStartType}
+          prepaymentCustomDate={viewModel.prepaymentCustomDate}
+          onShowCustomDatePicker={viewModel.showCustomDatePicker}
+          formatDisplayDate={formatDisplayDate}
         />
-      </View>
 
-      {/* 表單輸入 */}
-      <TransactionForm
-        title={viewModel.title}
-        amount={viewModel.amount}
-        description={viewModel.description}
-        titleInputStyle={viewModel.titleInputStyle}
-        amountInputStyle={viewModel.amountInputStyle}
-        onTitleChange={viewModel.setTitle}
-        onAmountChange={viewModel.handleAmountChange}
-        onDescriptionChange={viewModel.setDescription}
-        onTitleFocus={viewModel.handleTitleFocus}
-        onTitleBlur={viewModel.handleTitleBlur}
-        onAmountFocus={viewModel.handleAmountFocus}
-        onAmountBlur={viewModel.handleAmountBlur}
-        amountInputRef={amountInputRef}
-      />
-
-      {/* 預繳選項 */}
-      <PrepaymentOptions
-        activeTab={viewModel.activeTab}
-        allowPrepayment={viewModel.allowPrepayment}
-        isPrepayment={viewModel.isPrepayment}
-        setIsPrepayment={viewModel.setIsPrepayment}
-        prepaymentMonths={viewModel.prepaymentMonths}
-        prepaymentStartType={viewModel.prepaymentStartType}
-        setPrepaymentStartType={viewModel.setPrepaymentStartType}
-        prepaymentCustomDate={viewModel.prepaymentCustomDate}
-        onShowCustomDatePicker={viewModel.showCustomDatePicker}
-        formatDisplayDate={formatDisplayDate}
-      />
-
-      {/* 提交按鈕 */}
-      <SubmitButton
-        onPress={viewModel.handleSubmit}
-        isLoading={viewModel.isLoading}
-        submitButtonStyle={viewModel.submitButtonStyle}
-        activeTab={viewModel.activeTab}
-      />
+        {/* 提交按鈕 */}
+        <SubmitButton
+          onPress={viewModel.handleSubmit}
+          isLoading={viewModel.isLoading}
+          submitButtonStyle={viewModel.submitButtonStyle}
+          activeTab={viewModel.activeTab}
+        />
+      </ScrollView>
 
       {/* 年月份選擇器 */}
       <MonthYearPicker
@@ -453,6 +459,6 @@ export default function TransactionScreen() {
         onConfirm={viewModel.handleDatePickerConfirm}
         onCancel={viewModel.handleDatePickerCancel}
       />
-    </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
