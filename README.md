@@ -1,7 +1,6 @@
 # 團體記帳
 
-<span style="background:#fff88f">團體記帳</span> 是一個用於管理多人參加金（例如家庭基金、小團體儲蓄）的 React Native 應用程式。
-使用者可以建立或加入群組，透明化追蹤每位成員的繳費狀態，並支援月繳、預繳等多種儲值方式，以便追蹤與管理每人繳費狀態。
+TuanFund是一個用於管理多人參加金（例如家庭基金、小團體儲蓄）的 React Native 應用程式。</br>使用者可以建立或加入群組，透明化追蹤每位成員的繳費狀態，並支援月繳、預繳等多種儲值方式，以便追蹤與管理每人繳費狀態。
 
 ## 技術架構
 - **React Native** + **Expo** — 跨平台行動應用開發
@@ -24,7 +23,7 @@
   - 可設置查詢日期範圍
   - 可查看群組全部紀錄或個人新增的出入帳紀錄
   - 成員間繳費狀況透明顯示（如：該費用預繳期間）
-  - 提供刪除(待完善)與編輯功能
+  - 提供刪除與編輯（待完善）功能
 <img src="https://drive.google.com/uc?export=view&id=1LiyVcdj0wAsQYiy_dIVcqd-rwY0zXbt8" width="50%" height="50%" />
 
 - 建立出入帳紀錄
@@ -38,7 +37,7 @@
  <img src="https://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="30%" height="30%" />
 
 - 設定頁
-  - 查看個人資料(名稱、目前所在群組)
+  - 查看個人資料（名稱、目前所在群組）
   - 一個帳號可加入多個群組，於設定頁面切換
   - 提供退出群組功能
   - 提供建立群組介面
@@ -47,7 +46,7 @@
 <img src="https://drive.google.com/uc?export=view&id=1QRP9GlgwJzurT3QBAX5yHjLLP109EiTQ" width="55%" height="50%" />
 
 ## 專案未來可擴充方向
-目前已達成 MVP，內部團隊 6-7 人穩定使用中，未來預計新增：
+目前已達成 MVP，該 App 現已有6-7人群組日常使用作為資金規劃與檢視，未來預計新增：
 - 推播通知（如：繳費提醒）
 - 完整測試覆蓋（UI 測試、自動化測試）
 - 部分UI與流程優化（編輯紀錄、完善使用者介面、優化本月/季/年預繳，首頁顯示狀態）
@@ -58,9 +57,9 @@
 本專案由 yii016999 個人開發，用於私人團體工具、學習與展示作品使用
 暫不開放商業使用或再發佈，未經授權請勿直接使用本專案於其他用途
 
-This project is developed by Liya for personal learning and portfolio presentation only.
+This project is developed by yii016999 for personal learning and portfolio presentation only.
 No permission is granted to copy, modify, distribute, or use this project in whole or in part
 without explicit written consent from the author.
 
 - Email: yii016999@gmail.com
-- 2025/07/21
+- Copyright ©2025 yii016999
