@@ -18,14 +18,14 @@
   - 可查看目前群組總金額年度折線圖
   - 可查看最近出入帳資訊
   - 可查看本用戶是否完成"本月份"繳費
-![首頁](https://drive.google.com/uc?export=view&id=1DvZw3Lz0vWQLxY5Utw7rDhhPeyaWGkPe)
+<img src="https://drive.google.com/uc?export=view&id=1DvZw3Lz0vWQLxY5Utw7rDhhPeyaWGkPe" width="50%" height="50%" />
 
 - 紀錄
   - 可設置查詢日期範圍
   - 可查看群組全部紀錄或個人新增的出入帳紀錄
   - 成員間繳費狀況透明顯示（如：該費用預繳期間）
   - 提供刪除(待完善)與編輯功能
-![紀錄](https://drive.google.com/uc?export=view&id=1LiyVcdj0wAsQYiy_dIVcqd-rwY0zXbt8)
+<img src="https://drive.google.com/uc?export=view&id=1LiyVcdj0wAsQYiy_dIVcqd-rwY0zXbt8" width="50%" height="50%" />
 
 - 建立出入帳紀錄
   - 設置標題、金額、備註，出帳或入帳
@@ -35,7 +35,7 @@
 
 - 成員
   - 查看成員名稱、身分、可客製化預繳金額、移除成員
- ![成員管理](htts://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4)
+<img src="htts://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="50%" height="50%" />
 
 - 設定頁
   - 查看個人資料(名稱、目前所在群組)
@@ -43,7 +43,7 @@
   - 提供退出群組功能
   - 提供建立群組介面
   - 提供加入現有群組介面
- ![設定](https://drive.google.com/uc?export=view&id=1-KNV9mZRg2sqixtCRQS7rWUJNPHFSGT8) ![切換群組](https://drive.google.com/uc?export=view&id=1PjLrFtRrZtWOkBb9u-loE01wWSArGHvB)
+ ![設定與切換群組](https://drive.google.com/uc?export=view&id=1UWLhWLl-MREGLQY_-OeHP7mxkGlnAioN)
  ![建立與加入現有群組](https://drive.google.com/uc?export=view&id=1QRP9GlgwJzurT3QBAX5yHjLLP109EiTQ)
 
 ## 專案未來可擴充方向
