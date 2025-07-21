@@ -31,11 +31,11 @@
   - 設置標題、金額、備註，出帳或入帳
   - 入帳可開啟預繳計算，協助查看本次入帳可以預繳幾個月、並設置從何時開啟預繳，方便首頁計算
   - 限制成員權限，成員僅能入帳、群主可出入帳方便管理帳務
- <img src="https://drive.google.com/uc?export=view&id=12Jb5x0IxaWV7BLTRg1Ysk5iSM_8gDPx-" width="60%" height="60%" />
+ <img src="https://drive.google.com/uc?export=view&id=12Jb5x0IxaWV7BLTRg1Ysk5iSM_8gDPx-" width="50%" height="50%" />
 
 - 成員
   - 查看成員名稱、身分、可客製化預繳金額、移除成員
-<img src="htts://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="30%" height="30%" />
+<img src="htts://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="50%" height="50%" />
 
 - 設定頁
   - 查看個人資料(名稱、目前所在群組)
@@ -44,7 +44,7 @@
   - 提供建立群組介面
   - 提供加入現有群組介面
 <img src="https://drive.google.com/uc?export=view&id=1UWLhWLl-MREGLQY_-OeHP7mxkGlnAioN" width="50%" height="50%" />
-<img src="https://drive.google.com/uc?export=view&id=1QRP9GlgwJzurT3QBAX5yHjLLP109EiTQ" width="55%" height="55%" />
+<img src="https://drive.google.com/uc?export=view&id=1QRP9GlgwJzurT3QBAX5yHjLLP109EiTQ" width="55%" height="50%" />
 
 ## 專案未來可擴充方向
 目前已達成 MVP，內部團隊 6-7 人穩定使用中，未來預計新增：
