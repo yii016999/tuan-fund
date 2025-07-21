@@ -35,7 +35,7 @@
 
 - 成員
   - 查看成員名稱、身分、可客製化預繳金額、移除成員
-<img src="htts://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="50%" height="50%" />
+ <img src="https://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="50%" height="50%" />
 
 - 設定頁
   - 查看個人資料(名稱、目前所在群組)
