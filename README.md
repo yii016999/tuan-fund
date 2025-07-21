@@ -12,13 +12,13 @@
 
 ## 主要功能
 - 使用者註冊 / 登入（Account/Password，支援 Firebase Auth）
-![登入與註冊](https://drive.google.com/uc?export=view&id=1WkoL3rvtJj3xKnjgykSEI-8oHlQkM9Ss)
+<img src="https://drive.google.com/uc?export=view&id=1WkoL3rvtJj3xKnjgykSEI-8oHlQkM9Ss" width="50%" height="50%" />
 
 - 首頁
   - 可查看目前群組總金額年度折線圖
   - 可查看最近出入帳資訊
   - 可查看本用戶是否完成"本月份"繳費
-<img src="https://drive.google.com/uc?export=view&id=1DvZw3Lz0vWQLxY5Utw7rDhhPeyaWGkPe" width="50%" height="50%" />
+<img src="https://drive.google.com/uc?export=view&id=1DvZw3Lz0vWQLxY5Utw7rDhhPeyaWGkPe" width="30%" height="30%" />
 
 - 紀錄
   - 可設置查詢日期範圍
@@ -31,11 +31,11 @@
   - 設置標題、金額、備註，出帳或入帳
   - 入帳可開啟預繳計算，協助查看本次入帳可以預繳幾個月、並設置從何時開啟預繳，方便首頁計算
   - 限制成員權限，成員僅能入帳、群主可出入帳方便管理帳務
- ![建立出入帳紀錄](https://drive.google.com/uc?export=view&id=12Jb5x0IxaWV7BLTRg1Ysk5iSM_8gDPx-)
+ <img src="https://drive.google.com/uc?export=view&id=12Jb5x0IxaWV7BLTRg1Ysk5iSM_8gDPx-" width="60%" height="60%" />
 
 - 成員
   - 查看成員名稱、身分、可客製化預繳金額、移除成員
-<img src="htts://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="50%" height="50%" />
+<img src="htts://drive.google.com/uc?export=view&id=1yL1Q9pIuyPHlLaYr6Bu5gJDdZjDnOFy4" width="30%" height="30%" />
 
 - 設定頁
   - 查看個人資料(名稱、目前所在群組)
@@ -43,8 +43,8 @@
   - 提供退出群組功能
   - 提供建立群組介面
   - 提供加入現有群組介面
- ![設定與切換群組](https://drive.google.com/uc?export=view&id=1UWLhWLl-MREGLQY_-OeHP7mxkGlnAioN)
- ![建立與加入現有群組](https://drive.google.com/uc?export=view&id=1QRP9GlgwJzurT3QBAX5yHjLLP109EiTQ)
+<img src="https://drive.google.com/uc?export=view&id=1UWLhWLl-MREGLQY_-OeHP7mxkGlnAioN" width="50%" height="50%" />
+<img src="https://drive.google.com/uc?export=view&id=1QRP9GlgwJzurT3QBAX5yHjLLP109EiTQ" width="55%" height="55%" />
 
 ## 專案未來可擴充方向
 目前已達成 MVP，內部團隊 6-7 人穩定使用中，未來預計新增：
