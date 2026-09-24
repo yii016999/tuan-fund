@@ -7,6 +7,7 @@ import { MemberPaymentRecord } from '@/features/records/model/Record';
 import { Transaction } from '@/features/transaction/model/Transaction';
 import { collection, doc, getDoc, getDocs, limit, orderBy, OrderByDirection, query, where, WhereFilterOp } from 'firebase/firestore';
 import { BalanceData, DashboardSummary, PaymentStatus, TransactionOverview } from '../model/Home';
+import { formatLocalDate, formatLocalMonth, parseLocalDate } from '@/utils/date';
 
 class HomeService {
   // 獲取指定年份的餘額趨勢數據
@@ -90,8 +91,8 @@ class HomeService {
       const startOfMonth = new Date(currentYear, currentMonth, 1)
       const endOfMonth = new Date(currentYear, currentMonth + 1, 0)
       
-      const startDateStr = startOfMonth.toISOString().split('T')[0]
-      const endDateStr = endOfMonth.toISOString().split('T')[0]
+      const startDateStr = formatLocalDate(startOfMonth)
+      const endDateStr = formatLocalDate(endOfMonth)
 
       // 確保所有查詢參數都不是 undefined
       if (!COLUMNS.DATE || !QUERIES.GREATER_THAN_OR_EQUAL_TO || !QUERIES.LESS_THAN_OR_EQUAL_TO) {
@@ -111,7 +112,7 @@ class HomeService {
       // 如果當月沒有資料，擴大查詢範圍到最近3個月
       if (snapshot.size === 0) {
         const threeMonthsAgo = new Date(currentYear, currentMonth - UI.HOME.EXPANDED_QUERY_MONTHS, 1)
-        const threeMonthsAgoStr = threeMonthsAgo.toISOString().split('T')[0]
+        const threeMonthsAgoStr = formatLocalDate(threeMonthsAgo)
         
         const expandedQuery = query(
           collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
@@ -156,7 +157,7 @@ class HomeService {
           type: transaction.type,
           amount: transaction.amount,
           description: transaction.title,
-          date: new Date(transaction.date),
+          date: parseLocalDate(transaction.date),
           createdBy: userNamesMap[transaction.userId] || 'Unknown',
         }))
         
@@ -198,7 +199,7 @@ class HomeService {
         type: transaction.type,
         amount: transaction.amount,
         description: transaction.title,
-        date: new Date(transaction.date),
+        date: parseLocalDate(transaction.date),
         createdBy: userNamesMap[transaction.userId] || 'Unknown',
       }))
 
@@ -250,7 +251,7 @@ class HomeService {
         }
       }
 
-      const currentMonth = new Date().toISOString().slice(0, 7) // YYYY-MM
+      const currentMonth = formatLocalMonth(new Date()) // YYYY-MM
       const currentMonthNum = currentMonth.replace('-', '') // YYYYMM
 
       // 檢查常數是否定義

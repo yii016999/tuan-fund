@@ -7,6 +7,7 @@ import { addDoc, collection, deleteDoc, doc, getDoc, getDocs, query, serverTimes
 import { db } from '../../../config/firebase'
 import { MemberPaymentRecord } from '../../records/model/Record'
 import { CreateTransactionInput, TransactionError, validateCreateTransactionInput } from '../model/Transaction'
+import { parseLocalDate } from '@/utils/date'
 
 // 在文件頂部加入錯誤處理輔助函數
 const handleServiceError = (error: unknown, fallbackMessage: string, fallbackCode: string): never => {
@@ -461,7 +462,7 @@ export class PrepaymentService {
       const totalMonths = Math.floor(totalAmount / memberMonthlyAmount);
       
       let startDate: Date;
-      const currentDate = new Date(billingMonth + '-01');
+      const currentDate = parseLocalDate(billingMonth + '-01');
       
       switch (prepaymentStartOption) {
         case 'previousMonth':

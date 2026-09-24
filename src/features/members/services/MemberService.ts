@@ -9,6 +9,7 @@ import type { GroupSettings } from "@/features/settings/model/Group"
 import { getDocOrThrow } from '@/utils/collectionErrorMapping'
 import { arrayRemove, collection, deleteField, doc, DocumentReference, getDocs, orderBy, OrderByDirection, Query, query, Timestamp, updateDoc, where, WhereFilterOp } from 'firebase/firestore'
 import { MemberPaymentStatus, MemberStatistics, MemberWithDetails } from '../model/Member'
+import { formatLocalDate, formatLocalMonth } from '@/utils/date'
 
 export class MemberService {
   // 獲取群組成員列表
@@ -79,7 +80,7 @@ export class MemberService {
   // 獲取成員繳費狀態
   static async getMemberPaymentStatus(groupId: string, memberId: string): Promise<MemberPaymentStatus> {
     try {
-      const currentMonth = new Date().toISOString().substring(0, 7)
+      const currentMonth = formatLocalMonth(new Date())
 
       // 查詢該成員的繳費記錄
       const paymentsQuery = this.createMemberPaymentsQuery(groupId, memberId)
@@ -102,7 +103,7 @@ export class MemberService {
         currentMonthPaid,
         currentMonthAmount,
         latestPaymentDate,
-        nextDueDate: new Date(today.getFullYear(), today.getMonth() + 1, 1).toISOString().split('T')[0],
+        nextDueDate: formatLocalDate(new Date(today.getFullYear(), today.getMonth() + 1, 1)),
       }
     } catch (error) {
       console.error('Error fetching member payment status:', error)

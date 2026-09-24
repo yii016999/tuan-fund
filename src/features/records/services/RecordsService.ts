@@ -7,6 +7,7 @@ import { Transaction } from '@/features/transaction/model/Transaction'
 import { collection, deleteDoc, doc, getDoc, getDocs, limit, orderBy, OrderByDirection, query, Timestamp, updateDoc, where, WhereFilterOp } from 'firebase/firestore'
 import { MemberPaymentService } from '../../transaction/services/TransactionService'
 import { MemberPaymentRecord } from '../model/Record'
+import { formatLocalDate } from '@/utils/date'
 
 export class RecordsService {
   // 獲取群組收支記錄（包含創建者資訊）
@@ -14,8 +15,8 @@ export class RecordsService {
     try {
       const q = query(
         collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.TRANSACTIONS}`),
-        where(COLUMNS.DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, startDate.toISOString().split('T')[0]),
-        where(COLUMNS.DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDate.toISOString().split('T')[0]),
+        where(COLUMNS.DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, formatLocalDate(startDate)),
+        where(COLUMNS.DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, formatLocalDate(endDate)),
         orderBy(COLUMNS.DATE, QUERIES.DESC as OrderByDirection),
         limit(UI.RECORDS_QUERY_LIMIT)
       )
@@ -68,16 +69,16 @@ export class RecordsService {
         q = query(
           collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`),
           where(COLUMNS.MEMBER_ID, QUERIES.EQUALS as WhereFilterOp, currentUserId),
-          where(COLUMNS.PAYMENT_DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, startDate.toISOString().split('T')[0]),
-          where(COLUMNS.PAYMENT_DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDate.toISOString().split('T')[0]),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, formatLocalDate(startDate)),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, formatLocalDate(endDate)),
           orderBy(COLUMNS.PAYMENT_DATE, QUERIES.DESC as OrderByDirection),
           limit(UI.RECORDS_QUERY_LIMIT)
         )
       } else {
         q = query(
           collection(db, `${COLLECTIONS.GROUPS}${QUERIES.SLASH}${groupId}${QUERIES.SLASH}${DOCUMENTS.MEMBER_PAYMENTS}`),
-          where(COLUMNS.PAYMENT_DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, startDate.toISOString().split('T')[0]),
-          where(COLUMNS.PAYMENT_DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, endDate.toISOString().split('T')[0]),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.GREATER_THAN_OR_EQUAL_TO as WhereFilterOp, formatLocalDate(startDate)),
+          where(COLUMNS.PAYMENT_DATE, QUERIES.LESS_THAN_OR_EQUAL_TO as WhereFilterOp, formatLocalDate(endDate)),
           orderBy(COLUMNS.PAYMENT_DATE, QUERIES.DESC as OrderByDirection),
           limit(UI.RECORDS_QUERY_LIMIT)
         )
