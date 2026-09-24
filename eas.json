@@ -4,22 +4,43 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "adhoc": {
+      "distribution": "internal",
+      "environment": "production",
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "resourceClass": "m-medium",
+        "simulator": false,
+        "buildConfiguration": "Release"
+      }
+    },
     "dev": {
       "developmentClient": true,
       "distribution": "internal",
       "environment": "production",
-      "android": { "buildType": "apk" },
-      "ios": { "resourceClass": "m-medium" }
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
     },
     "internal": {
       "distribution": "internal",
       "environment": "production",
-      "android": { "buildType": "apk" },
-      "ios": { "resourceClass": "m-medium" }
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "resourceClass": "m-medium"
+      }
     },
     "production": {
       "distribution": "store",
-      "environment": "production"
+      "environment": "production",
+      "autoIncrement": true
     }
   },
   "submit": {
