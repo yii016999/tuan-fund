@@ -12,6 +12,7 @@ import RecordItem from '../components/RecordItem'
 import RecordsEmptyState from '../components/RecordsEmptyState'
 import { RecordListItem } from '../model/Record'
 import { useRecordsViewModel } from '../viewmodel/useRecordsViewModel'
+import { parseLocalDate } from '@/utils/date'
 
 export default function RecordsScreen() {
     const { activeGroupId, joinedGroupIds } = useAuthStore()
@@ -85,7 +86,7 @@ export default function RecordsScreen() {
     }, [])
 
     const formatDate = useCallback((dateStr: string) => {
-        const date = new Date(dateStr)
+        const date = parseLocalDate(dateStr)
         return date.toLocaleDateString(COMMON.ZH_TW, {
             year: 'numeric',  // 加入年份
             month: '2-digit',

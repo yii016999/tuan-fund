@@ -3,6 +3,7 @@ import { COMMON } from '@/constants/string';
 import React, { useMemo, useState } from 'react';
 import { Alert, Modal, Text, TouchableOpacity, View } from 'react-native';
 import { Calendar } from 'react-native-calendars';
+import { formatLocalDate, formatLocalMonth, parseLocalDate } from '@/utils/date';
 
 interface DateRangeSelectorProps {
   startDate: Date;
@@ -69,7 +70,7 @@ const CALENDAR_STYLES = {
 export default function DateRangeSelector(props: DateRangeSelectorProps) {
   const [selectedStartDate, setSelectedStartDate] = useState<string | null>(null);
   const [selectedEndDate, setSelectedEndDate] = useState<string | null>(null);
-  const [currentMonth, setCurrentMonth] = useState<string>(new Date().toISOString().split('T')[0].slice(0, 7));
+  const [currentMonth, setCurrentMonth] = useState<string>(formatLocalMonth(new Date()));
 
   // 使用常數設定日期限制
   const getDateLimits = () => {
@@ -77,8 +78,8 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
     const yearsAgo = new Date();
     yearsAgo.setFullYear(now.getFullYear() - UI.DATE_RANGE_YEARS_LIMIT);
     return {
-      minDate: yearsAgo.toISOString().split('T')[0],
-      maxDate: now.toISOString().split('T')[0],
+      minDate: formatLocalDate(yearsAgo),
+      maxDate: formatLocalDate(now),
     };
   };
 
@@ -86,7 +87,7 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
 
   // 重置到今天的月份
   const resetToToday = () => {
-    setCurrentMonth(new Date().toISOString().split('T')[0].slice(0, 7));
+    setCurrentMonth(formatLocalMonth(new Date()));
   };
 
   // 智慧日期選擇邏輯
@@ -125,7 +126,7 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
     const marked: { [key: string]: MarkedDate } = {};
 
     // 使用常數設定禁用日期範圍
-    const startYear = new Date(minDate).getFullYear() - 1;
+    const startYear = parseLocalDate(minDate).getFullYear() - 1;
     const endYear = startYear - UI.CALENDAR_PAST_YEARS;
 
     for (let year = startYear; year >= endYear; year--) {
@@ -159,12 +160,12 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
 
     if (selectedStartDate && selectedEndDate) {
       // 有完整範圍時標記所有範圍內的日期
-      const start = new Date(selectedStartDate);
-      const end = new Date(selectedEndDate);
+      const start = parseLocalDate(selectedStartDate);
+      const end = parseLocalDate(selectedEndDate);
       const current = new Date(start);
 
       while (current <= end) {
-        const dateStr = current.toISOString().split('T')[0];
+        const dateStr = formatLocalDate(current);
 
         if (dateStr === selectedStartDate) {
           marked[dateStr] = CALENDAR_STYLES.markers.startDate;
@@ -190,8 +191,8 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
       return;
     }
 
-    const start = new Date(selectedStartDate);
-    const end = new Date(selectedEndDate);
+    const start = parseLocalDate(selectedStartDate);
+    const end = parseLocalDate(selectedEndDate);
 
     props.onDateRangeChange(start, end);
 
@@ -245,7 +246,7 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
                   <Text className="text-sm text-gray-600">開始日期</Text>
                   <Text className="text-base font-semibold text-blue-600">
                     {selectedStartDate
-                      ? new Date(selectedStartDate).toLocaleDateString(COMMON.ZH_TW)
+                      ? parseLocalDate(selectedStartDate).toLocaleDateString(COMMON.ZH_TW)
                       : '未選擇'
                     }
                   </Text>
@@ -254,7 +255,7 @@ export default function DateRangeSelector(props: DateRangeSelectorProps) {
                   <Text className="text-sm text-gray-600">結束日期</Text>
                   <Text className="text-base font-semibold text-green-600">
                     {selectedEndDate
-                      ? new Date(selectedEndDate).toLocaleDateString(COMMON.ZH_TW)
+                      ? parseLocalDate(selectedEndDate).toLocaleDateString(COMMON.ZH_TW)
                       : '未選擇'
                     }
                   </Text>

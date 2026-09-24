@@ -9,6 +9,7 @@ import { useAuthStore } from '../../../store/useAuthStore'
 import { MemberService } from '../../members/services/MemberService'
 import { CreateTransactionInput, TransactionError } from '../model/Transaction'
 import { TransactionService } from '../services/TransactionService'
+import { formatLocalDate } from '@/utils/date'
 
 // 狀態介面
 interface TransactionState {
@@ -54,7 +55,7 @@ type TransactionAction =
 const initialState: TransactionState = {
   activeTab: RECORD_TRANSACTION_TYPES.INCOME,
   amount: '0',
-  selectedDate: new Date().toISOString().split('T')[0],
+  selectedDate: formatLocalDate(new Date()),
   title: '',
   description: '',
   titleFocus: false,
@@ -111,7 +112,7 @@ const transactionReducer = (state: TransactionState, action: TransactionAction):
         isAdmin: state.isAdmin,
         roleLoading: state.roleLoading,
         allowPrepayment: state.allowPrepayment,
-        selectedDate: new Date().toISOString().split('T')[0],
+        selectedDate: formatLocalDate(new Date()),
       }
     default:
       return state
