@@ -38,6 +38,8 @@ export const UI = {
   TIME: {
     MS_PER_DAY: 24 * 60 * 60 * 1000,
     DAYS_PER_WEEK: 7,
+    DAYS_PER_MONTH: 30,
+    DAYS_PER_YEAR: 365,
     MONTHS_PER_YEAR: 12,
   },
 
